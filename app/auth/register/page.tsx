@@ -14,6 +14,7 @@ import { Bot, ArrowRight, Eye, EyeOff } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Separator } from "@/components/ui/separator"
+import axios from "axios"
 
 const formSchema = z
   .object({
@@ -30,8 +31,12 @@ export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  //const [email, setEmail] = useState("");
+  //const [password, setPassword] = useState("");
   const router = useRouter()
   const { register, socialLogin } = useAuth()
+
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,18 +48,33 @@ export default function RegisterPage() {
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
-      await register(values.email, values.password)
-      router.push(
-        `/auth/verify?email=${encodeURIComponent(values.email)}&password=${encodeURIComponent(values.password)}`,
-      )
+      // Выполняем запрос на отправку кода
+      const response = await sendEmailCode(values.email);
+  
+      // Если запрос успешен, сохраняем данные и перенаправляем пользователя
+      if (response.status === 200 || response.status === 201) {
+        await register(values.email, values.password);
+        router.push(
+          `/auth/verify?email=${encodeURIComponent(values.email)}&password=${encodeURIComponent(values.password)}`,
+        );
+      }
     } catch (error) {
-      console.error("Registration error:", error)
+      console.error("Registration error:", error);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
+  
+  const sendEmailCode = async (email: string) => {
+    try {
+      const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/register/verify_code?email=${email}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
 
   const handleSocialLogin = async (provider: "google" | "yandex" | "vk") => {
     try {
@@ -97,7 +117,7 @@ export default function RegisterPage() {
                     <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input placeholder="your@email.com" {...field} />
+                        <Input placeholder="your@email.com" {...field}/>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -111,7 +131,7 @@ export default function RegisterPage() {
                       <FormLabel>Пароль</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Input type={showPassword ? "text" : "password"} placeholder="••••••" {...field} />
+                          <Input type={showPassword ? "text" : "password"} placeholder="••••••" {...field}/>
                           <Button
                             type="button"
                             variant="ghost"
