@@ -14,6 +14,7 @@ import { Bot, LogIn, Eye, EyeOff } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Separator } from "@/components/ui/separator"
+import axios from "axios"
 
 const formSchema = z.object({
   email: z.string().email({ message: "Пожалуйста, введите корректный email" }),
@@ -39,10 +40,12 @@ export default function LoginPage() {
     setIsSubmitting(true)
     setError("")
     try {
-      const success = await login(values.email, values.password)
-      if (success) {
+      //console.log(values.email, values.password)
+      const response = await Login(values.email, values.password);
+      if (response.status === 200 || response.status === 201) {
+        localStorage.setItem('access_token', response.data.access_token);
         router.push("/chat")
-      } else {
+      }else {
         setError("Неверный email или пароль. Пожалуйста, попробуйте снова.")
       }
     } catch (error) {
@@ -50,6 +53,15 @@ export default function LoginPage() {
       setError("Произошла ошибка при входе. Пожалуйста, попробуйте снова.")
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const Login = (email: string, password: string) => {
+    try {
+      const response = axios.post(`https://api-gpt.energy-cerber.ru/user/login?email=${email}&password=${password}`);
+      return response;
+    } catch (error) {
+      throw error;
     }
   }
 
