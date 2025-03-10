@@ -11,11 +11,17 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Bot, Mail } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
 import { ThemeToggle } from "@/components/theme-toggle"
+import axios from "axios"
+
+
+interface IUserDataRegistration{
+  email: string;
+  password: string;
+}
 
 const formSchema = z.object({
-  code: z.string().min(6, { message: "Код должен содержать 6 цифр" }).max(6),
+  code: z.string().min(5, { message: "Код должен содержать 5 цифр" }).max(5),
 })
 
 export default function VerifyPage() {
@@ -25,7 +31,6 @@ export default function VerifyPage() {
   const searchParams = useSearchParams()
   const email = searchParams.get("email") || ""
   const password = searchParams.get("password") || ""
-  const { verifyCode } = useAuth()
 
   useEffect(() => {
     if (!email) {
@@ -41,20 +46,52 @@ export default function VerifyPage() {
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    const userData = {
+      email, password
+    }
     setIsSubmitting(true)
     setError("")
     try {
-      const success = await verifyCode(email, values.code, password)
-      if (success) {
-        router.push("/chat")
-      } else {
-        setError("Неверный код подтверждения. Пожалуйста, попробуйте снова.")
+      const response = await verifyEmailCode(email, values.code);
+      if (response.status === 200 || response.status === 201) {
+
+        console.log(response)
+        console.log("YEEES")
+        const registrationResponse = await registartionApi(userData)
+        if (registrationResponse.status === 200 || registrationResponse.status === 201) {
+          localStorage.setItem('access_token', registrationResponse.data.access_token);
+          console.log(registrationResponse)
+          console.log(registrationResponse.data.access_token)
+          router.push("/chat")
+        }
+        else {
+          setError("Ошибка регистрации. Пожалуйста, попробуйте снова.")
+          console.error("Ошибка регистрации:", registrationResponse.status, registrationResponse.data);
+        }
       }
     } catch (error) {
       console.error("Verification error:", error)
       setError("Произошла ошибка при проверке кода. Пожалуйста, попробуйте снова.")
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const verifyEmailCode = async (email: string, code: string) => {
+    try {
+      const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/register/verify_code?email=${email}&code=${code}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const registartionApi = async (userData: IUserDataRegistration) => {
+    try {
+      const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/register`, userData);
+      return response;
+    } catch (error) {
+      throw error;
     }
   }
 
@@ -100,7 +137,7 @@ export default function VerifyPage() {
                         <Input
                           placeholder="123456"
                           {...field}
-                          maxLength={6}
+                          maxLength={5}
                           inputMode="numeric"
                           pattern="[0-9]*"
                           autoComplete="one-time-code"

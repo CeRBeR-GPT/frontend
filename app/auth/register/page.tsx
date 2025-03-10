@@ -31,12 +31,9 @@ export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  //const [email, setEmail] = useState("");
-  //const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const router = useRouter()
   const { register, socialLogin } = useAuth()
-
-
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,11 +46,10 @@ export default function RegisterPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
+    setErrorMessage(null); // Сброс сообщения об ошибке
     try {
-      // Выполняем запрос на отправку кода
       const response = await sendEmailCode(values.email);
   
-      // Если запрос успешен, сохраняем данные и перенаправляем пользователя
       if (response.status === 200 || response.status === 201) {
         await register(values.email, values.password);
         router.push(
@@ -72,6 +68,11 @@ export default function RegisterPage() {
       const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/register/verify_code?email=${email}`);
       return response;
     } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 400) {
+        setErrorMessage("Пользователь с такой почтой уже существует.");
+      } else {
+        setErrorMessage("Произошла ошибка при отправке кода.");
+      }
       throw error;
     }
   };
@@ -186,6 +187,12 @@ export default function RegisterPage() {
                     </div>
                   )}
                 </Button>
+
+                {errorMessage && (
+                  <div className="text-red-500 text-sm text-center mt-4">
+                    {errorMessage}
+                  </div>
+                )}
               </form>
             </Form>
 
