@@ -73,7 +73,12 @@ export default function RegisterPage() {
             <Bot className="w-6 h-6" />
             <span>AI Chat</span>
           </Link>
-          <ThemeToggle />
+          <nav className="flex items-center gap-4">
+            <Link href="/chat/chat1" className="text-sm font-medium hover:underline underline-offset-4">
+              Chat
+            </Link>
+            <ThemeToggle />
+          </nav>
         </div>
       </header>
       <main className="flex-1 container flex items-center justify-center px-4 py-12">

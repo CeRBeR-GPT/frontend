@@ -43,13 +43,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  // Обновим функцию login, чтобы после успешного входа перенаправлять на последний чат
   const login = async (email: string, password: string) => {
-    // In a real app, this would call an API to verify credentials
-    // For demo, we'll check if the user exists in localStorage
+    // В реальном приложении здесь будет вызов API для проверки учетных данных
+    // Для демонстрации проверим, существует ли пользователь в localStorage
     const storedUser = localStorage.getItem("user")
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser)
-      // Simple password check - in a real app this would be done securely on the server
+      // Простая проверка пароля - в реальном приложении это будет выполняться безопасно на сервере
       if (parsedUser.email === email && parsedUser.password === password) {
         setUser(parsedUser)
         setIsAuthenticated(true)
@@ -57,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // For demo purposes, allow login with any credentials if no stored user
+    // Для демонстрации разрешим вход с любыми учетными данными, если нет сохраненного пользователя
     if (!storedUser) {
       const newUser = { email, name: email.split("@")[0], password }
       setUser(newUser)
@@ -75,9 +76,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("pendingRegistration", JSON.stringify({ email, password }))
   }
 
+  // Также обновим функцию verifyCode
   const verifyCode = async (email: string, code: string, password: string) => {
-    // In a real app, this would verify the code with an API
-    // For demo, we'll just check if the code is any 6-digit code
+    // В реальном приложении это будет проверять код с помощью API
+    // Для демонстрации просто проверим, является ли код 6-значным числом
     if (code.length === 6 && /^\d+$/.test(code)) {
       const newUser = { email, name: email.split("@")[0], password }
       setUser(newUser)
@@ -95,9 +97,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("user")
   }
 
+  // И функцию socialLogin
   const socialLogin = async (provider: "google" | "yandex" | "vk") => {
-    // In a real app, this would redirect to OAuth flow
-    // For demo, we'll simulate a successful login
+    // В реальном приложении это перенаправит на поток OAuth
+    // Для демонстрации мы имитируем успешный вход
     const email = `user@${provider}.com`
     const newUser = { email, name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} User` }
     setUser(newUser)

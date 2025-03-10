@@ -28,7 +28,7 @@ export default function ProfilePage() {
               <span>AI Chat</span>
             </Link>
             <nav className="flex items-center gap-4">
-              <Link href="/chat" className="text-sm font-medium hover:underline underline-offset-4">
+              <Link href="/chat/chat1" className="text-sm font-medium hover:underline underline-offset-4">
                 Chat
               </Link>
               <Link href="/profile" className="text-sm font-medium underline underline-offset-4">
@@ -195,7 +195,7 @@ export default function ProfilePage() {
             <span>AI Chat</span>
           </Link>
           <nav className="flex items-center gap-4">
-            <Link href="/chat" className="text-sm font-medium hover:underline underline-offset-4">
+            <Link href="/chat/chat1" className="text-sm font-medium hover:underline underline-offset-4">
               Chat
             </Link>
             <Link href="/profile" className="text-sm font-medium underline underline-offset-4">

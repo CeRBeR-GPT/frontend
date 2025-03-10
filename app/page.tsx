@@ -1,10 +1,27 @@
+"use client"
+
+import { useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Bot } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { UserMenu } from "@/components/user-menu"
+import { useAuth } from "@/hooks/use-auth"
+import { useRouter } from "next/navigation"
 
 export default function Home() {
+  const { isAuthenticated } = useAuth()
+  const router = useRouter()
+
+  // Обновим редирект для авторизованных пользователей
+  useEffect(() => {
+    if (isAuthenticated) {
+      // В реальном приложении здесь будет запрос к API для получения ID последнего чата
+      const mockRecentChatId = "chat1" // Это будет приходить из вашей базы данных
+      router.push(`/chat/${mockRecentChatId}`)
+    }
+  }, [isAuthenticated, router])
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="border-b">
@@ -14,7 +31,7 @@ export default function Home() {
             <span>AI Chat</span>
           </Link>
           <nav className="flex items-center gap-4">
-            <Link href="/chat" className="text-sm font-medium hover:underline underline-offset-4">
+            <Link href="/chat/chat1" className="text-sm font-medium hover:underline underline-offset-4">
               Chat
             </Link>
             <Link href="/profile" className="text-sm font-medium hover:underline underline-offset-4">
@@ -38,7 +55,7 @@ export default function Home() {
                 </p>
               </div>
               <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                <Link href="/chat">
+                <Link href={isAuthenticated ? "/chat/new" : "/auth/login"}>
                   <Button size="lg" className="gap-1">
                     Start Chatting <ArrowRight className="w-4 h-4" />
                   </Button>
