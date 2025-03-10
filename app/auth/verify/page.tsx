@@ -11,9 +11,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Bot, Mail } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
 import { ThemeToggle } from "@/components/theme-toggle"
 import axios from "axios"
+
+
+interface IUserDataRegistration{
+  email: string;
+  password: string;
+}
 
 const formSchema = z.object({
   code: z.string().min(5, { message: "Код должен содержать 5 цифр" }).max(5),
@@ -26,7 +31,6 @@ export default function VerifyPage() {
   const searchParams = useSearchParams()
   const email = searchParams.get("email") || ""
   const password = searchParams.get("password") || ""
-  const { verifyCode } = useAuth()
 
   useEffect(() => {
     if (!email) {
@@ -42,15 +46,28 @@ export default function VerifyPage() {
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    const userData = {
+      email, password
+    }
     setIsSubmitting(true)
     setError("")
     try {
       const response = await verifyEmailCode(email, values.code);
-      const success = await verifyCode(email, values.code, password)
       if (response.status === 200 || response.status === 201) {
+
         console.log(response)
         console.log("YEEES")
-        router.push("/chat")
+        const registrationResponse = await registartionApi(userData)
+        if (registrationResponse.status === 200 || registrationResponse.status === 201) {
+          localStorage.setItem('access_token', registrationResponse.data.access_token);
+          console.log(registrationResponse)
+          console.log(registrationResponse.data.access_token)
+          router.push("/chat")
+        }
+        else {
+          setError("Ошибка регистрации. Пожалуйста, попробуйте снова.")
+          console.error("Ошибка регистрации:", registrationResponse.status, registrationResponse.data);
+        }
       }
     } catch (error) {
       console.error("Verification error:", error)
@@ -68,6 +85,15 @@ export default function VerifyPage() {
       throw error;
     }
   };
+
+  const registartionApi = async (userData: IUserDataRegistration) => {
+    try {
+      const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/register`, userData);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
