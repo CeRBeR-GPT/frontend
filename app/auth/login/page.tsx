@@ -44,6 +44,7 @@ export default function LoginPage() {
       const response = await Login(values.email, values.password);
       if (response.status === 200 || response.status === 201) {
         localStorage.setItem('access_token', response.data.access_token);
+        login(values.email, values.password)
         router.push("/chat")
       }else {
         setError("Неверный email или пароль. Пожалуйста, попробуйте снова.")

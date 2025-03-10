@@ -12,6 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Bot, Mail } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useAuth } from "@/hooks/use-auth"
 import axios from "axios"
 
 
@@ -31,6 +32,7 @@ export default function VerifyPage() {
   const searchParams = useSearchParams()
   const email = searchParams.get("email") || ""
   const password = searchParams.get("password") || ""
+  const { register, verifyCode } = useAuth()
 
   useEffect(() => {
     if (!email) {
@@ -54,12 +56,11 @@ export default function VerifyPage() {
     try {
       const response = await verifyEmailCode(email, values.code);
       if (response.status === 200 || response.status === 201) {
-
-        console.log(response)
-        console.log("YEEES")
         const registrationResponse = await registartionApi(userData)
         if (registrationResponse.status === 200 || registrationResponse.status === 201) {
           localStorage.setItem('access_token', registrationResponse.data.access_token);
+          verifyCode(email, values.code, password)
+          register(email, password);
           console.log(registrationResponse)
           console.log(registrationResponse.data.access_token)
           router.push("/chat")
