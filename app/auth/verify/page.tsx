@@ -13,9 +13,10 @@ import { Input } from "@/components/ui/input"
 import { Bot, Mail } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { ThemeToggle } from "@/components/theme-toggle"
+import axios from "axios"
 
 const formSchema = z.object({
-  code: z.string().min(6, { message: "Код должен содержать 6 цифр" }).max(6),
+  code: z.string().min(5, { message: "Код должен содержать 5 цифр" }).max(5),
 })
 
 export default function VerifyPage() {
@@ -44,11 +45,12 @@ export default function VerifyPage() {
     setIsSubmitting(true)
     setError("")
     try {
+      const response = await verifyEmailCode(email, values.code);
       const success = await verifyCode(email, values.code, password)
-      if (success) {
+      if (response.status === 200 || response.status === 201) {
+        console.log(response)
+        console.log("YEEES")
         router.push("/chat")
-      } else {
-        setError("Неверный код подтверждения. Пожалуйста, попробуйте снова.")
       }
     } catch (error) {
       console.error("Verification error:", error)
@@ -57,6 +59,15 @@ export default function VerifyPage() {
       setIsSubmitting(false)
     }
   }
+
+  const verifyEmailCode = async (email: string, code: string) => {
+    try {
+      const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/register/verify_code?email=${email}&code=${code}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -100,7 +111,7 @@ export default function VerifyPage() {
                         <Input
                           placeholder="123456"
                           {...field}
-                          maxLength={6}
+                          maxLength={5}
                           inputMode="numeric"
                           pattern="[0-9]*"
                           autoComplete="one-time-code"
