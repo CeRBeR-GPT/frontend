@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const verifyCode = async (email: string, code: string, password: string) => {
     // В реальном приложении это будет проверять код с помощью API
     // Для демонстрации просто проверим, является ли код 6-значным числом
-    if (code.length === 6 && /^\d+$/.test(code)) {
+    if (code.length === 5 && /^\d+$/.test(code)) {
       const newUser = { email, name: email.split("@")[0], password }
       setUser(newUser)
       setIsAuthenticated(true)
