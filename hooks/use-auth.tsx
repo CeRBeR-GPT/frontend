@@ -17,7 +17,7 @@ type AuthContextType = {
   register: (email: string, password: string) => Promise<void>
   verifyCode: (email: string, code: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
   logout: () => void
-  socialLogin: (provider: "google" | "yandex" | "vk") => Promise<{ success: boolean; lastChatId?: string }>
+  socialLogin: (provider: "google" | "yandex" | "github") => Promise<{ success: boolean; lastChatId?: string }>
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   // И функцию socialLogin
-  const socialLogin = async (provider: "google" | "yandex" | "vk") => {
+  const socialLogin = async (provider: "google" | "yandex" | "github") => {
     // В реальном приложении это перенаправит на поток OAuth
     // Для демонстрации мы имитируем успешный вход
     const email = `user@${provider}.com`
