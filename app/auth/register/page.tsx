@@ -78,13 +78,13 @@ export default function RegisterPage() {
 
   const handleSocialLogin = async (provider: "google" | "yandex" | "github") => {
     try {
-      await socialLogin(provider)
-      //router.push("/chat")
-      router.replace("https://api-gpt.energy-cerber.ru/auth/google")
+      // Перенаправляем пользователя на сервер OAuth2
+      window.location.href = `https://api-gpt.energy-cerber.ru/auth/${provider}`;
     } catch (error) {
-      console.error(`${provider} login error:`, error)
+      console.error(`${provider} login error:`, error);
+      setErrorMessage(`Произошла ошибка при входе через ${provider}. Пожалуйста, попробуйте снова.`);
     }
-  }
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
