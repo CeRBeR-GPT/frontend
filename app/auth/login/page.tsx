@@ -44,8 +44,10 @@ export default function LoginPage() {
       const response = await Login(values.email, values.password);
       if (response.status === 200 || response.status === 201) {
         localStorage.setItem('access_token', response.data.access_token);
-        login(values.email, values.password)
-        router.push("/chat")
+        const result = await login(values.email, values.password)
+        if (result.success) {
+          router.push(`/chat/${result.lastChatId}`)
+        }
       }else {
         setError("Неверный email или пароль. Пожалуйста, попробуйте снова.")
       }
@@ -69,7 +71,8 @@ export default function LoginPage() {
   const handleSocialLogin = async (provider: "google" | "yandex" | "vk") => {
     try {
       await socialLogin(provider)
-      router.push("/chat")
+      router.replace("https://api-gpt.energy-cerber.ru/auth/google")
+      //router.push("https://api-gpt.energy-cerber.ru/auth/google")
     } catch (error) {
       console.error(`${provider} login error:`, error)
       setError(`Произошла ошибка при входе через ${provider}. Пожалуйста, попробуйте снова.`)
