@@ -46,12 +46,11 @@ export default function RegisterPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
-    setErrorMessage(null); // Сброс сообщения об ошибке
+    setErrorMessage(null);
     try {
       const response = await sendEmailCode(values.email);
   
       if (response.status === 200 || response.status === 201) {
-        await register(values.email, values.password);
         router.push(
           `/auth/verify?email=${encodeURIComponent(values.email)}&password=${encodeURIComponent(values.password)}`,
         );
