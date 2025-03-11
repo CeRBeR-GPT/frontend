@@ -69,7 +69,8 @@ export default function LoginPage() {
   const handleSocialLogin = async (provider: "google" | "yandex" | "vk") => {
     try {
       await socialLogin(provider)
-      router.push("/chat")
+      router.replace("https://api-gpt.energy-cerber.ru/auth/google")
+      //router.push("https://api-gpt.energy-cerber.ru/auth/google")
     } catch (error) {
       console.error(`${provider} login error:`, error)
       setError(`Произошла ошибка при входе через ${provider}. Пожалуйста, попробуйте снова.`)
