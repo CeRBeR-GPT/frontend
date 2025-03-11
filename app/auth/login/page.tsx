@@ -70,14 +70,13 @@ export default function LoginPage() {
 
   const handleSocialLogin = async (provider: "google" | "yandex" | "vk") => {
     try {
-      await socialLogin(provider)
-      router.replace("https://api-gpt.energy-cerber.ru/auth/google")
-      //router.push("https://api-gpt.energy-cerber.ru/auth/google")
+      // Перенаправляем пользователя на сервер OAuth2
+      window.location.href = `https://api-gpt.energy-cerber.ru/auth/${provider}`;
     } catch (error) {
-      console.error(`${provider} login error:`, error)
-      setError(`Произошла ошибка при входе через ${provider}. Пожалуйста, попробуйте снова.`)
+      console.error(`${provider} login error:`, error);
+      setError(`Произошла ошибка при входе через ${provider}. Пожалуйста, попробуйте снова.`);
     }
-  }
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
