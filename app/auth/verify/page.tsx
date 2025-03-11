@@ -65,9 +65,9 @@ export default function VerifyPage() {
           await register(email, password);
   
           // Верифицируем код и сохраняем пользователя
-          const isVerified = await verifyCode(email, values.code, password);
-          if (isVerified) {
-            router.push("/chat");
+          const result = await verifyCode(email, values.code, password);
+          if (result.success) {
+            router.push(`/chat/${result.lastChatId}`);
           } else {
             setError("Ошибка верификации кода.");
           }
