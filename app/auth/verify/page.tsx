@@ -49,32 +49,38 @@ export default function VerifyPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const userData = {
-      email, password
-    }
-    setIsSubmitting(true)
-    setError("")
+      email,
+      password,
+    };
+    setIsSubmitting(true);
+    setError("");
     try {
       const response = await verifyEmailCode(email, values.code);
       if (response.status === 200 || response.status === 201) {
-        const registrationResponse = await registartionApi(userData)
+        const registrationResponse = await registartionApi(userData);
         if (registrationResponse.status === 200 || registrationResponse.status === 201) {
-          localStorage.setItem('access_token', registrationResponse.data.access_token);
-          verifyCode(email, values.code, password)
-          register(email, password);
-          console.log(registrationResponse)
-          console.log(registrationResponse.data.access_token)
-          router.push("/chat")
-        }
-        else {
-          setError("Ошибка регистрации. Пожалуйста, попробуйте снова.")
+          localStorage.setItem("access_token", registrationResponse.data.access_token);
+  
+          // Обновляем состояние аутентификации
+          await register(email, password);
+  
+          // Верифицируем код и сохраняем пользователя
+          const isVerified = await verifyCode(email, values.code, password);
+          if (isVerified) {
+            router.push("/chat");
+          } else {
+            setError("Ошибка верификации кода.");
+          }
+        } else {
+          setError("Ошибка регистрации. Пожалуйста, попробуйте снова.");
           console.error("Ошибка регистрации:", registrationResponse.status, registrationResponse.data);
         }
       }
     } catch (error) {
-      console.error("Verification error:", error)
-      setError("Произошла ошибка при проверке кода. Пожалуйста, попробуйте снова.")
+      console.error("Verification error:", error);
+      setError("Произошла ошибка при проверке кода. Пожалуйста, попробуйте снова.");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
