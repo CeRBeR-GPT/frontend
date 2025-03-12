@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Bot } from "lucide-react"
@@ -8,19 +8,26 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { UserMenu } from "@/components/user-menu"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
+import { NavLinks } from "@/components/nav-links"
 
 export default function Home() {
   const { isAuthenticated } = useAuth()
   const router = useRouter()
+  const [isAuth, setIsAuth] = useState(false)
+
+  // Отслеживаем изменения состояния аутентификации
+  useEffect(() => {
+    setIsAuth(isAuthenticated)
+  }, [isAuthenticated])
 
   // Обновим редирект для авторизованных пользователей
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuth) {
       // В реальном приложении здесь будет запрос к API для получения ID последнего чата
       const mockRecentChatId = "chat1" // Это будет приходить из вашей базы данных
       router.push(`/chat/${mockRecentChatId}`)
     }
-  }, [isAuthenticated, router])
+  }, [isAuth, router])
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -31,12 +38,7 @@ export default function Home() {
             <span>AI Chat</span>
           </Link>
           <nav className="flex items-center gap-4">
-            <Link href="/chat/chat1" className="text-sm font-medium hover:underline underline-offset-4">
-              Chat
-            </Link>
-            <Link href="/profile" className="text-sm font-medium hover:underline underline-offset-4">
-              Profile
-            </Link>
+            <NavLinks />
             <ThemeToggle />
             <UserMenu />
           </nav>
@@ -55,7 +57,7 @@ export default function Home() {
                 </p>
               </div>
               <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                <Link href={isAuthenticated ? "/chat/new" : "/auth/login"}>
+                <Link href={isAuth ? "/chat/new" : "/auth/login"}>
                   <Button size="lg" className="gap-1">
                     Start Chatting <ArrowRight className="w-4 h-4" />
                   </Button>

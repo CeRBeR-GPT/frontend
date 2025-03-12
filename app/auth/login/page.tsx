@@ -14,6 +14,7 @@ import { Bot, LogIn, Eye, EyeOff } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Separator } from "@/components/ui/separator"
+import {NavLinks} from "@/components/nav-links"
 import axios from "axios"
 
 console.log("")
@@ -86,9 +87,7 @@ export default function LoginPage() {
             <span>AI Chat</span>
           </Link>
           <nav className="flex items-center gap-4">
-            <Link href="/chat/chat1" className="text-sm font-medium hover:underline underline-offset-4">
-              Chat
-            </Link>
+            <NavLinks />
             <ThemeToggle />
           </nav>
         </div>

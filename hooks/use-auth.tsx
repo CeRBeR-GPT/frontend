@@ -17,7 +17,8 @@ type AuthContextType = {
   register: (email: string, password: string) => Promise<void>
   verifyCode: (email: string, code: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
   logout: () => void
-  socialLogin: (provider: "google" | "yandex" | "github") => Promise<{ success: boolean; lastChatId?: string }>
+  socialLogin: (provider: "google" | "yandex" | "vk") => Promise<{ success: boolean; lastChatId?: string }>
+  isLoading: boolean
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -28,19 +29,24 @@ const AuthContext = createContext<AuthContextType>({
   verifyCode: async () => ({ success: false }),
   logout: () => {},
   socialLogin: async () => ({ success: false }),
+  isLoading: false,
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Check for existing session on mount
   useEffect(() => {
-    const storedUser = localStorage.getItem("user")
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
-      setIsAuthenticated(true)
+    const checkAuth = async () => {
+      const storedUser = localStorage.getItem("user")
+      if (storedUser) {
+        setUser(JSON.parse(storedUser))
+        setIsAuthenticated(true)
+      }
+      setIsLoading(false)
     }
+    checkAuth()
   }, [])
 
   // Обновим функцию login, чтобы после успешного входа перенаправлять на последний чат
@@ -72,23 +78,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (email: string, password: string) => {
     // In a real app, this would call an API to send verification code
     // For demo, we'll just store the email and password temporarily
-    localStorage.setItem("pendingRegistration", JSON.stringify({ email, password }));
-    setUser({ email, name: email.split("@")[0], password });
-    setIsAuthenticated(true);
+    localStorage.setItem("pendingRegistration", JSON.stringify({ email, password }))
   }
-  
+
+  // Также обновим функцию verifyCode
   const verifyCode = async (email: string, code: string, password: string) => {
     // В реальном приложении это будет проверять код с помощью API
     // Для демонстрации просто проверим, является ли код 6-значным числом
     if (code.length === 5 && /^\d+$/.test(code)) {
-      const newUser = { email, name: email.split("@")[0], password };
-      setUser(newUser);
-      setIsAuthenticated(true);
-      localStorage.setItem("user", JSON.stringify(newUser));
-      localStorage.removeItem("pendingRegistration");
-      return { success: true, lastChatId: "chat1" }; // Возвращаем ID последнего чата
+      const newUser = { email, name: email.split("@")[0], password }
+      setUser(newUser)
+      setIsAuthenticated(true)
+      localStorage.setItem("user", JSON.stringify(newUser))
+      localStorage.removeItem("pendingRegistration")
+      return { success: true, lastChatId: "chat1" } // Возвращаем ID последнего чата
     }
-    return { success: false };
+    return { success: false }
   }
 
   const logout = () => {
@@ -98,7 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   // И функцию socialLogin
-  const socialLogin = async (provider: "google" | "yandex" | "github") => {
+  const socialLogin = async (provider: "google" | "yandex" | "vk") => {
     // В реальном приложении это перенаправит на поток OAuth
     // Для демонстрации мы имитируем успешный вход
     const email = `user@${provider}.com`
@@ -114,6 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         isAuthenticated,
+        isLoading,
         login,
         register,
         verifyCode,

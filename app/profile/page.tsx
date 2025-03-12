@@ -8,6 +8,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@/hooks/use-auth"
 import { UserMenu } from "@/components/user-menu"
 import { useRouter } from "next/navigation"
+import {NavLinks} from "@/components/nav-links"
 
 export default function ProfilePage() {
   const { isAuthenticated, logout, user } = useAuth()
@@ -28,12 +29,7 @@ export default function ProfilePage() {
               <span>AI Chat</span>
             </Link>
             <nav className="flex items-center gap-4">
-              <Link href="/chat/chat1" className="text-sm font-medium hover:underline underline-offset-4">
-                Chat
-              </Link>
-              <Link href="/profile" className="text-sm font-medium underline underline-offset-4">
-                Profile
-              </Link>
+              <NavLinks />
               <ThemeToggle />
               <UserMenu />
             </nav>
@@ -195,12 +191,7 @@ export default function ProfilePage() {
             <span>AI Chat</span>
           </Link>
           <nav className="flex items-center gap-4">
-            <Link href="/chat/chat1" className="text-sm font-medium hover:underline underline-offset-4">
-              Chat
-            </Link>
-            <Link href="/profile" className="text-sm font-medium underline underline-offset-4">
-              Profile
-            </Link>
+            <NavLinks />
             <ThemeToggle />
             <UserMenu />
           </nav>
@@ -386,4 +377,3 @@ export default function ProfilePage() {
     </div>
   )
 }
-
