@@ -16,6 +16,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { Separator } from "@/components/ui/separator"
 import axios from "axios"
 
+console.log("")
 const formSchema = z.object({
   email: z.string().email({ message: "Пожалуйста, введите корректный email" }),
   password: z.string().min(6, { message: "Пароль должен содержать минимум 6 символов" }),
@@ -40,7 +41,6 @@ export default function LoginPage() {
     setIsSubmitting(true)
     setError("")
     try {
-      //console.log(values.email, values.password)
       const response = await Login(values.email, values.password);
       if (response.status === 200 || response.status === 201) {
         localStorage.setItem('access_token', response.data.access_token);
@@ -70,7 +70,6 @@ export default function LoginPage() {
 
   const handleSocialLogin = async (provider: "google" | "yandex" | "github") => {
     try {
-      // Перенаправляем пользователя на сервер OAuth2
       window.location.href = `https://api-gpt.energy-cerber.ru/auth/${provider}`;
     } catch (error) {
       console.error(`${provider} login error:`, error);
