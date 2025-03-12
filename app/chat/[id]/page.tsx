@@ -13,6 +13,8 @@ import { ArrowUp, Bot, User, ArrowLeft } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { UserMenu } from "@/components/user-menu"
 import { ChatSidebar } from "@/components/chat-sidebar"
+import { useAuth } from "@/hooks/use-auth"
+import { NavLinks } from "@/components/nav-links"
 
 interface Message {
   id: number
@@ -25,14 +27,24 @@ export default function ChatPage() {
   const params = useParams()
   const router = useRouter()
   const chatId = params.id as string
+  const { isAuthenticated } = useAuth()
 
   const [input, setInput] = useState("")
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [chatTitle, setChatTitle] = useState("")
 
+  // Проверка аутентификации
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/auth/login")
+    }
+  }, [isAuthenticated, router])
+
   // Simulate loading chat data
   useEffect(() => {
+    if (!isAuthenticated) return
+
     // For a new chat
     if (chatId === "new") {
       setMessages([
@@ -100,7 +112,7 @@ export default function ChatPage() {
       // Handle non-existent chat
       router.push("/chat/new")
     }
-  }, [chatId, router])
+  }, [chatId, router, isAuthenticated])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -137,6 +149,11 @@ export default function ChatPage() {
     }, 1000)
   }
 
+  // Если пользователь не аутентифицирован, не рендерим содержимое
+  if (!isAuthenticated) {
+    return null
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="border-b">
@@ -157,12 +174,7 @@ export default function ChatPage() {
                 <ArrowLeft className="h-4 w-4" />
               </Link>
             </Button>
-            <Link href="/chat/chat1" className="text-sm font-medium underline underline-offset-4">
-              Chat
-            </Link>
-            <Link href="/profile" className="text-sm font-medium hover:underline underline-offset-4">
-              Profile
-            </Link>
+            <NavLinks />
             <ThemeToggle />
             <UserMenu />
           </nav>
@@ -256,4 +268,5 @@ export default function ChatPage() {
     </div>
   )
 }
+
 
