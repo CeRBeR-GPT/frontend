@@ -11,10 +11,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { ArrowRight, Eye, EyeOff } from "lucide-react"
-import { Separator } from "@/components/ui/separator"
 import axios from "axios"
 import { Header } from "@/components/Header"
 import { AuthIcons } from "@/components/AuthIcons"
+import { ChoiceAuth } from "@/components/ChoiceAuth"
 
 const formSchema = z
   .object({
@@ -172,16 +172,7 @@ export default function RegisterPage() {
                 )}
               </form>
             </Form>
-
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <Separator />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Или зарегистрироваться через</span>
-              </div>
-            </div>
-
+            <ChoiceAuth text = "Или зарегистрироваться через"/>
             <AuthIcons setError={setErrorMessage}/>
           </CardContent>
           <CardFooter className="flex justify-center">

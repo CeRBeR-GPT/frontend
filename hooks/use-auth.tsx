@@ -4,10 +4,7 @@ import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
 import axios from "axios"
 
-type User = {
-  email: string
-  password?: string
-} | null
+type User = { email: string } | null
 
 type AuthContextType = {
   user: User
@@ -58,19 +55,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
            email: email,
          };
         localStorage.setItem('access_token', response.data.access_token);
-  
+        console.log(response.data.access_token)
         setUser(user);
         setIsAuthenticated(true);
-        localStorage.setItem("user", JSON.stringify(user));
   
         return { success: true, lastChatId: response.data.lastChatId || "chat1" };
       } else {
-        return { success: false, message: response.data.message || "Неверный email или пароль" };
+        return { success: false};
       }
     } catch (error) {
       throw new Error("Произошла ошибка при входе. Пожалуйста, попробуйте снова.");
     }
   };
+
 
   const register = async (email: string, password: string) => {
     // In a real app, this would call an API to send verification code

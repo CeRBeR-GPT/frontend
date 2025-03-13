@@ -68,6 +68,7 @@ export default function VerifyPage() {
           const result = await verifyCode(email, values.code, password);
           if (result.success) {
             router.push(`/chat/${result.lastChatId}`);
+            getUserData()
           } else {
             setError("Ошибка верификации кода.");
           }
@@ -101,6 +102,25 @@ export default function VerifyPage() {
       throw error;
     }
   }
+
+  const getToken = () => localStorage.getItem('access_token');
+
+  const getUserData = async () => {
+    try {
+      const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
+      });
+
+      const userData = response.data;
+      const email = userData.email;
+      const password = userData.password;
+
+    } catch (error) {
+
+    }
+  } 
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -173,4 +193,3 @@ export default function VerifyPage() {
     </div>
   )
 }
-

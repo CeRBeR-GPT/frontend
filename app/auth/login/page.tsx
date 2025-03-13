@@ -12,9 +12,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { LogIn, Eye, EyeOff } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
-import { Separator } from "@/components/ui/separator"
 import { Header } from "@/components/Header"
 import { AuthIcons } from "@/components/AuthIcons"
+import { ChoiceAuth } from "@/components/ChoiceAuth"
+import axios from "axios"
 
 const formSchema = z.object({
   email: z.string().email({ message: "Пожалуйста, введите корректный email" }),
@@ -43,6 +44,7 @@ export default function LoginPage() {
       const result = await login(values.email, values.password);
       if (result.success) {
         router.push(`/chat/${result.lastChatId}`);
+        await getUserData()
       } else {
         setError("Неверный email или пароль. Пожалуйста, попробуйте снова.");
       }
@@ -52,6 +54,25 @@ export default function LoginPage() {
       setIsSubmitting(false);
     }
   }
+
+  const getToken = () => localStorage.getItem('access_token');
+
+  const getUserData = async () => {
+    try {
+      const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
+      });
+
+      const userData = response.data;
+      const email = userData.email;
+      const password = userData.password;
+
+    } catch (error) {
+
+    }
+  } 
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -125,15 +146,7 @@ export default function LoginPage() {
               </form>
             </Form>
 
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <Separator />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Или войти через</span>
-              </div>
-            </div>
-
+            <ChoiceAuth text = "Или войти через"/>
             <AuthIcons setError = {setError}/> 
           </CardContent>
 
@@ -150,4 +163,5 @@ export default function LoginPage() {
     </div>
   )
 }
+
 
