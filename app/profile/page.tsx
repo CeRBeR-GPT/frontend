@@ -9,10 +9,48 @@ import { useAuth } from "@/hooks/use-auth"
 import { UserMenu } from "@/components/user-menu"
 import { useRouter } from "next/navigation"
 import {NavLinks} from "@/components/nav-links"
-
+import { useEffect, useState } from "react"
+import axios from "axios"
+import { useRef } from "react"
 export default function ProfilePage() {
-  const { isAuthenticated, logout, user } = useAuth()
+  const { isAuthenticated, logout, user} = useAuth()
   const router = useRouter()
+  const [userData, setUserData] = useState({})
+
+  const isRequested = useRef(false);
+
+  useEffect(() => {
+    const getToken = () => localStorage.getItem('access_token');
+    const token = getToken();
+
+    const getUserData = async () => {
+      if (isRequested.current) return;
+      isRequested.current = true; 
+
+      try {
+        const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const userData = response.data;
+        const email = userData.email;
+        const password = userData.password;
+        console.log("User data fetched:", userData);
+        setUserData(userData)
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+      }
+    };
+
+    if (token) {
+      getUserData();
+    }
+  }, []); // Убедитесь, что массив зависимостей пуст
+
+
+
 
   const handleLogout = () => {
     logout()
@@ -253,7 +291,7 @@ export default function ProfilePage() {
                   <div className="bg-muted rounded-lg p-4">
                     <h4 className="font-medium mb-1">Базовый тариф</h4>
                     <p className="text-sm text-muted-foreground mb-3">
-                      У вас активирован базовый тариф с ограничением в 100 сообщений в день.
+                      У вас активирован базовый тариф с ограничением в 10 сообщений в день.
                     </p>
                     <Button variant="outline" size="sm">
                       Управление тарифом
