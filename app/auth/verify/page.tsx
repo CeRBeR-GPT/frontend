@@ -10,11 +10,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Bot, Mail } from "lucide-react"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { Mail } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
-import {NavLinks} from "@/components/nav-links"
 import axios from "axios"
+import { Header } from "@/components/Header"
 
 
 interface IUserDataRegistration{
@@ -69,6 +68,7 @@ export default function VerifyPage() {
           const result = await verifyCode(email, values.code, password);
           if (result.success) {
             router.push(`/chat/${result.lastChatId}`);
+            getUserData()
           } else {
             setError("Ошибка верификации кода.");
           }
@@ -103,20 +103,28 @@ export default function VerifyPage() {
     }
   }
 
+  const getToken = () => localStorage.getItem('access_token');
+
+  const getUserData = async () => {
+    try {
+      const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
+      });
+
+      const userData = response.data;
+      const email = userData.email;
+      const password = userData.password;
+
+    } catch (error) {
+
+    }
+  } 
+
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="border-b">
-        <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
-          <Link href="/" className="flex items-center gap-2 font-bold">
-            <Bot className="w-6 h-6" />
-            <span>AI Chat</span>
-          </Link>
-          <nav className="flex items-center gap-4">
-            <NavLinks />
-            <ThemeToggle />
-          </nav>
-        </div>
-      </header>
+      <Header/>
       <main className="flex-1 container flex items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
@@ -185,4 +193,3 @@ export default function VerifyPage() {
     </div>
   )
 }
-

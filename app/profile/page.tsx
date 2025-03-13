@@ -80,7 +80,7 @@ export default function ProfilePage() {
                   <ul className="grid gap-2">
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-green-500" />
-                      <span>100 сообщений в день</span>
+                      <span>10 сообщений в день</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-green-500" />
@@ -111,7 +111,7 @@ export default function ProfilePage() {
                   <ul className="grid gap-2">
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-green-500" />
-                      <span>Неограниченные сообщения</span>
+                      <span>50 сообщений в день</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-green-500" />
@@ -149,7 +149,7 @@ export default function ProfilePage() {
                   <ul className="grid gap-2">
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-green-500" />
-                      <span>Все функции Премиум</span>
+                      <span>100 сообщений в день</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-green-500" />
@@ -277,15 +277,11 @@ export default function ProfilePage() {
                   <ul className="grid gap-2">
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-green-500" />
-                      <span>100 сообщений в день</span>
+                      <span>10 сообщений в день</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-green-500" />
-                      <span>Стандартная модель AI</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-500" />
-                      <span>Базовая поддержка</span>
+                      <span>Ограничение: 2000 символов</span>
                     </li>
                   </ul>
                 </CardContent>
@@ -300,7 +296,7 @@ export default function ProfilePage() {
                   <CardTitle>Премиум</CardTitle>
                   <CardDescription>Для активных пользователей</CardDescription>
                   <div className="mt-2">
-                    <span className="text-3xl font-bold">$9.99</span>
+                    <span className="text-3xl font-bold">999₽</span>
                     <span className="text-muted-foreground"> / месяц</span>
                   </div>
                 </CardHeader>
@@ -308,19 +304,15 @@ export default function ProfilePage() {
                   <ul className="grid gap-2">
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-green-500" />
-                      <span>Неограниченные сообщения</span>
+                      <span>50 сообщений в день</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-green-500" />
-                      <span>Продвинутая модель AI</span>
+                      <span>Ограничение: 10000 символов</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-green-500" />
-                      <span>Приоритетная поддержка</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-500" />
-                      <span>Без рекламы</span>
+                      <span>Фотокарточка Кирилла</span>
                     </li>
                   </ul>
                 </CardContent>
@@ -336,7 +328,7 @@ export default function ProfilePage() {
                   <CardTitle>Бизнес</CardTitle>
                   <CardDescription>Для команд и компаний</CardDescription>
                   <div className="mt-2">
-                    <span className="text-3xl font-bold">$29.99</span>
+                    <span className="text-3xl font-bold">2999₽</span>
                     <span className="text-muted-foreground"> / месяц</span>
                   </div>
                 </CardHeader>
@@ -344,29 +336,23 @@ export default function ProfilePage() {
                   <ul className="grid gap-2">
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-green-500" />
-                      <span>Все функции Премиум</span>
+                      <span>100 сообщений в день</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-green-500" />
-                      <span>До 10 пользователей</span>
+                      <span>Ограничение: 20000 символов</span>
                     </li>
+                    
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-green-500" />
-                      <span>Самая мощная модель AI</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-500" />
-                      <span>Аналитика и отчеты</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-500" />
-                      <span>Выделенная поддержка</span>
+                      <span>Удочка в подарок</span>
                     </li>
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Button className="w-full" variant="outline">
-                    Связаться с продажами
+                  <Button className="w-full">
+                    <Zap className="w-4 h-4 mr-2" />
+                    Обновить
                   </Button>
                 </CardFooter>
               </Card>
