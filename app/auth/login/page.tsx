@@ -13,11 +13,8 @@ import { Input } from "@/components/ui/input"
 import { LogIn, Eye, EyeOff } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { Separator } from "@/components/ui/separator"
-import axios from "axios"
 import { Header } from "@/components/Header"
-import {GoogleIcon} from "@/components/ui/GoogleIcon"
-import { YandexIcon } from "@/components/ui/YandexIcon"
-import { GitHubIcon } from "@/components/ui/GitHubIcon"
+import { AuthIcons } from "@/components/AuthIcons"
 
 const formSchema = z.object({
   email: z.string().email({ message: "Пожалуйста, введите корректный email" }),
@@ -40,44 +37,21 @@ export default function LoginPage() {
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true)
-    setError("")
+    setIsSubmitting(true);
+    setError("");
     try {
-      const response = await Login(values.email, values.password);
-      if (response.status === 200 || response.status === 201) {
-        localStorage.setItem('access_token', response.data.access_token);
-        const result = await login(values.email, values.password)
-        if (result.success) {
-          router.push(`/chat/${result.lastChatId}`)
-        }
-      }else {
-        setError("Неверный email или пароль. Пожалуйста, попробуйте снова.")
+      const result = await login(values.email, values.password);
+      if (result.success) {
+        router.push(`/chat/${result.lastChatId}`);
+      } else {
+        setError("Неверный email или пароль. Пожалуйста, попробуйте снова.");
       }
-    } catch (error) {
-      console.error("Login error:", error)
-      setError("Произошла ошибка при входе. Пожалуйста, попробуйте снова.")
+    } catch (error) {;
+      setError("Произошла ошибка при входе. Пожалуйста, попробуйте снова.");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
-
-  const Login = (email: string, password: string) => {
-    try {
-      const response = axios.post(`https://api-gpt.energy-cerber.ru/user/login?email=${email}&password=${password}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  const handleSocialLogin = async (provider: "google" | "yandex" | "github") => {
-    try {
-      window.location.href = `https://api-gpt.energy-cerber.ru/auth/${provider}`;
-    } catch (error) {
-      console.error(`${provider} login error:`, error);
-      setError(`Произошла ошибка при входе через ${provider}. Пожалуйста, попробуйте снова.`);
-    }
-  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -160,21 +134,9 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
-              <Button variant="outline" className="w-full" onClick={() => handleSocialLogin("google")}>
-                <GoogleIcon/>
-                Google
-              </Button>
-              <Button variant="outline" className="w-full" onClick={() => handleSocialLogin("yandex")}>
-                <YandexIcon/>
-                Яндекс
-              </Button>
-              <Button variant="outline" className="w-full" onClick={() => handleSocialLogin("github")}>
-                <GitHubIcon/>
-                GitHub
-            </Button>
-            </div>
+            <AuthIcons setError = {setError}/> 
           </CardContent>
+
           <CardFooter className="flex justify-center">
             <div className="text-center text-sm">
               Нет аккаунта?{" "}

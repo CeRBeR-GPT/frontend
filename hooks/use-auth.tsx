@@ -1,12 +1,11 @@
 "use client"
 
 import type React from "react"
-
 import { createContext, useContext, useState, useEffect } from "react"
+import axios from "axios"
 
 type User = {
   email: string
-  name: string
   password?: string
 } | null
 
@@ -17,7 +16,7 @@ type AuthContextType = {
   register: (email: string, password: string) => Promise<void>
   verifyCode: (email: string, code: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
   logout: () => void
-  socialLogin: (provider: "google" | "yandex" | "vk") => Promise<{ success: boolean; lastChatId?: string }>
+  socialLogin: (provider: "google" | "yandex" | "github") => Promise<{ success: boolean; lastChatId?: string }>
   isLoading: boolean
 }
 
@@ -49,31 +48,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkAuth()
   }, [])
 
-  // Обновим функцию login, чтобы после успешного входа перенаправлять на последний чат
   const login = async (email: string, password: string) => {
-    // В реальном приложении здесь будет вызов API для проверки учетных данных
-    // Для демонстрации проверим, существует ли пользователь в localStorage
-    const storedUser = localStorage.getItem("user")
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser)
-      // Простая проверка пароля - в реальном приложении это будет выполняться безопасно на сервере
-      if (parsedUser.email === email && parsedUser.password === password) {
-        setUser(parsedUser)
-        setIsAuthenticated(true)
-        return { success: true, lastChatId: "chat1" } // Возвращаем ID последнего чата
-      }
-    }
+    try {
 
-    // Для демонстрации разрешим вход с любыми учетными данными, если нет сохраненного пользователя
-    if (!storedUser) {
-      const newUser = { email, name: email.split("@")[0], password }
-      setUser(newUser)
-      setIsAuthenticated(true)
-      localStorage.setItem("user", JSON.stringify(newUser))
-      return { success: true, lastChatId: "chat1" } // Возвращаем ID последнего чата
+      const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/login?email=${email}&password=${password}`);
+
+      if (response.data && response.status === 200) {
+        const user = {
+           email: email,
+         };
+        localStorage.setItem('access_token', response.data.access_token);
+  
+        setUser(user);
+        setIsAuthenticated(true);
+        localStorage.setItem("user", JSON.stringify(user));
+  
+        return { success: true, lastChatId: response.data.lastChatId || "chat1" };
+      } else {
+        return { success: false, message: response.data.message || "Неверный email или пароль" };
+      }
+    } catch (error) {
+      throw new Error("Произошла ошибка при входе. Пожалуйста, попробуйте снова.");
     }
-    return { success: false }
-  }
+  };
 
   const register = async (email: string, password: string) => {
     // In a real app, this would call an API to send verification code
@@ -85,6 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const verifyCode = async (email: string, code: string, password: string) => {
     // В реальном приложении это будет проверять код с помощью API
     // Для демонстрации просто проверим, является ли код 6-значным числом
+    
     if (code.length === 5 && /^\d+$/.test(code)) {
       const newUser = { email, name: email.split("@")[0], password }
       setUser(newUser)
@@ -103,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   // И функцию socialLogin
-  const socialLogin = async (provider: "google" | "yandex" | "vk") => {
+  const socialLogin = async (provider: "google" | "yandex" | "github") => {
     // В реальном приложении это перенаправит на поток OAuth
     // Для демонстрации мы имитируем успешный вход
     const email = `user@${provider}.com`
@@ -116,16 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated,
-        isLoading,
-        login,
-        register,
-        verifyCode,
-        logout,
-        socialLogin,
-      }}
+      value={{ user, isAuthenticated, isLoading, login, register, verifyCode, logout, socialLogin,}}
     >
       {children}
     </AuthContext.Provider>
