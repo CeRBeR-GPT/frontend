@@ -3,7 +3,7 @@ import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Bot, Check, User, Zap, LogIn, LogOut } from "lucide-react"
+import { Bot, Check, User, Zap, LogIn, LogOut, Lock } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@/hooks/use-auth"
 import { UserMenu } from "@/components/user-menu"
@@ -86,7 +86,6 @@ export default function ProfilePage() {
     : userData?.plan === "business"
       ? "Бизнес"
       : "дефолт";
-  console.log(userData)
 
   const handleLogout = () => {
     logout()
@@ -286,6 +285,12 @@ export default function ProfilePage() {
                   <div className="text-center">
                     <h2 className="text-xl font-bold">{user?.email}</h2>
                   </div>
+                  <Button variant="outline" asChild>
+                      <Link href="/profile/change-password" className="w-full">
+                        <Lock className="w-4 h-4 mr-2" />
+                        Изменить пароль
+                      </Link>
+                    </Button>
                   <Button
                     variant="outline"
                     className="w-full mt-2 text-red-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
