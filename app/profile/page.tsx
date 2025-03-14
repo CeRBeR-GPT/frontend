@@ -67,7 +67,7 @@ export default function ProfilePage() {
     : userData?.plan === "business"
       ? "Бизнес"
       : "дефолт";
-
+  console.log(userData)
 
   const handleLogout = () => {
     logout()
@@ -283,7 +283,8 @@ export default function ProfilePage() {
                 <h3 className="font-medium mb-2">Текущий тариф</h3>
                 <div className="bg-primary/10 rounded-lg p-3 text-center">
                   <p className="font-bold">{plan}</p>
-                  <p className="text-sm text-muted-foreground">Бесплатно</p>
+                  <p className="text-sm text-muted-foreground">{plan === "Базовый" ? "Бесплатно" : 
+                  plan === "Премиум" ? "999₽" : plan === "Бизнес" ? "2999₽" : ""}</p>
                 </div>
               </CardContent>
             </Card>
@@ -318,6 +319,9 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
 
+
+
+
             <h2 className="text-xl font-bold mb-4">Доступные тарифы</h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               <Card className="border-2 border-gray-200">
@@ -340,11 +344,13 @@ export default function ProfilePage() {
                     </li>
                   </ul>
                 </CardContent>
-                <CardFooter>
-                  <Button className="w-full" variant="outline">
-                    Текущий план
-                  </Button>
+                {plan === "Базовый" && (
+                  <CardFooter>
+                    <Button className="w-full" variant="outline">
+                      Текущий план
+                    </Button>
                 </CardFooter>
+                )}
               </Card>
               <Card className="border-2 border-primary">
                 <CardHeader>
@@ -371,12 +377,20 @@ export default function ProfilePage() {
                     </li>
                   </ul>
                 </CardContent>
-                <CardFooter>
-                  <Button className="w-full">
-                    <Zap className="w-4 h-4 mr-2" />
-                    Обновить
-                  </Button>
-                </CardFooter>
+                {plan === "Премиум" && (
+                  <CardFooter>
+                    <Button className="w-full" variant="outline">
+                      Текущий план
+                    </Button>
+                  </CardFooter>)}
+                
+                {plan === "Базовый" && (
+                  <CardFooter>
+                    <Button className="w-full">
+                      <Zap className="w-4 h-4 mr-2" />
+                      Обновить
+                    </Button>
+                  </CardFooter>)}
               </Card>
               <Card className="border-2 border-gray-200">
                 <CardHeader>
@@ -404,12 +418,20 @@ export default function ProfilePage() {
                     </li>
                   </ul>
                 </CardContent>
-                <CardFooter>
-                  <Button className="w-full">
-                    <Zap className="w-4 h-4 mr-2" />
-                    Обновить
-                  </Button>
-                </CardFooter>
+                {plan === "Бизнес" && (
+                  <CardFooter>
+                    <Button className="w-full" variant="outline">
+                      Текущий план
+                    </Button>
+                  </CardFooter>)}
+                
+                  {plan === "Премиум" || plan === "Базовый" && (
+                  <CardFooter>
+                    <Button className="w-full">
+                      <Zap className="w-4 h-4 mr-2" />
+                      Обновить
+                    </Button>
+                  </CardFooter>)}
               </Card>
             </div>
           </div>
