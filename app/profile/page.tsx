@@ -12,10 +12,21 @@ import {NavLinks} from "@/components/nav-links"
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { useRef } from "react"
+
+interface UserData {
+  id: string;
+  email: string;
+  plan: string;
+  available_message_count: number;
+  message_length_limit: number;
+  message_count_limit: number
+}
+
+
 export default function ProfilePage() {
   const { isAuthenticated, logout, user} = useAuth()
   const router = useRouter()
-  const [userData, setUserData] = useState({})
+  const [userData, setUserData] = useState<UserData | null>(null)
 
   const isRequested = useRef(false);
 
@@ -35,8 +46,6 @@ export default function ProfilePage() {
         });
 
         const userData = response.data;
-        const email = userData.email;
-        const password = userData.password;
         console.log("User data fetched:", userData);
         setUserData(userData)
       } catch (error) {
@@ -47,10 +56,37 @@ export default function ProfilePage() {
     if (token) {
       getUserData();
     }
-  }, []); // Убедитесь, что массив зависимостей пуст
+  }, []);
 
+  const payForPremium = async (plan: string) => {
+    const getToken = () => localStorage.getItem('access_token');
+    const token = getToken();
+    console.log(token)
+    console.log('eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwic3ViIjoiZGltLm1hbHVja293MjAxN0B5YW5kZXgucnUiLCJ1dWlkIjoiODExYmVmYWUtY2MxZC00ZDVjLThjNDctOTcwOWJmNmY1ZDIwIiwiZXhwIjoxNzQyMDY3MTUwLCJpYXQiOjE3NDE5ODA3NTB9.UUm9ZAMToft-I6V8no8sHOPKQ8TsCDg1IB1AVB9kde7YoYm9eg6XdgAgdEeAalBKj_OwrIiw4CZpw1tfiEV7SUnR_1-tdvea40dHnnWkLLQ47RrCaAaFZkp14wHFduAMoWlZCve95TgOiCWLg5tXMlCp-7hO1PjoPgS8zG3LfCcMgJSZZTb0VTC9Y1P6BUbIbrNE2vsPmG-eaFC9xtrO9pu5Yck65xzBnvi8FFIvbUHks7EUHWxMaiL1q1JUMlK4kblzWPxEUvUjgcCvLnZkZKaMXntkRZwbnLr_ju5hMAg4W49Ax5yeXER0wtr3RYdtADLLt42CepAk23zOkU0bxA' === token)
+    try {
+      const response = await axios.post(`https://api-gpt.energy-cerber.ru/transaction/new_payment?plan=${plan}`, {},  {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      console.log(response.data.url)
+      router.replace(response.data.url)
+    } catch (error) {
+      console.error("Fail to pay:", error);
+    }
+  }
 
-
+  let available_message_count = userData ? userData.available_message_count: 1;
+  let message_count_limit = userData ? userData.message_count_limit: 1
+  let plan = userData?.plan === "default"
+  ? "Базовый"
+  : userData?.plan === "premium"
+    ? "Премиум"
+    : userData?.plan === "business"
+      ? "Бизнес"
+      : "дефолт";
+  console.log(userData)
 
   const handleLogout = () => {
     logout()
@@ -265,8 +301,9 @@ export default function ProfilePage() {
               <CardContent className="p-4">
                 <h3 className="font-medium mb-2">Текущий тариф</h3>
                 <div className="bg-primary/10 rounded-lg p-3 text-center">
-                  <p className="font-bold">Базовый</p>
-                  <p className="text-sm text-muted-foreground">Бесплатно</p>
+                  <p className="font-bold">{plan}</p>
+                  <p className="text-sm text-muted-foreground">{plan === "Базовый" ? "Бесплатно" : 
+                  plan === "Премиум" ? "999₽" : plan === "Бизнес" ? "2999₽" : ""}</p>
                 </div>
               </CardContent>
             </Card>
@@ -282,16 +319,16 @@ export default function ProfilePage() {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium">Использовано сообщений</span>
-                      <span className="text-sm font-medium">45 / 100</span>
+                      <span className="text-sm font-medium">{message_count_limit - available_message_count} / {message_count_limit}</span>
                     </div>
                     <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                      <div className="h-full bg-primary rounded-full" style={{ width: "45%" }}></div>
+                      <div className="h-full bg-primary rounded-full" style={{ width: `${(message_count_limit - available_message_count) / message_count_limit * 100}%` }}></div>
                     </div>
                   </div>
                   <div className="bg-muted rounded-lg p-4">
-                    <h4 className="font-medium mb-1">Базовый тариф</h4>
+                    <h4 className="font-medium mb-1">{plan} тариф</h4>
                     <p className="text-sm text-muted-foreground mb-3">
-                      У вас активирован базовый тариф с ограничением в 10 сообщений в день.
+                      У вас активирован {plan} тариф с ограничением в {message_count_limit} сообщений в день.
                     </p>
                     <Button variant="outline" size="sm">
                       Управление тарифом
@@ -301,9 +338,12 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
 
+
+
+
             <h2 className="text-xl font-bold mb-4">Доступные тарифы</h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card className="border-2 border-gray-200">
+              <Card className={plan !== "Базовый" ? "border-2 border-gray-200" : "border-2 border-primary"}>
                 <CardHeader>
                   <CardTitle>Базовый</CardTitle>
                   <CardDescription>Для начинающих пользователей</CardDescription>
@@ -323,13 +363,15 @@ export default function ProfilePage() {
                     </li>
                   </ul>
                 </CardContent>
-                <CardFooter>
-                  <Button className="w-full" variant="outline">
-                    Текущий план
-                  </Button>
+                {plan === "Базовый" && (
+                  <CardFooter>
+                    <Button className="w-full" variant="outline">
+                      Текущий план
+                    </Button>
                 </CardFooter>
+                )}
               </Card>
-              <Card className="border-2 border-primary">
+              <Card className={plan !== "Премиум" ? "border-2 border-gray-200" : "border-2 border-primary"}>
                 <CardHeader>
                   <CardTitle>Премиум</CardTitle>
                   <CardDescription>Для активных пользователей</CardDescription>
@@ -354,14 +396,22 @@ export default function ProfilePage() {
                     </li>
                   </ul>
                 </CardContent>
-                <CardFooter>
-                  <Button className="w-full">
-                    <Zap className="w-4 h-4 mr-2" />
-                    Обновить
-                  </Button>
-                </CardFooter>
+                {plan === "Премиум" && (
+                  <CardFooter>
+                    <Button className="w-full" variant="outline">
+                      Текущий план
+                    </Button>
+                  </CardFooter>)}
+                
+                {plan === "Базовый" && (
+                  <CardFooter>
+                    <Button onClick = {() => payForPremium("premium")} className="w-full">
+                      <Zap className="w-4 h-4 mr-2" />
+                      Обновить
+                    </Button>
+                  </CardFooter>)}
               </Card>
-              <Card className="border-2 border-gray-200">
+              <Card className={plan !== "Бизнес" ? "border-2 border-gray-200" : "border-2 border-primary"}>
                 <CardHeader>
                   <CardTitle>Бизнес</CardTitle>
                   <CardDescription>Для команд и компаний</CardDescription>
@@ -387,12 +437,27 @@ export default function ProfilePage() {
                     </li>
                   </ul>
                 </CardContent>
-                <CardFooter>
-                  <Button className="w-full">
-                    <Zap className="w-4 h-4 mr-2" />
-                    Обновить
-                  </Button>
-                </CardFooter>
+                {plan === "Бизнес" && (
+                  <CardFooter>
+                    <Button className="w-full" variant="outline">
+                      Текущий план
+                    </Button>
+                  </CardFooter>)}
+                
+                  {plan === "Премиум"  && (
+                  <CardFooter>
+                    <Button onClick = {() => payForPremium("business")} className="w-full">
+                      <Zap className="w-4 h-4 mr-2" />
+                      Обновить
+                    </Button>
+                  </CardFooter>)}
+                  {plan === "Базовый"  && (
+                  <CardFooter>
+                    <Button onClick = {() => payForPremium("business")} className="w-full">
+                      <Zap className="w-4 h-4 mr-2" />
+                      Обновить
+                    </Button>
+                  </CardFooter>)}
               </Card>
             </div>
           </div>
