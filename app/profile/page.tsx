@@ -299,10 +299,10 @@ export default function ProfilePage() {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium">Использовано сообщений</span>
-                      <span className="text-sm font-medium">{available_message_count} / {message_count_limit}</span>
+                      <span className="text-sm font-medium">{message_count_limit - available_message_count} / {message_count_limit}</span>
                     </div>
                     <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                      <div className="h-full bg-primary rounded-full" style={{ width: `${available_message_count / message_count_limit * 100}%` }}></div>
+                      <div className="h-full bg-primary rounded-full" style={{ width: `${(message_count_limit - available_message_count) / message_count_limit * 100}%` }}></div>
                     </div>
                   </div>
                   <div className="bg-muted rounded-lg p-4">
