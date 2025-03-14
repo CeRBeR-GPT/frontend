@@ -58,6 +58,25 @@ export default function ProfilePage() {
     }
   }, []);
 
+  const payForPremium = async (plan: string) => {
+    const getToken = () => localStorage.getItem('access_token');
+    const token = getToken();
+    console.log(token)
+    console.log('eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwic3ViIjoiZGltLm1hbHVja293MjAxN0B5YW5kZXgucnUiLCJ1dWlkIjoiODExYmVmYWUtY2MxZC00ZDVjLThjNDctOTcwOWJmNmY1ZDIwIiwiZXhwIjoxNzQyMDY3MTUwLCJpYXQiOjE3NDE5ODA3NTB9.UUm9ZAMToft-I6V8no8sHOPKQ8TsCDg1IB1AVB9kde7YoYm9eg6XdgAgdEeAalBKj_OwrIiw4CZpw1tfiEV7SUnR_1-tdvea40dHnnWkLLQ47RrCaAaFZkp14wHFduAMoWlZCve95TgOiCWLg5tXMlCp-7hO1PjoPgS8zG3LfCcMgJSZZTb0VTC9Y1P6BUbIbrNE2vsPmG-eaFC9xtrO9pu5Yck65xzBnvi8FFIvbUHks7EUHWxMaiL1q1JUMlK4kblzWPxEUvUjgcCvLnZkZKaMXntkRZwbnLr_ju5hMAg4W49Ax5yeXER0wtr3RYdtADLLt42CepAk23zOkU0bxA' === token)
+    try {
+      const response = await axios.post(`https://api-gpt.energy-cerber.ru/transaction/new_payment?plan=${plan}`, {},  {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      console.log(response.data.url)
+      router.replace(response.data.url)
+    } catch (error) {
+      console.error("Fail to pay:", error);
+    }
+  }
+
   let available_message_count = userData ? userData.available_message_count: 1;
   let message_count_limit = userData ? userData.message_count_limit: 1
   let plan = userData?.plan === "default"
@@ -324,7 +343,7 @@ export default function ProfilePage() {
 
             <h2 className="text-xl font-bold mb-4">Доступные тарифы</h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card className="border-2 border-gray-200">
+              <Card className={plan !== "Базовый" ? "border-2 border-gray-200" : "border-2 border-primary"}>
                 <CardHeader>
                   <CardTitle>Базовый</CardTitle>
                   <CardDescription>Для начинающих пользователей</CardDescription>
@@ -352,7 +371,7 @@ export default function ProfilePage() {
                 </CardFooter>
                 )}
               </Card>
-              <Card className="border-2 border-primary">
+              <Card className={plan !== "Премиум" ? "border-2 border-gray-200" : "border-2 border-primary"}>
                 <CardHeader>
                   <CardTitle>Премиум</CardTitle>
                   <CardDescription>Для активных пользователей</CardDescription>
@@ -386,13 +405,13 @@ export default function ProfilePage() {
                 
                 {plan === "Базовый" && (
                   <CardFooter>
-                    <Button className="w-full">
+                    <Button onClick = {() => payForPremium("premium")} className="w-full">
                       <Zap className="w-4 h-4 mr-2" />
                       Обновить
                     </Button>
                   </CardFooter>)}
               </Card>
-              <Card className="border-2 border-gray-200">
+              <Card className={plan !== "Бизнес" ? "border-2 border-gray-200" : "border-2 border-primary"}>
                 <CardHeader>
                   <CardTitle>Бизнес</CardTitle>
                   <CardDescription>Для команд и компаний</CardDescription>
@@ -425,9 +444,16 @@ export default function ProfilePage() {
                     </Button>
                   </CardFooter>)}
                 
-                  {plan === "Премиум" || plan === "Базовый" && (
+                  {plan === "Премиум"  && (
                   <CardFooter>
-                    <Button className="w-full">
+                    <Button onClick = {() => payForPremium("business")} className="w-full">
+                      <Zap className="w-4 h-4 mr-2" />
+                      Обновить
+                    </Button>
+                  </CardFooter>)}
+                  {plan === "Базовый"  && (
+                  <CardFooter>
+                    <Button onClick = {() => payForPremium("business")} className="w-full">
                       <Zap className="w-4 h-4 mr-2" />
                       Обновить
                     </Button>
