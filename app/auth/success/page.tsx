@@ -8,7 +8,7 @@ import axios from "axios";
 
 const AuthSuccess = () => {
   const router = useRouter();
-  const { socialLogin } = useAuth();
+  const { Login } = useAuth();
 
   useEffect(() => {
     const handleAuthSuccess = async () => {
@@ -34,7 +34,7 @@ const AuthSuccess = () => {
           const email = userData.email;
           const password = userData.password;
 
-          const result = await socialLogin(email);
+          const result = await Login(email, password);
 
           if (result.success) {
             router.push(`/chat/${result.lastChatId}`);
@@ -50,7 +50,7 @@ const AuthSuccess = () => {
     };
 
     handleAuthSuccess();
-  }, [router, socialLogin]);
+  }, [router, Login]);
 
   return <div>Перенаправление...</div>;
 };

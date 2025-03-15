@@ -108,6 +108,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const Login = async (email: string, password: string) => {
+    const storedUser = localStorage.getItem("user")
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser)
+      if (parsedUser.email === email && parsedUser.password === password) {
+        setUser(parsedUser)
+        setIsAuthenticated(true)
+        return { success: true, lastChatId: "chat1" } // Возвращаем ID последнего чата
+      }
+    }
+    return { success: false }
+  }
+
   const register = async (email: string, password: string) => {
     localStorage.setItem("pendingRegistration", JSON.stringify({ email, password }))
   }
