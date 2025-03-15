@@ -55,7 +55,9 @@ export function ChatSidebar() {
           messages: chat.messages.length,
         }))
 
-        setChatHistory(formattedChats)
+        const sortedChats = formattedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
+
+        setChatHistory(sortedChats)
       } catch (error) {
         console.error("Error fetching chats:", error)
       }
@@ -128,15 +130,14 @@ export function ChatSidebar() {
 
   const renameChatTitle = async (id: string, newTitle: string) => {
     try {
-      await axios.put(
-        `https://api-gpt.energy-cerber.ru/chat/${id}`,
-        { name: newTitle },
-        {
+      const response = await axios.put(
+        `https://api-gpt.energy-cerber.ru/chat/${id}?chat_id=${id}?new_name=${newTitle}`,{
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       )
+      console.log(response)
 
       setChatHistory((prev) =>
         prev.map((chat) => (chat.id === id ? { ...chat, title: newTitle } : chat))
