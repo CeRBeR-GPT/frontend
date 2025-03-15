@@ -12,12 +12,14 @@ export const NavLinks = () => {
   useEffect(() => {
     setIsAuth(isAuthenticated)
   }, [isAuthenticated])
-
+  const lastSavedChat = localStorage.getItem("lastSavedChat")
+  const chat = lastSavedChat ? JSON.parse(lastSavedChat) : "chat"
+  
   return (
     <>
       {isAuth ? (
         <Link
-          href="/chat/chat1"
+          href= {`/chat/${chat}`}
           className={`text-sm font-medium ${pathname.includes("/chat") ? "underline" : "hover:underline"} underline-offset-4`}
         >
           Chat

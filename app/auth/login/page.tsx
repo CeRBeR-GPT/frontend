@@ -34,7 +34,7 @@ export default function LoginPage() {
         router.push("/auth/login")
       }
       else{
-        router.push("/chat/chat1")
+        router.push("/chat")
       }
     }, [isAuthenticated, router])
 
@@ -51,8 +51,12 @@ export default function LoginPage() {
     setError("");
     try {
       const result = await login(values.email, values.password);
+      const lastSavedChat = localStorage.getItem("lastSavedChat")
+      if (lastSavedChat) {
+        const chat = JSON.parse(lastSavedChat)
+      }
       if (result.success) {
-        router.push(`/chat/${result.lastChatId}`);
+        router.push(`/chat`);
         await getUserData()
       } else {
         setError("Неверный email или пароль. Пожалуйста, попробуйте снова.");

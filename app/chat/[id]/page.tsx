@@ -1,8 +1,6 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -39,42 +37,83 @@ export default function ChatPage() {
   const [chatTitle, setChatTitle] = useState("")
   const [chats, setChats] = useState(null)
 
+  const ws = useRef<WebSocket | null>(null)
+
   const getToken = () => localStorage.getItem('access_token')
   const token = getToken()
 
-  useEffect(() => {
-    const getAllChats = async () => {
-      try {
-        const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
-        console.log(response.data)
-        setChats(response.data)
-      } catch (error) {
-        console.error("Error creating chat:", error)
-      }
+  // Загрузка истории сообщений
+  const loadChatHistory = async (chatId: string) => {
+    console.log(chatId)
+    try {
+      const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/${chatId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      const history = response.data.messages
+      console.log(response.data.messages)
+      setMessages(history)
+    } catch (error) {
+      console.error("Failed to load chat history:", error)
+      toast({
+        title: "Ошибка загрузки истории",
+        description: "Не удалось загрузить историю сообщений.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  // Инициализация WebSocket
+  const initializeWebSocket = (chatId: string) => {
+    const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}`
+    console.log("WebSocket URL:", wsUrl)
+
+    ws.current = new WebSocket(wsUrl)
+
+    ws.current.onopen = () => {
+      console.log("WebSocket connection established")
     }
 
-    getAllChats()
+    ws.current.onmessage = (event) => {
+      console.log("WebSocket message received:", event.data)
+      const newMessage: Message = {
+        id: messages.length + 1,
+        content: event.data,
+        role: "assistant",
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, newMessage])
+    }
 
-  }, []
-)
+    ws.current.onerror = (error) => {
+      console.error("WebSocket error:", error)
+      toast({
+        title: "Ошибка WebSocket",
+        description: "Не удалось подключиться к серверу.",
+        variant: "destructive",
+      })
+    }
 
-  // Проверка аутентификации
+    ws.current.onclose = (event) => {
+      console.log("WebSocket connection closed:", event)
+      if (event.code !== 1000) {
+        toast({
+          title: "Соединение закрыто",
+          description: "Попытка переподключения...",
+          variant: "destructive",
+        })
+        setTimeout(() => initializeWebSocket(chatId), 5000)
+      }
+    }
+  }
+
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/auth/login")
+      return
     }
-  }, [isAuthenticated, router])
 
-  // Simulate loading chat data
-  useEffect(() => {
-    if (!isAuthenticated) return
-
-    // For a new chat
     if (chatId === "new") {
       setMessages([
         {
@@ -88,68 +127,23 @@ export default function ChatPage() {
       return
     }
 
-    // For existing chats, we would fetch from an API
-    // This is mock data for demonstration
-    
+    // Загружаем историю сообщений и инициализируем WebSocket
+    loadChatHistory(chatId)
+    initializeWebSocket(chatId)
 
-    const mockChats: Record<string, { title: string; messages: Message[] }> = {
-      chat1: {
-        title: "Разработка веб-приложения",
-        messages: [
-          {
-            id: 1,
-            content: "Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?",
-            role: "assistant",
-            timestamp: new Date(2023, 10, 15, 14, 30),
-          },
-          {
-            id: 2,
-            content: "Как создать современное веб-приложение с использованием React и Next.js?",
-            role: "user",
-            timestamp: new Date(2023, 10, 15, 14, 31),
-          },
-          {
-            id: 3,
-            content:
-              "Для создания современного веб-приложения с использованием React и Next.js, вам нужно выполнить следующие шаги:\n\n1. Установите Node.js и npm\n2. Создайте новый проект Next.js: `npx create-next-app my-app`\n3. Перейдите в директорию проекта: `cd my-app`\n4. Запустите сервер разработки: `npm run dev`\n\nNext.js предоставляет множество функций, таких как серверный рендеринг, статическая генерация, маршрутизация на основе файловой системы и многое другое.\n\nЧто конкретно вы хотели бы узнать о разработке с использованием React и Next.js?",
-            role: "assistant",
-            timestamp: new Date(2023, 10, 15, 14, 32),
-          },
-        ],
-      },
-      chat2: {
-        title: "Искусственный интеллект",
-        messages: [
-          {
-            id: 1,
-            content: "Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?",
-            role: "assistant",
-            timestamp: new Date(2023, 10, 14, 9, 45),
-          },
-          {
-            id: 2,
-            content: "Расскажи о последних достижениях в области искусственного интеллекта",
-            role: "user",
-            timestamp: new Date(2023, 10, 14, 9, 46),
-          },
-        ],
-      },
+    // Закрываем WebSocket при размонтировании компонента
+    return () => {
+      if (ws.current) {
+        ws.current.close()
+      }
     }
-
-    if (mockChats[chatId]) {
-      setMessages(mockChats[chatId].messages)
-      setChatTitle(mockChats[chatId].title)
-    } else {
-      // Handle non-existent chat
-      router.push("/chat/new")
-    }
-  }, [chatId, router, isAuthenticated])
+  }, [chatId, isAuthenticated, router])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim() || isLoading) return
 
-    // Add user message
+    // Добавляем сообщение пользователя
     const userMessage: Message = {
       id: messages.length + 1,
       content: input,
@@ -161,27 +155,16 @@ export default function ChatPage() {
     setIsLoading(true)
     setInput("")
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiMessage: Message = {
-        id: messages.length + 2,
-        content: "Это демонстрационный ответ от AI. В реальном приложении здесь будет ответ от модели GPT.",
-        role: "assistant",
-        timestamp: new Date(),
-      }
-      setMessages((prev) => [...prev, aiMessage])
-      setIsLoading(false)
+    // Отправляем сообщение через WebSocket
+    if (ws.current) {
+      ws.current.send(input)
+    }
 
-      // If this is a new chat, we would save it and redirect to the saved chat
-      if (chatId === "new") {
-        // In a real app, we would save the chat and get a new ID
-        // For demo, we'll just stay on the page
-      }
-    }, 1000)
+    // Сбрасываем состояние загрузки
+    setIsLoading(false)
   }
 
   const handleDeleteChat = (id: string) => {
-    // В реальном приложении здесь был бы запрос к API для удаления чата
     toast({
       title: "Чат удален",
       description: "Чат был успешно удален",
@@ -190,7 +173,6 @@ export default function ChatPage() {
   }
 
   const handleClearChat = (id: string) => {
-    // В реальном приложении здесь был бы запрос к API для очистки сообщений
     setMessages([
       {
         id: 1,
@@ -206,7 +188,6 @@ export default function ChatPage() {
   }
 
   const handleRenameChat = (id: string, newTitle: string) => {
-    // В реальном приложении здесь был бы запрос к API для обновления названия
     setChatTitle(newTitle)
     toast({
       title: "Название обновлено",
@@ -214,7 +195,6 @@ export default function ChatPage() {
     })
   }
 
-  // Если пользователь не аутентифицирован, не рендерим содержимое
   if (!isAuthenticated) {
     return null
   }
