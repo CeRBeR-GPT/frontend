@@ -277,7 +277,7 @@ export default function ProfilePage() {
               <CardContent className="p-4">
                 <div className="flex flex-col items-center gap-4">
                   <Avatar className="w-20 h-20 mt-2">
-                    <AvatarImage src="/placeholder.svg?height=80&width=80" />
+                    <AvatarImage src="/user.png?height=85&width=85" />
                     <AvatarFallback>
                       <User className="w-10 h-10" />
                     </AvatarFallback>
