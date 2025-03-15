@@ -13,6 +13,7 @@ import { formatDistanceToNow } from "date-fns"
 import { ru } from "date-fns/locale"
 import { usePathname } from "next/navigation"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { NewChatDialog } from "@/components/new-chat-dialog"
 
 // Mock chat history data
 interface ChatHistory {
@@ -27,6 +28,7 @@ export function ChatSidebar() {
   const [searchQuery, setSearchQuery] = useState("")
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
   const [isOpen, setIsOpen] = useState(false)
+  const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false)
   const pathname = usePathname()
   const currentChatId = pathname.split("/").pop() || ""
 
@@ -86,13 +88,16 @@ export function ChatSidebar() {
     setChatHistory((prev) => prev.filter((chat) => chat.id !== id))
   }
 
+  const handleNewChatClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsNewChatDialogOpen(true)
+  }
+
   const sidebarContent = (
     <div className="flex flex-col gap-4 h-full">
-      <Button className="w-full gap-2" asChild>
-        <Link href="/chat/new">
-          <Plus className="w-4 h-4" />
-          Новый чат
-        </Link>
+      <Button className="w-full gap-2" onClick={handleNewChatClick}>
+        <Plus className="w-4 h-4" />
+        Новый чат
       </Button>
 
       <div className="relative">
@@ -150,6 +155,8 @@ export function ChatSidebar() {
           )}
         </div>
       </ScrollArea>
+
+      <NewChatDialog open={isNewChatDialogOpen} onOpenChange={setIsNewChatDialogOpen} />
     </div>
   )
 
