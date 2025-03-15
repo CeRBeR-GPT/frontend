@@ -37,6 +37,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [chatTitle, setChatTitle] = useState("")
+  const [chats, setChats] = useState(null)
 
   const getToken = () => localStorage.getItem('access_token')
   const token = getToken()
@@ -51,6 +52,7 @@ export default function ChatPage() {
           }
         )
         console.log(response.data)
+        setChats(response.data)
       } catch (error) {
         console.error("Error creating chat:", error)
       }
@@ -88,6 +90,7 @@ export default function ChatPage() {
 
     // For existing chats, we would fetch from an API
     // This is mock data for demonstration
+    
 
     const mockChats: Record<string, { title: string; messages: Message[] }> = {
       chat1: {
