@@ -14,17 +14,24 @@ import { useAuth } from "@/hooks/use-auth"
 import { LogOut, User } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
 export function UserMenu() {
-  const { user, isAuthenticated, logout } = useAuth()
+  const { userData, isAuthenticated, logout } = useAuth()
   const router = useRouter()
+  const [isAuth, setIsAuth] = useState(false)
+
+  // Отслеживаем изменения состояния аутентификации
+  useEffect(() => {
+    setIsAuth(isAuthenticated)
+  }, [isAuthenticated])
 
   const handleLogout = () => {
     logout()
     router.push("/")
   }
 
-  if (!isAuthenticated) {
+  if (!isAuth) {
     return (
       <Button size="sm" asChild>
         <Link href="/auth/login">Sign In</Link>
@@ -46,7 +53,7 @@ export function UserMenu() {
       <DropdownMenuContent align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user?.email}</p>
+            <p className="text-sm font-medium leading-none">{userData?.email}</p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
