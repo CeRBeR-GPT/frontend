@@ -17,7 +17,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
 export function UserMenu() {
-  const { userData, isAuthenticated, logout } = useAuth()
+  const { userData, isAuthenticated, logout, getUserData } = useAuth()
   const router = useRouter()
   const [isAuth, setIsAuth] = useState(false)
 

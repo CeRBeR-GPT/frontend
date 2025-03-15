@@ -8,12 +8,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Plus, Search, Trash2, Menu } from "lucide-react"
+import { Plus, Search, Menu } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { ru } from "date-fns/locale"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { NewChatDialog } from "@/components/new-chat-dialog"
+import { ChatOptionsMenu } from "@/components/chat-options-menu"
+import { toast } from "@/components/ui/use-toast"
 
 // Mock chat history data
 interface ChatHistory {
@@ -30,6 +32,7 @@ export function ChatSidebar() {
   const [isOpen, setIsOpen] = useState(false)
   const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
   const currentChatId = pathname.split("/").pop() || ""
 
   // Simulate loading chat history
@@ -81,11 +84,43 @@ export function ChatSidebar() {
       chat.preview.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
-  const deleteChat = (id: string, e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    // In a real app, this would delete the chat from the database
+  const deleteChat = (id: string) => {
+    // В реальном приложении здесь был бы запрос к API для удаления чата
     setChatHistory((prev) => prev.filter((chat) => chat.id !== id))
+
+    // Если удаляемый чат - текущий, перенаправляем на страницу нового чата
+    if (currentChatId === id) {
+      router.push("/chat/new")
+    }
+
+    toast({
+      title: "Чат удален",
+      description: "Чат был успешно удален",
+    })
+  }
+
+  const clearChatMessages = (id: string) => {
+    // В реальном приложении здесь был бы запрос к API для очистки сообщений
+    // Для демонстрации просто показываем уведомление
+    toast({
+      title: "Сообщения очищены",
+      description: "Все сообщения в чате были удалены",
+    })
+
+    // Если это текущий чат, можно обновить страницу или состояние
+    if (currentChatId === id) {
+      // В реальном приложении здесь можно было бы обновить состояние сообщений
+    }
+  }
+
+  const renameChatTitle = (id: string, newTitle: string) => {
+    // В реальном приложении здесь был бы запрос к API для обновления названия
+    setChatHistory((prev) => prev.map((chat) => (chat.id === id ? { ...chat, title: newTitle } : chat)))
+
+    toast({
+      title: "Название обновлено",
+      description: "Название чата было успешно изменено",
+    })
   }
 
   const handleNewChatClick = (e: React.MouseEvent) => {
@@ -120,7 +155,7 @@ export function ChatSidebar() {
                   className={`cursor-pointer hover:bg-muted/50 transition-colors ${currentChatId === chat.id ? "bg-muted" : ""}`}
                 >
                   <CardContent className="p-3 flex justify-between items-start">
-                    <div className="space-y-1">
+                    <div className="space-y-1 flex-1 mr-2">
                       <h3 className="font-medium text-sm line-clamp-1">{chat.title}</h3>
                       <p className="text-xs text-muted-foreground line-clamp-1">{chat.preview}</p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -129,15 +164,13 @@ export function ChatSidebar() {
                         <span>{chat.messages} сообщ.</span>
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:text-red-500"
-                      onClick={(e) => deleteChat(chat.id, e)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span className="sr-only">Удалить</span>
-                    </Button>
+                    <ChatOptionsMenu
+                      chatId={chat.id}
+                      chatTitle={chat.title}
+                      onDelete={deleteChat}
+                      onClear={clearChatMessages}
+                      onRename={renameChatTitle}
+                    />
                   </CardContent>
                 </Card>
               </Link>
@@ -189,4 +222,5 @@ export function ChatSidebar() {
     </>
   )
 }
+
 
