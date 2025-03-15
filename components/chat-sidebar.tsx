@@ -61,6 +61,10 @@ export function ChatSidebar() {
         })
 
         const sortedChats = formattedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
+        if (sortedChats.length > 0) {
+          const lastChat = sortedChats[0].id
+          localStorage.setItem("lastSavedChat", JSON.stringify(lastChat))
+        }
 
         setChatHistory(sortedChats)
       } catch (error) {

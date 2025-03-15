@@ -23,9 +23,20 @@ export default function Home() {
   // Обновим редирект для авторизованных пользователей
   useEffect(() => {
     if (isAuth) {
-      // В реальном приложении здесь будет запрос к API для получения ID последнего чата
-      const mockRecentChatId = "chat1" // Это будет приходить из вашей базы данных
-      router.push(`/chat/${mockRecentChatId}`)
+      const lastSavedChat = localStorage.getItem("lastSavedChat")
+      console.log(lastSavedChat)
+
+      if (lastSavedChat) {
+        const chat = JSON.parse(lastSavedChat)
+        console.log("Последний сохраненный чат:", chat)
+
+        // Формируем путь для редиректа
+         // Предполагаем, что у чата есть поле `id`
+        router.replace(`/chat/${chat}`) // Редирект на страницу чата с конкретным ID
+      } else {
+        // Если последний чат не найден, редиректим на страницу по умолчанию
+        router.replace("/chat")
+      }
     }
   }, [isAuth, router])
 

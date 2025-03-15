@@ -136,13 +136,13 @@ export default function ChatPage() {
       },
     }
 
-    if (mockChats[chatId]) {
-      setMessages(mockChats[chatId].messages)
-      setChatTitle(mockChats[chatId].title)
-    } else {
-      // Handle non-existent chat
-      router.push("/chat/new")
-    }
+    // if (mockChats[chatId]) {
+    //   setMessages(mockChats[chatId].messages)
+    //   setChatTitle(mockChats[chatId].title)
+    // } else {
+    //   // Handle non-existent chat
+    //   router.push("/chat/")
+    // }
   }, [chatId, router, isAuthenticated])
 
   const handleSubmit = (e: React.FormEvent) => {

@@ -21,7 +21,7 @@ type AuthContextType = {
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
   register: (email: string, password: string) => Promise<void>
-  verifyCode: (email: string, code: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
+  verifyCode: (email: string, code: string, password: string) => Promise<{ success: boolean; lastChatId?: string | undefined }>
   logout: () => void
   socialLogin: (provider: "google" | "yandex" | "github") => Promise<{ success: boolean; lastChatId?: string }>
   updatePassword: (newPassword: string) => Promise<{ success: boolean } | undefined>
@@ -111,8 +111,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('access_token', response.data.access_token)
         setUser(user)
         setIsAuthenticated(true)
+        const lastSavedChat = localStorage.getItem("lastSavedChat")
+        if (lastSavedChat) {
+          const chat = JSON.parse(lastSavedChat)
+          console.log("Последний сохраненный чат:", chat)
+        }
         localStorage.setItem('isAuthenticated', 'true') // Сохраняем isAuthenticated
-        return { success: true, lastChatId: response.data.lastChatId || "chat1" }
+        return { success: true, lastChatId: lastSavedChat || "chat1" }
       } else {
         return { success: false }
       }
@@ -181,7 +186,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("user", JSON.stringify(newUser))
       localStorage.setItem('isAuthenticated', 'true') // Сохраняем isAuthenticated
       localStorage.removeItem("pendingRegistration")
-      return { success: true, lastChatId: "chat1" }
+      const lastSavedChat = localStorage.getItem("lastSavedChat")
+      if (lastSavedChat) {
+        const chat = JSON.parse(lastSavedChat)
+        console.log("Последний сохраненный чат:", chat)
+      }
+      return { success: true, lastChatId:  lastSavedChat}
     }
     return { success: false }
   }
