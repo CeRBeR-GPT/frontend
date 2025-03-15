@@ -37,7 +37,6 @@ export default function ProfilePage() {
     const getUserData = async () => {
       if (isRequested.current) return;
       isRequested.current = true; 
-
       try {
         const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
           headers: {
@@ -47,6 +46,11 @@ export default function ProfilePage() {
 
         const userData = response.data;
         console.log("User data fetched:", userData);
+        const user = {
+          email: userData.email,
+        }
+        
+        
         setUserData(userData)
       } catch (error) {
         console.error("Failed to fetch user data:", error);
@@ -283,7 +287,7 @@ export default function ProfilePage() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="text-center">
-                    <h2 className="text-xl font-bold">{user?.email}</h2>
+                    <h2 className="text-xl font-bold">{userData?.email}</h2>
                   </div>
                   <Button variant="outline" asChild>
                       <Link href="/profile/change-password" className="w-full">
