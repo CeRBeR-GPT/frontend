@@ -14,7 +14,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { UserMenu } from "@/components/user-menu"
 import { ChatSidebar } from "@/components/chat-sidebar"
 import { useAuth } from "@/hooks/use-auth"
-import { NavLinks } from "@/components/nav-links"
+import {NavLinks} from "@/components/nav-links"
 
 interface Message {
   id: number
@@ -33,7 +33,8 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [chatTitle, setChatTitle] = useState("")
-
+  const getToken = () => localStorage.getItem('access_token');
+  const token = getToken();
   // Проверка аутентификации
   useEffect(() => {
     if (!isAuthenticated) {
