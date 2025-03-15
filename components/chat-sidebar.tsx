@@ -47,13 +47,18 @@ export function ChatSidebar() {
         })
         const chats = response.data
 
-        const formattedChats = chats.map((chat: any) => ({
-          id: chat.id,
-          title: chat.name,
-          preview: chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].content : "Нет сообщений",
-          date: new Date(chat.created_at),
-          messages: chat.messages.length,
-        }))
+        const formattedChats = chats.map((chat: any) => {
+          const date = new Date(chat.created_at)
+          date.setHours(date.getHours() + 3)
+
+          return {
+            id: chat.id,
+            title: chat.name,
+            preview: chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].content : "Нет сообщений",
+            date: date,
+            messages: chat.messages.length,
+          }
+        })
 
         const sortedChats = formattedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
 
@@ -129,26 +134,29 @@ export function ChatSidebar() {
   }
 
   const renameChatTitle = async (id: string, newTitle: string) => {
+    console.log("Функция renameChatTitle вызвана с id:", id, "и newTitle:", newTitle)
     try {
       const response = await axios.put(
-        `https://api-gpt.energy-cerber.ru/chat/${id}?chat_id=${id}?new_name=${newTitle}`,{
+        `https://api-gpt.energy-cerber.ru/chat/${id}?new_name=${newTitle}`,
+        {},
+        {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       )
-      console.log(response)
-
+      console.log("Ответ сервера:", response.data)
+  
       setChatHistory((prev) =>
         prev.map((chat) => (chat.id === id ? { ...chat, title: newTitle } : chat))
       )
-
+  
       toast({
         title: "Название обновлено",
         description: "Название чата было успешно изменено",
       })
     } catch (error) {
-      console.error("Error renaming chat:", error)
+      console.error("Ошибка при переименовании чата:", error)
       toast({
         title: "Ошибка",
         description: "Не удалось обновить название чата",
@@ -227,7 +235,6 @@ export function ChatSidebar() {
     </div>
   )
 
-  // Mobile sidebar (sheet)
   const mobileSidebar = (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
@@ -242,7 +249,6 @@ export function ChatSidebar() {
     </Sheet>
   )
 
-  // Desktop sidebar
   const desktopSidebar = (
     <div className="hidden md:block w-[260px] border-r h-[calc(100vh-4rem)] overflow-hidden">
       <div className="p-4 h-full">{sidebarContent}</div>

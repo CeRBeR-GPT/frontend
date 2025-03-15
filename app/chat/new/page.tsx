@@ -2,7 +2,8 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -12,6 +13,8 @@ import { ArrowUp, Bot, User } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { UserMenu } from "@/components/user-menu"
 import { ChatSidebar } from "@/components/chat-sidebar"
+import { useAuth } from "@/hooks/use-auth"
+import {NavLinks} from "@/components/nav-links"
 
 interface Message {
   id: number
@@ -21,6 +24,9 @@ interface Message {
 }
 
 export default function NewChatPage() {
+  const router = useRouter()
+  const { isAuthenticated } = useAuth()
+
   const [input, setInput] = useState("")
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -32,6 +38,13 @@ export default function NewChatPage() {
   ])
   const [isLoading, setIsLoading] = useState(false)
   const chatTitle = "Новый чат"
+
+  // Проверка аутентификации
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/auth/login")
+    }
+  }, [isAuthenticated, router])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -65,6 +78,11 @@ export default function NewChatPage() {
     }, 1000)
   }
 
+  // Если пользователь не аутентифицирован, не рендерим содержимое
+  if (!isAuthenticated) {
+    return null
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="border-b">
@@ -80,12 +98,7 @@ export default function NewChatPage() {
             </div>
           </div>
           <nav className="flex items-center gap-4">
-            <Link href="/chat/chat1" className="text-sm font-medium underline underline-offset-4">
-              Chat
-            </Link>
-            <Link href="/profile" className="text-sm font-medium hover:underline underline-offset-4">
-              Profile
-            </Link>
+            <NavLinks />
             <ThemeToggle />
             <UserMenu />
           </nav>
@@ -179,4 +192,3 @@ export default function NewChatPage() {
     </div>
   )
 }
-

@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Bot, ArrowRight, Eye, EyeOff } from "lucide-react"
+import { Bot} from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import {NavLinks} from "@/components/nav-links"
 

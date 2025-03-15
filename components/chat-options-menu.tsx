@@ -46,6 +46,7 @@ export function ChatOptionsMenu({ chatId, chatTitle, onDelete, onClear, onRename
   }
 
   const handleRename = (newTitle: string) => {
+    console.log("Функция handleRename вызвана с newTitle:", newTitle)
     onRename(chatId, newTitle)
     setIsEditDialogOpen(false)
   }
@@ -60,10 +61,13 @@ export function ChatOptionsMenu({ chatId, chatTitle, onDelete, onClear, onRename
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-          <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+        <DropdownMenuItem onClick={() => {
+            console.log("Клик по 'Переименовать'")
+            setIsEditDialogOpen(true)
+            }}>
             <Pencil className="mr-2 h-4 w-4" />
             <span>Переименовать</span>
-          </DropdownMenuItem>
+        </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setIsClearDialogOpen(true)}>
             <Eraser className="mr-2 h-4 w-4" />
             <span>Очистить сообщения</span>
