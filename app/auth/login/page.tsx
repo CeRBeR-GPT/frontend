@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { z } from "zod"
@@ -27,7 +27,16 @@ export default function LoginPage() {
   const [error, setError] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
-  const {login} = useAuth()
+  const {login, isAuthenticated} = useAuth()
+
+  useEffect(() => {
+      if (!isAuthenticated) {
+        router.push("/auth/login")
+      }
+      else{
+        router.push("/chat/chat1")
+      }
+    }, [isAuthenticated, router])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -66,13 +75,10 @@ export default function LoginPage() {
       });
 
       const userData = response.data;
-      const email = userData.email;
-      const password = userData.password;
-
     } catch (error) {
 
     }
-  } 
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
