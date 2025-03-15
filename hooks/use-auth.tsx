@@ -16,6 +16,7 @@ type AuthContextType = {
   socialLogin: (provider: "google" | "yandex" | "github") => Promise<{ success: boolean; lastChatId?: string }>
   updatePassword: (newPassword: string) => Promise<{ success: boolean } | undefined>
   isLoading: boolean
+  Login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -28,6 +29,7 @@ const AuthContext = createContext<AuthContextType>({
   socialLogin: async () => ({ success: false }),
   updatePassword: async () => ({ success: false }),
   isLoading: false,
+  Login: async () => ({ success: false }),
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -109,15 +111,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const Login = async (email: string, password: string) => {
-    const storedUser = localStorage.getItem("user")
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser)
-      if (parsedUser.email === email && parsedUser.password === password) {
-        setUser(parsedUser)
-        setIsAuthenticated(true)
-        return { success: true, lastChatId: "chat1" } // Возвращаем ID последнего чата
-      }
+
+    const user = {
+      email: email,
     }
+    if (user){
+      setUser(user)
+      setIsAuthenticated(true)
+      localStorage.setItem('isAuthenticated', 'true') // Сохраняем isAuthenticated
+      return { success: true, lastChatId: "chat1" }
+    }
+
     return { success: false }
   }
 
@@ -157,7 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated, isLoading, login, register, verifyCode, logout, socialLogin, updatePassword }}
+      value={{ user, isAuthenticated, isLoading, login, register, verifyCode, logout, socialLogin, updatePassword, Login }}
     >
       {children}
     </AuthContext.Provider>
