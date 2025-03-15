@@ -6,8 +6,18 @@ import axios from "axios"
 
 type User = { email: string; password?: string } | null
 
+type UserData = {
+  id: string,
+  email: string,
+  plan: string,
+  available_message_count: number,
+  message_length_limit: number,
+  message_count_limit: number
+} | null
+
 type AuthContextType = {
   user: User
+  userData: UserData
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
   register: (email: string, password: string) => Promise<void>
@@ -17,10 +27,12 @@ type AuthContextType = {
   updatePassword: (newPassword: string) => Promise<{ success: boolean } | undefined>
   isLoading: boolean
   Login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
+  getUserData: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  userData: null,
   isAuthenticated: false,
   login: async () => ({ success: false }),
   register: async () => {},
@@ -30,10 +42,12 @@ const AuthContext = createContext<AuthContextType>({
   updatePassword: async () => ({ success: false }),
   isLoading: false,
   Login: async () => ({ success: false }),
+  getUserData: async () => {},
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const [userData, setUserData] = useState<UserData | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -54,6 +68,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     checkAuth()
   }, [])
+
+
+  
+  const getToken = () => localStorage.getItem('access_token');
+  const token = getToken();
+
+  const getUserData = async () => {
+    try {
+      const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const userData = response.data;
+      console.log("User data fetched:", userData);
+      const user = {
+        email: userData.email,
+      }
+      
+      
+      setUserData(userData)
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
+    }
+  };
+
+  useEffect( () => {
+    getUserData()
+  }, [token])
+
 
   const login = async (email: string, password: string) => {
     try {
@@ -76,7 +121,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const getToken = () => localStorage.getItem('access_token')
 
   const updatePassword = async (newPassword: string) => {
     try {
@@ -161,7 +205,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated, isLoading, login, register, verifyCode, logout, socialLogin, updatePassword, Login }}
+      value={{ user, userData, getUserData, isAuthenticated, isLoading, login, register, verifyCode, logout, socialLogin, updatePassword, Login }}
     >
       {children}
     </AuthContext.Provider>

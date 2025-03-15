@@ -1,20 +1,22 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Plus, Search, Trash2, Menu } from "lucide-react"
+import { Plus, Search, Menu } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { ru } from "date-fns/locale"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { NewChatDialog } from "@/components/new-chat-dialog"
+import { ChatOptionsMenu } from "@/components/chat-options-menu"
+import { toast } from "@/components/ui/use-toast"
+import axios from "axios"
 
-// Mock chat history data
 interface ChatHistory {
   id: string
   title: string
@@ -27,51 +29,47 @@ export function ChatSidebar() {
   const [searchQuery, setSearchQuery] = useState("")
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
   const [isOpen, setIsOpen] = useState(false)
+  const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
   const currentChatId = pathname.split("/").pop() || ""
 
-  // Simulate loading chat history
+  const getToken = () => localStorage.getItem('access_token')
+  const token = getToken()
+
   useEffect(() => {
-    // In a real app, this would be an API call
-    const mockChatHistory: ChatHistory[] = [
-      {
-        id: "chat1",
-        title: "Разработка веб-приложения",
-        preview: "Как создать современное веб-приложение с использованием React и Next.js?",
-        date: new Date(2023, 10, 15, 14, 30),
-        messages: 12,
-      },
-      {
-        id: "chat2",
-        title: "Искусственный интеллект",
-        preview: "Расскажи о последних достижениях в области искусственного интеллекта",
-        date: new Date(2023, 10, 14, 9, 45),
-        messages: 8,
-      },
-      {
-        id: "chat3",
-        title: "Рецепт пасты карбонара",
-        preview: "Как приготовить настоящую итальянскую пасту карбонара?",
-        date: new Date(2023, 10, 12, 18, 20),
-        messages: 5,
-      },
-      {
-        id: "chat4",
-        title: "Изучение JavaScript",
-        preview: "Какие ресурсы лучше всего подходят для изучения JavaScript с нуля?",
-        date: new Date(2023, 10, 10, 11, 15),
-        messages: 15,
-      },
-      {
-        id: "chat5",
-        title: "Путешествие в Японию",
-        preview: "Что стоит посетить в Японии во время двухнедельного путешествия?",
-        date: new Date(2023, 10, 8, 16, 40),
-        messages: 10,
-      },
-    ]
-    setChatHistory(mockChatHistory)
-  }, [])
+    const fetchChats = async () => {
+      try {
+        const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        const chats = response.data
+
+        const formattedChats = chats.map((chat: any) => {
+          const date = new Date(chat.created_at)
+          date.setHours(date.getHours() + 3)
+
+          return {
+            id: chat.id,
+            title: chat.name,
+            preview: chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].content : "Нет сообщений",
+            date: date,
+            messages: chat.messages.length,
+          }
+        })
+
+        const sortedChats = formattedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
+
+        setChatHistory(sortedChats)
+      } catch (error) {
+        console.error("Error fetching chats:", error)
+      }
+    }
+
+    fetchChats()
+  }, [token])
 
   const filteredChats = chatHistory.filter(
     (chat) =>
@@ -79,20 +77,104 @@ export function ChatSidebar() {
       chat.preview.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
-  const deleteChat = (id: string, e: React.MouseEvent) => {
+  const deleteChat = async (id: string) => {
+    try {
+      await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      setChatHistory((prev) => prev.filter((chat) => chat.id !== id))
+
+      if (currentChatId === id) {
+        router.push("/chat/new")
+      }
+
+      toast({
+        title: "Чат удален",
+        description: "Чат был успешно удален",
+      })
+    } catch (error) {
+      console.error("Error deleting chat:", error)
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить чат",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const clearChatMessages = async (id: string) => {
+    try {
+      await axios.post(`https://api-gpt.energy-cerber.ru/chat/${id}/clear`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      setChatHistory((prev) =>
+        prev.map((chat) =>
+          chat.id === id ? { ...chat, messages: 0, preview: "Нет сообщений" } : chat
+        )
+      )
+
+      toast({
+        title: "Сообщения очищены",
+        description: "Все сообщения в чате были удалены",
+      })
+    } catch (error) {
+      console.error("Error clearing chat messages:", error)
+      toast({
+        title: "Ошибка",
+        description: "Не удалось очистить сообщения",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const renameChatTitle = async (id: string, newTitle: string) => {
+    console.log("Функция renameChatTitle вызвана с id:", id, "и newTitle:", newTitle)
+    try {
+      const response = await axios.put(
+        `https://api-gpt.energy-cerber.ru/chat/${id}?new_name=${newTitle}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      console.log("Ответ сервера:", response.data)
+  
+      setChatHistory((prev) =>
+        prev.map((chat) => (chat.id === id ? { ...chat, title: newTitle } : chat))
+      )
+  
+      toast({
+        title: "Название обновлено",
+        description: "Название чата было успешно изменено",
+      })
+    } catch (error) {
+      console.error("Ошибка при переименовании чата:", error)
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить название чата",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleNewChatClick = (e: React.MouseEvent) => {
     e.preventDefault()
-    e.stopPropagation()
-    // In a real app, this would delete the chat from the database
-    setChatHistory((prev) => prev.filter((chat) => chat.id !== id))
+    setIsNewChatDialogOpen(true)
   }
 
   const sidebarContent = (
     <div className="flex flex-col gap-4 h-full">
-      <Button className="w-full gap-2" asChild>
-        <Link href="/chat/new">
-          <Plus className="w-4 h-4" />
-          Новый чат
-        </Link>
+      <Button className="w-full gap-2" onClick={handleNewChatClick}>
+        <Plus className="w-4 h-4" />
+        Новый чат
       </Button>
 
       <div className="relative">
@@ -115,7 +197,7 @@ export function ChatSidebar() {
                   className={`cursor-pointer hover:bg-muted/50 transition-colors ${currentChatId === chat.id ? "bg-muted" : ""}`}
                 >
                   <CardContent className="p-3 flex justify-between items-start">
-                    <div className="space-y-1">
+                    <div className="space-y-1 flex-1 mr-2">
                       <h3 className="font-medium text-sm line-clamp-1">{chat.title}</h3>
                       <p className="text-xs text-muted-foreground line-clamp-1">{chat.preview}</p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -124,15 +206,13 @@ export function ChatSidebar() {
                         <span>{chat.messages} сообщ.</span>
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:text-red-500"
-                      onClick={(e) => deleteChat(chat.id, e)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span className="sr-only">Удалить</span>
-                    </Button>
+                    <ChatOptionsMenu
+                      chatId={chat.id}
+                      chatTitle={chat.title}
+                      onDelete={deleteChat}
+                      onClear={clearChatMessages}
+                      onRename={renameChatTitle}
+                    />
                   </CardContent>
                 </Card>
               </Link>
@@ -150,10 +230,11 @@ export function ChatSidebar() {
           )}
         </div>
       </ScrollArea>
+
+      <NewChatDialog open={isNewChatDialogOpen} onOpenChange={setIsNewChatDialogOpen} />
     </div>
   )
 
-  // Mobile sidebar (sheet)
   const mobileSidebar = (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
@@ -168,7 +249,6 @@ export function ChatSidebar() {
     </Sheet>
   )
 
-  // Desktop sidebar
   const desktopSidebar = (
     <div className="hidden md:block w-[260px] border-r h-[calc(100vh-4rem)] overflow-hidden">
       <div className="p-4 h-full">{sidebarContent}</div>
@@ -182,4 +262,5 @@ export function ChatSidebar() {
     </>
   )
 }
+
 

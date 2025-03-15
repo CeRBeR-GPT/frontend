@@ -14,7 +14,11 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { UserMenu } from "@/components/user-menu"
 import { ChatSidebar } from "@/components/chat-sidebar"
 import { useAuth } from "@/hooks/use-auth"
-import {NavLinks} from "@/components/nav-links"
+import { NavLinks } from "@/components/nav-links"
+import { ChatOptionsMenu } from "@/components/chat-options-menu"
+import { toast } from "@/components/ui/use-toast"
+import { Toaster } from "@/components/ui/toaster"
+import axios from "axios"
 
 interface Message {
   id: number
@@ -33,8 +37,32 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [chatTitle, setChatTitle] = useState("")
-  const getToken = () => localStorage.getItem('access_token');
-  const token = getToken();
+  const [chats, setChats] = useState(null)
+
+  const getToken = () => localStorage.getItem('access_token')
+  const token = getToken()
+
+  useEffect(() => {
+    const getAllChats = async () => {
+      try {
+        const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
+        console.log(response.data)
+        setChats(response.data)
+      } catch (error) {
+        console.error("Error creating chat:", error)
+      }
+    }
+
+    getAllChats()
+
+  }, []
+)
+
   // Проверка аутентификации
   useEffect(() => {
     if (!isAuthenticated) {
@@ -62,6 +90,8 @@ export default function ChatPage() {
 
     // For existing chats, we would fetch from an API
     // This is mock data for demonstration
+    
+
     const mockChats: Record<string, { title: string; messages: Message[] }> = {
       chat1: {
         title: "Разработка веб-приложения",
@@ -150,6 +180,40 @@ export default function ChatPage() {
     }, 1000)
   }
 
+  const handleDeleteChat = (id: string) => {
+    // В реальном приложении здесь был бы запрос к API для удаления чата
+    toast({
+      title: "Чат удален",
+      description: "Чат был успешно удален",
+    })
+    router.push("/chat/new")
+  }
+
+  const handleClearChat = (id: string) => {
+    // В реальном приложении здесь был бы запрос к API для очистки сообщений
+    setMessages([
+      {
+        id: 1,
+        content: "Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?",
+        role: "assistant",
+        timestamp: new Date(),
+      },
+    ])
+    toast({
+      title: "Сообщения очищены",
+      description: "Все сообщения в чате были удалены",
+    })
+  }
+
+  const handleRenameChat = (id: string, newTitle: string) => {
+    // В реальном приложении здесь был бы запрос к API для обновления названия
+    setChatTitle(newTitle)
+    toast({
+      title: "Название обновлено",
+      description: "Название чата было успешно изменено",
+    })
+  }
+
   // Если пользователь не аутентифицирован, не рендерим содержимое
   if (!isAuthenticated) {
     return null
@@ -157,6 +221,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <Toaster />
       <header className="border-b">
         <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
           <div className="flex items-center gap-4">
@@ -167,6 +232,15 @@ export default function ChatPage() {
             <div className="hidden md:flex items-center gap-1 text-sm text-muted-foreground">
               <span>/</span>
               <span className="font-medium text-foreground">{chatTitle}</span>
+              {chatId !== "new" && (
+                <ChatOptionsMenu
+                  chatId={chatId}
+                  chatTitle={chatTitle}
+                  onDelete={handleDeleteChat}
+                  onClear={handleClearChat}
+                  onRename={handleRenameChat}
+                />
+              )}
             </div>
           </div>
           <nav className="flex items-center gap-4">
@@ -175,6 +249,17 @@ export default function ChatPage() {
                 <ArrowLeft className="h-4 w-4" />
               </Link>
             </Button>
+            {chatId !== "new" && (
+              <div className="md:hidden">
+                <ChatOptionsMenu
+                  chatId={chatId}
+                  chatTitle={chatTitle}
+                  onDelete={handleDeleteChat}
+                  onClear={handleClearChat}
+                  onRename={handleRenameChat}
+                />
+              </div>
+            )}
             <NavLinks />
             <ThemeToggle />
             <UserMenu />
