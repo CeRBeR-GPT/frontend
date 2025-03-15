@@ -18,6 +18,7 @@ import { NavLinks } from "@/components/nav-links"
 import { ChatOptionsMenu } from "@/components/chat-options-menu"
 import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
+import axios from "axios"
 
 interface Message {
   id: number
@@ -36,6 +37,29 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [chatTitle, setChatTitle] = useState("")
+
+  const getToken = () => localStorage.getItem('access_token')
+  const token = getToken()
+
+  useEffect(() => {
+    const getAllChats = async () => {
+      try {
+        const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
+        console.log(response.data)
+      } catch (error) {
+        console.error("Error creating chat:", error)
+      }
+    }
+
+    getAllChats()
+
+  }, []
+)
 
   // Проверка аутентификации
   useEffect(() => {
@@ -64,6 +88,7 @@ export default function ChatPage() {
 
     // For existing chats, we would fetch from an API
     // This is mock data for demonstration
+
     const mockChats: Record<string, { title: string; messages: Message[] }> = {
       chat1: {
         title: "Разработка веб-приложения",

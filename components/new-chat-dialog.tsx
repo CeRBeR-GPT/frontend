@@ -5,18 +5,13 @@ import { useRouter } from "next/navigation"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } 
+    from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Sparkles, MessageSquarePlus } from "lucide-react"
+import axios from "axios"
 
 const formSchema = z.object({
   chatName: z
@@ -32,6 +27,7 @@ interface NewChatDialogProps {
 
 export const NewChatDialog = ({ open, onOpenChange }: NewChatDialogProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [chatName, setChatName] = useState("") // Локальное состояние для названия чата
   const router = useRouter()
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -41,19 +37,26 @@ export const NewChatDialog = ({ open, onOpenChange }: NewChatDialogProps) => {
     },
   })
 
+  const getToken = () => localStorage.getItem('access_token')
+  const token = getToken()
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
     try {
-      // В реальном приложении здесь был бы запрос к API для создания нового чата
-      // Для демонстрации просто перенаправим на страницу нового чата
-      console.log("Создание нового чата:", values.chatName)
+      const response = await axios.post(
+        `https://api-gpt.energy-cerber.ru/chat/new?name=${chatName}`, {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
 
-      // Имитация задержки запроса
-      await new Promise((resolve) => setTimeout(resolve, 500))
+      console.log(response.data)
 
       // Закрываем диалог и перенаправляем на страницу нового чата
       onOpenChange(false)
-      router.push("/chat/new")
+      router.push(`/chat/${response.data.id}`)
     } catch (error) {
       console.error("Error creating chat:", error)
     } finally {
@@ -80,7 +83,15 @@ export const NewChatDialog = ({ open, onOpenChange }: NewChatDialogProps) => {
                 <FormItem>
                   <FormLabel>Название чата</FormLabel>
                   <FormControl>
-                    <Input placeholder="Например: Помощь с проектом" {...field} autoFocus />
+                    <Input
+                      placeholder="Например: Помощь с проектом"
+                      {...field}
+                      autoFocus
+                      onChange={(e) => {
+                        field.onChange(e) // Обновляем значение формы
+                        setChatName(e.target.value) // Обновляем локальное состояние
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
