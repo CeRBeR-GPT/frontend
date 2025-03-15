@@ -56,6 +56,11 @@ export default function ChatPage() {
       setMessages(history)
     } catch (error) {
       console.error("Failed to load chat history:", error)
+      toast({
+        title: "Ошибка загрузки истории",
+        description: "Не удалось загрузить историю сообщений.",
+        variant: "destructive",
+      })
     }
   }
 
