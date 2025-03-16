@@ -111,7 +111,7 @@ export function ChatSidebar() {
 
   const clearChatMessages = async (id: string) => {
     try {
-      await axios.post(`https://api-gpt.energy-cerber.ru/chat/${id}/clear`, {}, {
+      await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}/clear`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

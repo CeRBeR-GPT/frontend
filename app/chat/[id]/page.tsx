@@ -20,8 +20,8 @@ import axios from "axios"
 
 interface Message {
   id: number
-  content: string
-  role: "user" | "assistant"
+  text: string
+  message_belong: "user" | "assistant"
   timestamp: Date
 }
 
@@ -34,17 +34,24 @@ export default function ChatPage() {
   const [input, setInput] = useState("")
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const [chatTitle, setChatTitle] = useState("")
   const [chats, setChats] = useState(null)
 
   const ws = useRef<WebSocket | null>(null)
 
-  const getToken = () => localStorage.getItem('access_token')
+  const getToken = () => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem('access_token')
+    }
+    return null
+  }
+
   const token = getToken()
 
   // Загрузка истории сообщений
   const loadChatHistory = async (chatId: string) => {
-    console.log(chatId)
+    setIsLoadingHistory(true)
     try {
       const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/${chatId}`, {
         headers: {
@@ -52,8 +59,8 @@ export default function ChatPage() {
         },
       })
       const history = response.data.messages
-      console.log(response.data.messages)
       setMessages(history)
+      setChatTitle(response.data.name)
     } catch (error) {
       console.error("Failed to load chat history:", error)
       toast({
@@ -61,6 +68,8 @@ export default function ChatPage() {
         description: "Не удалось загрузить историю сообщений.",
         variant: "destructive",
       })
+    } finally {
+      setIsLoadingHistory(false)
     }
   }
 
@@ -79,8 +88,8 @@ export default function ChatPage() {
       console.log("WebSocket message received:", event.data)
       const newMessage: Message = {
         id: messages.length + 1,
-        content: event.data,
-        role: "assistant",
+        text: event.data,
+        message_belong: "assistant",
         timestamp: new Date(),
       }
       setMessages((prev) => [...prev, newMessage])
@@ -114,12 +123,13 @@ export default function ChatPage() {
       return
     }
 
+    // Если это новый чат, инициализируем начальное сообщение
     if (chatId === "new") {
       setMessages([
         {
           id: 1,
-          content: "Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?",
-          role: "assistant",
+          text: "Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?",
+          message_belong: "assistant",
           timestamp: new Date(),
         },
       ])
@@ -127,9 +137,13 @@ export default function ChatPage() {
       return
     }
 
-    // Загружаем историю сообщений и инициализируем WebSocket
-    loadChatHistory(chatId)
-    initializeWebSocket(chatId)
+    // Загружаем историю сообщений для существующего чата
+    const fetchData = async () => {
+      await loadChatHistory(chatId)
+      initializeWebSocket(chatId)
+    }
+
+    fetchData()
 
     // Закрываем WebSocket при размонтировании компонента
     return () => {
@@ -146,8 +160,8 @@ export default function ChatPage() {
     // Добавляем сообщение пользователя
     const userMessage: Message = {
       id: messages.length + 1,
-      content: input,
-      role: "user",
+      text: input,
+      message_belong: "user",
       timestamp: new Date(),
     }
 
@@ -176,8 +190,8 @@ export default function ChatPage() {
     setMessages([
       {
         id: 1,
-        content: "Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?",
-        role: "assistant",
+        text: "Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?",
+        message_belong: "assistant",
         timestamp: new Date(),
       },
     ])
@@ -251,82 +265,90 @@ export default function ChatPage() {
         <main className="flex-1 overflow-auto">
           <div className="container mx-auto px-4 py-6 md:px-6 max-w-4xl">
             <div className="flex flex-col h-[calc(100vh-12rem)]">
-              <div className="flex-1 overflow-y-auto mb-4 space-y-4 p-4">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in-0 slide-in-from-bottom-3 duration-300`}
-                  >
-                    <div className="flex items-start gap-3 max-w-[80%]">
-                      {message.role === "assistant" && (
-                        <Avatar className="mt-1">
-                          <AvatarFallback>
-                            <Bot className="w-4 h-4" />
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
-                      <Card
-                        className={`p-3 ${message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}
-                      >
-                        <p className="whitespace-pre-wrap">{message.content}</p>
-                      </Card>
-                      {message.role === "user" && (
-                        <Avatar className="mt-1">
-                          <AvatarFallback>
-                            <User className="w-4 h-4" />
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                {isLoading && (
-                  <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-3 duration-300">
-                    <div className="flex items-start gap-3 max-w-[80%]">
-                      <Avatar className="mt-1">
-                        <AvatarFallback>
-                          <Bot className="w-4 h-4" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <Card className="p-3 bg-muted">
-                        <div className="flex space-x-2">
-                          <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
-                          <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.2s]" />
-                          <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.4s]" />
-                        </div>
-                      </Card>
-                    </div>
-                  </div>
-                )}
-              </div>
-              <form onSubmit={handleSubmit} className="sticky bottom-0 bg-background pt-2">
-                <div className="relative">
-                  <Textarea
-                    placeholder="Напишите ваш запрос..."
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    className="min-h-[60px] resize-none pr-14 rounded-xl border-gray-300 focus:border-primary"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault()
-                        handleSubmit(e)
-                      }
-                    }}
-                  />
-                  <Button
-                    type="submit"
-                    size="icon"
-                    className="absolute right-2 bottom-2 rounded-full"
-                    disabled={!input.trim() || isLoading}
-                  >
-                    <ArrowUp className="w-4 h-4" />
-                    <span className="sr-only">Отправить</span>
-                  </Button>
+              {isLoadingHistory ? (
+                <div className="flex justify-center items-center h-full">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
                 </div>
-                <p className="text-xs text-center text-muted-foreground mt-2">
-                  AI может допускать ошибки. Проверяйте важную информацию.
-                </p>
-              </form>
+              ) : (
+                <>
+                  <div className="flex-1 overflow-y-auto mb-4 space-y-4 p-4">
+                    {messages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`flex ${message.message_belong === "user" ? "justify-end" : "justify-start"} animate-in fade-in-0 slide-in-from-bottom-3 duration-300`}
+                      >
+                        <div className="flex items-start gap-3 max-w-[80%]">
+                          {message.message_belong === "assistant" && (
+                            <Avatar className="mt-1">
+                              <AvatarFallback>
+                                <Bot className="w-4 h-4" />
+                              </AvatarFallback>
+                            </Avatar>
+                          )}
+                          <Card
+                            className={`p-3 ${message.message_belong === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+                          >
+                            <p className="whitespace-pre-wrap">{message.text}</p>
+                          </Card>
+                          {message.message_belong === "user" && (
+                            <Avatar className="mt-1">
+                              <AvatarFallback>
+                                <User className="w-4 h-4" />
+                              </AvatarFallback>
+                            </Avatar>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {isLoading && (
+                      <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-3 duration-300">
+                        <div className="flex items-start gap-3 max-w-[80%]">
+                          <Avatar className="mt-1">
+                            <AvatarFallback>
+                              <Bot className="w-4 h-4" />
+                            </AvatarFallback>
+                          </Avatar>
+                          <Card className="p-3 bg-muted">
+                            <div className="flex space-x-2">
+                              <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
+                              <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.2s]" />
+                              <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.4s]" />
+                            </div>
+                          </Card>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <form onSubmit={handleSubmit} className="sticky bottom-0 bg-background pt-2">
+                    <div className="relative">
+                      <Textarea
+                        placeholder="Напишите ваш запрос..."
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        className="min-h-[60px] resize-none pr-14 rounded-xl border-gray-300 focus:border-primary"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault()
+                            handleSubmit(e)
+                          }
+                        }}
+                      />
+                      <Button
+                        type="submit"
+                        size="icon"
+                        className="absolute right-2 bottom-2 rounded-full"
+                        disabled={!input.trim() || isLoading}
+                      >
+                        <ArrowUp className="w-4 h-4" />
+                        <span className="sr-only">Отправить</span>
+                      </Button>
+                    </div>
+                    <p className="text-xs text-center text-muted-foreground mt-2">
+                      AI может допускать ошибки. Проверяйте важную информацию.
+                    </p>
+                  </form>
+                </>
+              )}
             </div>
           </div>
         </main>
