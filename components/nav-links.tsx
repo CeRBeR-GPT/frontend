@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
@@ -7,19 +9,28 @@ export const NavLinks = () => {
   const { isAuthenticated } = useAuth()
   const pathname = usePathname()
   const [isAuth, setIsAuth] = useState(false)
+  const [chat, setChat] = useState("chat")
 
   // Используем useEffect для отслеживания изменений состояния аутентификации
   useEffect(() => {
     setIsAuth(isAuthenticated)
   }, [isAuthenticated])
-  const lastSavedChat = localStorage.getItem("lastSavedChat")
-  const chat = lastSavedChat ? JSON.parse(lastSavedChat) : "chat"
-  
+
+  // Используем useEffect для работы с localStorage только на клиенте
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const lastSavedChat = localStorage.getItem("lastSavedChat")
+      if (lastSavedChat) {
+        setChat(JSON.parse(lastSavedChat))
+      }
+    }
+  }, [])
+
   return (
     <>
       {isAuth ? (
         <Link
-          href= {`/chat/${chat}`}
+          href={`/chat/${chat}`}
           className={`text-sm font-medium ${pathname.includes("/chat") ? "underline" : "hover:underline"} underline-offset-4`}
         >
           Chat

@@ -1,6 +1,5 @@
 "use client"
 
-import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
 import axios from "axios"
 
@@ -21,7 +20,7 @@ type AuthContextType = {
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
   register: (email: string, password: string) => Promise<void>
-  verifyCode: (email: string, code: string, password: string) => Promise<{ success: boolean; lastChatId?: string | undefined }>
+  verifyCode: (email: string, code: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
   logout: () => void
   socialLogin: (provider: "google" | "yandex" | "github") => Promise<{ success: boolean; lastChatId?: string }>
   updatePassword: (newPassword: string) => Promise<{ success: boolean } | undefined>
@@ -53,52 +52,63 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const storedUser = localStorage.getItem("user")
-      const storedIsAuthenticated = localStorage.getItem('isAuthenticated')
+      if (typeof window !== "undefined") {
+        const storedUser = localStorage.getItem("user")
+        const storedIsAuthenticated = localStorage.getItem('isAuthenticated')
 
-      if (storedUser) {
-        setUser(JSON.parse(storedUser))
+        if (storedUser) {
+          setUser(JSON.parse(storedUser))
+        }
+
+        if (storedIsAuthenticated === 'true') {
+          setIsAuthenticated(true)
+        }
+
+        setIsLoading(false)
       }
-
-      if (storedIsAuthenticated === 'true') {
-        setIsAuthenticated(true)
-      }
-
-      setIsLoading(false)
     }
     checkAuth()
   }, [])
 
+  const getToken = () => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem('access_token')
+    }
+    return null
+  }
 
-  
-  const getToken = () => localStorage.getItem('access_token');
-  const token = getToken();
+  const token = getToken()
 
   const getUserData = async () => {
-    try {
-      const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem('access_token')
+      if (token) {
+        try {
+          const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
 
-      const userData = response.data;
-      console.log("User data fetched:", userData);
-      const user = {
-        email: userData.email,
+          const userData = response.data
+          console.log("User data fetched:", userData)
+          const user = {
+            email: userData.email,
+          }
+
+          setUserData(userData)
+        } catch (error) {
+          console.error("Failed to fetch user data:", error)
+        }
       }
-      
-      
-      setUserData(userData)
-    } catch (error) {
-      console.error("Failed to fetch user data:", error);
     }
-  };
+  }
 
-  useEffect( () => {
-    getUserData()
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      getUserData()
+    }
   }, [token])
-
 
   const login = async (email: string, password: string) => {
     try {
@@ -116,7 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const chat = JSON.parse(lastSavedChat)
           console.log("Последний сохраненный чат:", chat)
         }
-        localStorage.setItem('isAuthenticated', 'true') // Сохраняем isAuthenticated
+        localStorage.setItem('isAuthenticated', 'true')
         return { success: true, lastChatId: lastSavedChat || "chat1" }
       } else {
         return { success: false }
@@ -125,7 +135,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error("Произошла ошибка при входе. Пожалуйста, попробуйте снова.")
     }
   }
-
 
   const updatePassword = async (newPassword: string) => {
     try {
@@ -146,8 +155,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const updatedUser = { ...user, password: newPassword }
           setUser(updatedUser)
           localStorage.setItem("user", JSON.stringify(updatedUser))
-          setIsAuthenticated(true) // Обновляем isAuthenticated
-          localStorage.setItem('isAuthenticated', 'true') // Сохраняем isAuthenticated
+          setIsAuthenticated(true)
+          localStorage.setItem('isAuthenticated', 'true')
         }
         return { success: true }
       }
@@ -160,14 +169,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const Login = async (email: string, password: string) => {
-
     const user = {
       email: email,
     }
-    if (user){
+    if (user) {
       setUser(user)
       setIsAuthenticated(true)
-      localStorage.setItem('isAuthenticated', 'true') // Сохраняем isAuthenticated
+      localStorage.setItem('isAuthenticated', 'true')
       return { success: true, lastChatId: "chat1" }
     }
 
@@ -184,14 +192,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(newUser)
       setIsAuthenticated(true)
       localStorage.setItem("user", JSON.stringify(newUser))
-      localStorage.setItem('isAuthenticated', 'true') // Сохраняем isAuthenticated
+      localStorage.setItem('isAuthenticated', 'true')
       localStorage.removeItem("pendingRegistration")
-      const lastSavedChat = localStorage.getItem("lastSavedChat")
-      if (lastSavedChat) {
-        const chat = JSON.parse(lastSavedChat)
-        console.log("Последний сохраненный чат:", chat)
-      }
-      return { success: true, lastChatId:  lastSavedChat}
+      return { success: true, lastChatId: "chat1" }
     }
     return { success: false }
   }
@@ -200,7 +203,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null)
     setIsAuthenticated(false)
     localStorage.removeItem("user")
-    localStorage.removeItem('isAuthenticated') // Удаляем isAuthenticated
+    localStorage.removeItem('isAuthenticated')
   }
 
   const socialLogin = async (provider: "google" | "yandex" | "github") => {
@@ -209,7 +212,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(newUser)
     setIsAuthenticated(true)
     localStorage.setItem("user", JSON.stringify(newUser))
-    localStorage.setItem('isAuthenticated', 'true') // Сохраняем isAuthenticated
+    localStorage.setItem('isAuthenticated', 'true')
     return { success: true, lastChatId: "chat1" }
   }
 
