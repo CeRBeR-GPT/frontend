@@ -1,161 +1,172 @@
-"use client"
+'use client'
 
-import { useState, useEffect, useRef } from "react"
-import { useParams, useRouter } from "next/navigation"
-import Link from "next/link"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
-import { ArrowUp, Bot, User, ArrowLeft } from "lucide-react"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { UserMenu } from "@/components/user-menu"
-import { ChatSidebar } from "@/components/chat-sidebar"
-import { useAuth } from "@/hooks/use-auth"
-import { NavLinks } from "@/components/nav-links"
-import { ChatOptionsMenu } from "@/components/chat-options-menu"
-import { toast } from "@/components/ui/use-toast"
-import { Toaster } from "@/components/ui/toaster"
-import axios from "axios"
+import { useState, useEffect, useRef } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { ArrowUp, Bot, User, ArrowLeft } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { UserMenu } from "@/components/user-menu";
+import { ChatSidebar } from "@/components/chat-sidebar";
+import { useAuth } from "@/hooks/use-auth";
+import { NavLinks } from "@/components/nav-links";
+import { ChatOptionsMenu } from "@/components/chat-options-menu";
+import { toast } from "@/components/ui/use-toast";
+import { Toaster } from "@/components/ui/toaster";
+import axios from "axios";
 
 interface Message {
-  id: number
-  text: string
-  message_belong: "user" | "assistant"
-  timestamp: Date
+  id: number;
+  text: string;
+  message_belong: "user" | "assistant";
+  timestamp: Date;
 }
 
 export default function ChatPage() {
-  const params = useParams()
-  const router = useRouter()
-  const chatId = params.id as string
-  const { isAuthenticated } = useAuth()
+  const params = useParams();
+  const router = useRouter();
+  const chatId = params.id as string;
+  const { isAuthenticated } = useAuth();
 
-  const [input, setInput] = useState("")
-  const [messages, setMessages] = useState<Message[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
-  const [chatTitle, setChatTitle] = useState("")
-  const [chats, setChats] = useState(null)
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [chatTitle, setChatTitle] = useState("");
+  const [chats, setChats] = useState(null);
 
-  const ws = useRef<WebSocket | null>(null)
+  const ws = useRef<WebSocket | null>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null); // Ссылка на контейнер сообщений
 
   const getToken = () => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem('access_token')
+      return localStorage.getItem("access_token");
     }
-    return null
-  }
+    return null;
+  };
 
-  const token = getToken()
+  const token = getToken();
 
   // Загрузка истории сообщений
   const loadChatHistory = async (chatId: string) => {
-    setIsLoadingHistory(true)
+    setIsLoadingHistory(true);
     try {
-      const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/${chatId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      const history = response.data.messages
-      setMessages(history)
-      setChatTitle(response.data.name)
+      const response = await axios.get(
+        `https://api-gpt.energy-cerber.ru/chat/${chatId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const history = response.data.messages;
+      setMessages(history);
+      setChatTitle(response.data.name);
     } catch (error) {
-      console.error("Failed to load chat history:", error)
+      console.error("Failed to load chat history:", error);
       toast({
         title: "Ошибка загрузки истории",
         description: "Не удалось загрузить историю сообщений.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoadingHistory(false)
+      setIsLoadingHistory(false);
     }
-  }
+  };
 
   // Инициализация WebSocket
   const initializeWebSocket = (chatId: string) => {
-    const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}`
-    console.log("WebSocket URL:", wsUrl)
+    const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}`;
+    console.log("WebSocket URL:", wsUrl);
 
-    ws.current = new WebSocket(wsUrl)
+    ws.current = new WebSocket(wsUrl);
 
     ws.current.onopen = () => {
-      console.log("WebSocket connection established")
-    }
+      console.log("WebSocket connection established");
+    };
 
     ws.current.onmessage = (event) => {
-      console.log("WebSocket message received:", event.data)
+      console.log("WebSocket message received:", event.data);
       const newMessage: Message = {
         id: messages.length + 1,
         text: event.data,
         message_belong: "assistant",
         timestamp: new Date(),
-      }
-      setMessages((prev) => [...prev, newMessage])
-    }
+      };
+      setMessages((prev) => [...prev, newMessage]);
+      setIsLoading(false);
+    };
 
     ws.current.onerror = (error) => {
-      console.error("WebSocket error:", error)
+      console.error("WebSocket error:", error);
       toast({
         title: "Ошибка WebSocket",
         description: "Не удалось подключиться к серверу.",
         variant: "destructive",
-      })
-    }
+      });
+    };
 
     ws.current.onclose = (event) => {
-      console.log("WebSocket connection closed:", event)
+      console.log("WebSocket connection closed:", event);
       if (event.code !== 1000) {
         toast({
           title: "Соединение закрыто",
           description: "Попытка переподключения...",
           variant: "destructive",
-        })
-        setTimeout(() => initializeWebSocket(chatId), 5000)
+        });
+        setTimeout(() => initializeWebSocket(chatId), 5000);
       }
+    };
+  };
+
+  // Скролл вниз при изменении messages
+  useEffect(() => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
     }
-  }
+  }, [messages]);
 
   useEffect(() => {
     if (!isAuthenticated) {
-      router.push("/auth/login")
-      return
+      router.push("/auth/login");
+      return;
     }
 
-    // Если это новый чат, инициализируем начальное сообщение
-    if (chatId === "new") {
-      setMessages([
-        {
-          id: 1,
-          text: "Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?",
-          message_belong: "assistant",
-          timestamp: new Date(),
-        },
-      ])
-      setChatTitle("Новый чат")
-      return
-    }
+    setMessages([
+      {
+        id: 1,
+        text: "Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?",
+        message_belong: "assistant",
+        timestamp: new Date(),
+      },
+    ]);
+    setChatTitle("Новый чат");
 
     // Загружаем историю сообщений для существующего чата
     const fetchData = async () => {
-      await loadChatHistory(chatId)
-      initializeWebSocket(chatId)
-    }
+      await loadChatHistory(chatId);
+      initializeWebSocket(chatId);
+    };
 
-    fetchData()
+    fetchData();
 
     // Закрываем WebSocket при размонтировании компонента
     return () => {
       if (ws.current) {
-        ws.current.close()
+        ws.current.close();
       }
-    }
-  }, [chatId, isAuthenticated, router])
+    };
+  }, [chatId, isAuthenticated, router]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!input.trim() || isLoading) return
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
 
     // Добавляем сообщение пользователя
     const userMessage: Message = {
@@ -163,28 +174,25 @@ export default function ChatPage() {
       text: input,
       message_belong: "user",
       timestamp: new Date(),
-    }
+    };
 
-    setMessages((prev) => [...prev, userMessage])
-    setIsLoading(true)
-    setInput("")
+    setMessages((prev) => [...prev, userMessage]);
+    setIsLoading(true); // Устанавливаем состояние загрузки
+    setInput("");
 
     // Отправляем сообщение через WebSocket
     if (ws.current) {
-      ws.current.send(input)
+      ws.current.send(input);
     }
-
-    // Сбрасываем состояние загрузки
-    setIsLoading(false)
-  }
+  };
 
   const handleDeleteChat = (id: string) => {
     toast({
       title: "Чат удален",
       description: "Чат был успешно удален",
-    })
-    router.push("/chat/new")
-  }
+    });
+    router.push("/chat/new");
+  };
 
   const handleClearChat = (id: string) => {
     setMessages([
@@ -194,23 +202,23 @@ export default function ChatPage() {
         message_belong: "assistant",
         timestamp: new Date(),
       },
-    ])
+    ]);
     toast({
       title: "Сообщения очищены",
       description: "Все сообщения в чате были удалены",
-    })
-  }
+    });
+  };
 
   const handleRenameChat = (id: string, newTitle: string) => {
-    setChatTitle(newTitle)
+    setChatTitle(newTitle);
     toast({
       title: "Название обновлено",
       description: "Название чата было успешно изменено",
-    })
-  }
+    });
+  };
 
   if (!isAuthenticated) {
-    return null
+    return null;
   }
 
   return (
@@ -271,11 +279,16 @@ export default function ChatPage() {
                 </div>
               ) : (
                 <>
-                  <div className="flex-1 overflow-y-auto mb-4 space-y-4 p-4">
+                  <div
+                    ref={messagesContainerRef} // Привязка ссылки
+                    className="flex-1 overflow-y-auto mb-4 space-y-4 p-4"
+                  >
                     {messages.map((message) => (
                       <div
                         key={message.id}
-                        className={`flex ${message.message_belong === "user" ? "justify-end" : "justify-start"} animate-in fade-in-0 slide-in-from-bottom-3 duration-300`}
+                        className={`flex ${
+                          message.message_belong === "user" ? "justify-end" : "justify-start"
+                        } animate-in fade-in-0 slide-in-from-bottom-3 duration-300`}
                       >
                         <div className="flex items-start gap-3 max-w-[80%]">
                           {message.message_belong === "assistant" && (
@@ -286,7 +299,11 @@ export default function ChatPage() {
                             </Avatar>
                           )}
                           <Card
-                            className={`p-3 ${message.message_belong === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+                            className={`p-3 ${
+                              message.message_belong === "user"
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted"
+                            }`}
                           >
                             <p className="whitespace-pre-wrap">{message.text}</p>
                           </Card>
@@ -328,8 +345,8 @@ export default function ChatPage() {
                         className="min-h-[60px] resize-none pr-14 rounded-xl border-gray-300 focus:border-primary"
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault()
-                            handleSubmit(e)
+                            e.preventDefault();
+                            handleSubmit(e);
                           }
                         }}
                       />
@@ -354,7 +371,6 @@ export default function ChatPage() {
         </main>
       </div>
     </div>
-  )
+  );
 }
-
 

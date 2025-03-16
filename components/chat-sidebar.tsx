@@ -16,6 +16,7 @@ import { NewChatDialog } from "@/components/new-chat-dialog"
 import { ChatOptionsMenu } from "@/components/chat-options-menu"
 import { toast } from "@/components/ui/use-toast"
 import axios from "axios"
+import { Loader2 } from "lucide-react" // Импортируем спиннер
 
 interface ChatHistory {
   id: string
@@ -30,6 +31,7 @@ export function ChatSidebar() {
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false) // Состояние загрузки
   const pathname = usePathname()
   const router = useRouter()
   const currentChatId = pathname.split("/").pop() || ""
@@ -39,6 +41,7 @@ export function ChatSidebar() {
 
   useEffect(() => {
     const fetchChats = async () => {
+      setIsLoading(true) // Устанавливаем состояние загрузки в true
       try {
         const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
           headers: {
@@ -69,6 +72,13 @@ export function ChatSidebar() {
         setChatHistory(sortedChats)
       } catch (error) {
         console.error("Error fetching chats:", error)
+        toast({
+          title: "Ошибка",
+          description: "Не удалось загрузить чаты",
+          variant: "destructive",
+        })
+      } finally {
+        setIsLoading(false) // Устанавливаем состояние загрузки в false
       }
     }
 
@@ -194,7 +204,11 @@ export function ChatSidebar() {
 
       <ScrollArea className="flex-1">
         <div className="pr-3 space-y-2">
-          {filteredChats.length > 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center items-center h-20">
+              <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+          ) : filteredChats.length > 0 ? (
             filteredChats.map((chat) => (
               <Link href={`/chat/${chat.id}`} key={chat.id} onClick={() => setIsOpen(false)}>
                 <Card
@@ -266,5 +280,4 @@ export function ChatSidebar() {
     </>
   )
 }
-
 
