@@ -20,8 +20,8 @@ import axios from "axios"
 
 interface Message {
   id: number
-  content: string
-  role: "user" | "assistant"
+  text: string
+  message_belong: "user" | "assistant"
   timestamp: Date
 }
 
@@ -64,7 +64,6 @@ export default function ChatPage() {
     }
   }
 
-  // Инициализация WebSocket
   const initializeWebSocket = (chatId: string) => {
     const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}`
     console.log("WebSocket URL:", wsUrl)
@@ -79,8 +78,8 @@ export default function ChatPage() {
       console.log("WebSocket message received:", event.data)
       const newMessage: Message = {
         id: messages.length + 1,
-        content: event.data,
-        role: "assistant",
+        text: event.data,
+        message_belong: "assistant",
         timestamp: new Date(),
       }
       setMessages((prev) => [...prev, newMessage])
@@ -118,8 +117,8 @@ export default function ChatPage() {
       setMessages([
         {
           id: 1,
-          content: "Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?",
-          role: "assistant",
+          text: "Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?",
+          message_belong: "assistant",
           timestamp: new Date(),
         },
       ])
@@ -127,11 +126,9 @@ export default function ChatPage() {
       return
     }
 
-    // Загружаем историю сообщений и инициализируем WebSocket
     loadChatHistory(chatId)
     initializeWebSocket(chatId)
 
-    // Закрываем WebSocket при размонтировании компонента
     return () => {
       if (ws.current) {
         ws.current.close()
@@ -143,11 +140,10 @@ export default function ChatPage() {
     e.preventDefault()
     if (!input.trim() || isLoading) return
 
-    // Добавляем сообщение пользователя
     const userMessage: Message = {
       id: messages.length + 1,
-      content: input,
-      role: "user",
+      text: input,
+      message_belong: "user",
       timestamp: new Date(),
     }
 
@@ -155,12 +151,10 @@ export default function ChatPage() {
     setIsLoading(true)
     setInput("")
 
-    // Отправляем сообщение через WebSocket
     if (ws.current) {
       ws.current.send(input)
     }
 
-    // Сбрасываем состояние загрузки
     setIsLoading(false)
   }
 
@@ -176,8 +170,8 @@ export default function ChatPage() {
     setMessages([
       {
         id: 1,
-        content: "Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?",
-        role: "assistant",
+        text: "Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?",
+        message_belong: "assistant",
         timestamp: new Date(),
       },
     ])
@@ -255,10 +249,10 @@ export default function ChatPage() {
                 {messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in-0 slide-in-from-bottom-3 duration-300`}
+                    className={`flex ${message.message_belong === "user" ? "justify-end" : "justify-start"} animate-in fade-in-0 slide-in-from-bottom-3 duration-300`}
                   >
                     <div className="flex items-start gap-3 max-w-[80%]">
-                      {message.role === "assistant" && (
+                      {message.message_belong === "assistant" && (
                         <Avatar className="mt-1">
                           <AvatarFallback>
                             <Bot className="w-4 h-4" />
@@ -266,11 +260,11 @@ export default function ChatPage() {
                         </Avatar>
                       )}
                       <Card
-                        className={`p-3 ${message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+                        className={`p-3 ${message.message_belong === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}
                       >
-                        <p className="whitespace-pre-wrap">{message.content}</p>
+                        <p className="whitespace-pre-wrap">{message.text}</p>
                       </Card>
-                      {message.role === "user" && (
+                      {message.message_belong === "user" && (
                         <Avatar className="mt-1">
                           <AvatarFallback>
                             <User className="w-4 h-4" />
