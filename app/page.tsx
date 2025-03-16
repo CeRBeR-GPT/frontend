@@ -35,7 +35,7 @@ export default function Home() {
         router.replace(`/chat/${chat}`) // Редирект на страницу чата с конкретным ID
       } else {
         // Если последний чат не найден, редиректим на страницу по умолчанию
-        router.replace("/chat")
+        router.replace("/profile")
       }
     }
   }, [isAuth, router])

@@ -54,6 +54,7 @@ export default function RegisterPage() {
           `/auth/verify?email=${encodeURIComponent(values.email)}&password=${encodeURIComponent(values.password)}`,
         );
       }
+      
     } catch (error) {
       console.error("Registration error:", error);
     } finally {
@@ -164,12 +165,7 @@ export default function RegisterPage() {
                     </div>
                   )}
                 </Button>
-
-                {errorMessage && (
-                  <div className="text-red-500 text-sm text-center mt-4">
-                    {errorMessage}
-                  </div>
-                )}
+                {errorMessage && (<div className="text-red-500 text-sm text-center mt-4">{errorMessage}</div>)}
               </form>
             </Form>
             <ChoiceAuth text = "Или зарегистрироваться через"/>
