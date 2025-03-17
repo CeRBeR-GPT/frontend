@@ -1,5 +1,8 @@
 'use client'
 
+import 'katex/dist/katex.min.css'; // Импортируем стили KaTeX
+import rehypeKatex from 'rehype-katex';
+import { InlineMath, BlockMath } from 'react-katex'; // Компоненты для рендеринга LaTeX
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -7,7 +10,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowUp, Bot, User, ArrowLeft } from "lucide-react";
+import { ArrowUp, Bot, User, ArrowLeft, Copy } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { ChatSidebar } from "@/components/chat-sidebar";
@@ -17,6 +20,10 @@ import { ChatOptionsMenu } from "@/components/chat-options-menu";
 import { toast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import axios from "axios";
+import ReactMarkdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { a11yLight } from "react-syntax-highlighter/dist/esm/styles/prism"; // Используем светлый стиль
+import { useTheme } from "next-themes";
 
 interface Message {
   id: number;
@@ -25,7 +32,35 @@ interface Message {
   timestamp: Date;
 }
 
+// Функция для экранирования обратных слэшей
+const escapeBackslashes = (text: string) => {
+  return text.replace(/\\/g, '\\\\');
+};
+
+// Функция для обработки текста и замены формул в квадратных скобках на компоненты KaTeX
+const renderMessageWithLaTeX = (text: string) => {
+  // Экранируем обратные слэши
+  const escapedText = escapeBackslashes(text);
+
+  // Регулярное выражение для поиска формул в квадратных скобках
+  const regex = /\[(.*?)\]/g;
+
+  // Разделяем текст на части: обычный текст и формулы
+  const parts = escapedText.split(regex);
+
+  // Обрабатываем каждую часть
+  return parts.map((part, index) => {
+    // Если часть — это формула (нечетный индекс), обрабатываем её как LaTeX
+    if (index % 2 === 1) {
+      return <InlineMath key={index}>{part}</InlineMath>;
+    }
+    // Иначе возвращаем обычный текст
+    return part;
+  });
+};
+
 export default function ChatPage() {
+  const { setTheme, theme } = useTheme();
   const params = useParams();
   const router = useRouter();
   const chatId = params.id as string;
@@ -39,7 +74,7 @@ export default function ChatPage() {
   const [chats, setChats] = useState(null);
 
   const ws = useRef<WebSocket | null>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null); // Ссылка на контейнер сообщений
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const getToken = () => {
     if (typeof window !== "undefined") {
@@ -50,7 +85,6 @@ export default function ChatPage() {
 
   const token = getToken();
 
-  // Загрузка истории сообщений
   const loadChatHistory = async (chatId: string) => {
     setIsLoadingHistory(true);
     try {
@@ -77,7 +111,6 @@ export default function ChatPage() {
     }
   };
 
-  // Инициализация WebSocket
   const initializeWebSocket = (chatId: string) => {
     const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}`;
     console.log("WebSocket URL:", wsUrl);
@@ -122,7 +155,6 @@ export default function ChatPage() {
     };
   };
 
-  // Скролл вниз при изменении messages
   useEffect(() => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTo({
@@ -148,7 +180,6 @@ export default function ChatPage() {
     ]);
     setChatTitle("Новый чат");
 
-    // Загружаем историю сообщений для существующего чата
     const fetchData = async () => {
       await loadChatHistory(chatId);
       initializeWebSocket(chatId);
@@ -156,7 +187,6 @@ export default function ChatPage() {
 
     fetchData();
 
-    // Закрываем WebSocket при размонтировании компонента
     return () => {
       if (ws.current) {
         ws.current.close();
@@ -168,7 +198,6 @@ export default function ChatPage() {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    // Добавляем сообщение пользователя
     const userMessage: Message = {
       id: messages.length + 1,
       text: input,
@@ -177,10 +206,9 @@ export default function ChatPage() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    setIsLoading(true); // Устанавливаем состояние загрузки
+    setIsLoading(true);
     setInput("");
 
-    // Отправляем сообщение через WebSocket
     if (ws.current) {
       ws.current.send(input);
     }
@@ -214,6 +242,14 @@ export default function ChatPage() {
     toast({
       title: "Название обновлено",
       description: "Название чата было успешно изменено",
+    });
+  };
+
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    toast({
+      title: "Код скопирован",
+      description: "Код был успешно скопирован в буфер обмена.",
     });
   };
 
@@ -280,7 +316,7 @@ export default function ChatPage() {
               ) : (
                 <>
                   <div
-                    ref={messagesContainerRef} // Привязка ссылки
+                    ref={messagesContainerRef}
                     className="flex-1 overflow-y-auto mb-4 space-y-4 p-4"
                   >
                     {messages.map((message) => (
@@ -299,13 +335,54 @@ export default function ChatPage() {
                             </Avatar>
                           )}
                           <Card
+                            style={{ backgroundColor: message.message_belong === "assistant" && theme !== 'dark' ? '#F0F0F0' : '' }}
                             className={`p-3 ${
                               message.message_belong === "user"
                                 ? "bg-primary text-primary-foreground"
                                 : "bg-muted"
                             }`}
                           >
-                            <p className="whitespace-pre-wrap">{message.text}</p>
+                            {/* Используем ReactMarkdown для обработки Markdown и кастомную логику для LaTeX */}
+                            <ReactMarkdown
+                              components={{
+                                // Обработка кода
+                                code({ node, inline, className, children, ...props }) {
+                                  const match = /language-(\w+)/.exec(className || '');
+                                  return !inline && match ? (
+                                    <div className="relative">
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        className="absolute right-2 top-2 h-8 w-8"
+                                        onClick={() => handleCopyCode(String(children))}
+                                      >
+                                        <Copy className="h-4 w-4" />
+                                      </Button>
+                                      <SyntaxHighlighter
+                                        style={a11yLight}
+                                        language={match[1]}
+                                        PreTag="div"
+                                        {...props}
+                                        customStyle={{ backgroundColor: '#F3F3F3' }}
+                                      >
+                                        {String(children).replace(/\n$/, '')}
+                                      </SyntaxHighlighter>
+                                    </div>
+                                  ) : (
+                                    <code className={className} {...props}>
+                                      {children}
+                                    </code>
+                                  );
+                                },
+                                // Обработка текста (включая LaTeX)
+                                text({ node, children }) {
+                                  const text = String(children);
+                                  return <>{renderMessageWithLaTeX(text)}</>;
+                                },
+                              }}
+                            >
+                              {message.text}
+                            </ReactMarkdown>
                           </Card>
                           {message.message_belong === "user" && (
                             <Avatar className="mt-1">
@@ -373,4 +450,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
