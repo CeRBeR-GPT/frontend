@@ -1,7 +1,7 @@
 'use client'
 
+import ReactMarkdown from 'react-markdown';
 import 'katex/dist/katex.min.css'; // Импортируем стили KaTeX
-import rehypeKatex from 'rehype-katex';
 import { InlineMath, BlockMath } from 'react-katex'; // Компоненты для рендеринга LaTeX
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -20,7 +20,6 @@ import { ChatOptionsMenu } from "@/components/chat-options-menu";
 import { toast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import axios from "axios";
-import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { a11yLight } from "react-syntax-highlighter/dist/esm/styles/prism"; // Используем светлый стиль
 import { useTheme } from "next-themes";
@@ -37,28 +36,130 @@ const escapeBackslashes = (text: string) => {
   return text.replace(/\\/g, '\\\\');
 };
 
-// Функция для обработки текста и замены формул в квадратных скобках на компоненты KaTeX
-const renderMessageWithLaTeX = (text: string) => {
-  // Экранируем обратные слэши
-  const escapedText = escapeBackslashes(text);
-
-  // Регулярное выражение для поиска формул в квадратных скобках
-  const regex = /\[(.*?)\]/g;
-
-  // Разделяем текст на части: обычный текст и формулы
-  const parts = escapedText.split(regex);
-
-  // Обрабатываем каждую часть
-  return parts.map((part, index) => {
-    // Если часть — это формула (нечетный индекс), обрабатываем её как LaTeX
-    if (index % 2 === 1) {
-      return <InlineMath key={index}>{part}</InlineMath>;
-    }
-    // Иначе возвращаем обычный текст
-    return part;
-  });
+// Функция для обработки текста и применения LaTeX только к формулам
+// Функция для удаления лишних вставок и обработки формул
+// Функция для замены \(...\) на $...$
+const replaceInlineLatex = (text: string) => {
+  return text.replace(/\\\((.*?)\\\)/g, '$$$1$$');
 };
 
+const replaceDoubleBackslashes = (text: string) => {
+  return text.replace(/\\\\/g, '\\');
+};
+const removeVisibleDollars = (text: string) => {
+  return text.replace(/\$\$/g, '').replace(/\$/g, '');
+};
+const latexStyles = {
+  inline: {
+    whiteSpace: 'nowrap', // Запрещаем автоматический перенос
+    display: 'inline-block', // Отображаем в одну строку
+  },
+  block: {
+    whiteSpace: 'nowrap', // Запрещаем автоматический перенос
+    display: 'inline-block', // Отображаем в одну строку
+  },
+};
+
+const replaceLatexDelimiters = (text: string) => {
+  // Заменяем \(...\) на $...$
+  let cleanedText = text.replace(/\\\((.*?)\\\)/g, '$$$1$$');
+  // Заменяем \[...\] на $$...$$
+  cleanedText = cleanedText.replace(/\\\[([\s\S]*?)\\\]/g, '$$$1$$');
+  // Убираем переносы строк внутри формул
+  cleanedText = cleanedText.replace(/\$([\s\S]*?)\$/g, (match, p1) => {
+    const cleanedFormula = p1.replace(/\n/g, ' ').trim(); // Убираем переносы строк
+    return `$$${cleanedFormula}$$`;
+  });
+  // Включаем знаки препинания внутрь формулы
+  cleanedText = cleanedText.replace(/\$\$([\s\S]*?)\$\$([.,;:!?])/g, '$$$1$2$$$');
+  console.log(cleanedText)
+  return cleanedText;
+};
+
+const renderMessageWithLaTeX = (text: string) => {
+  const cleanedText = replaceLatexDelimiters(text);
+  const latexRegex = /\$\$([\s\S]*?)\$\$|\$(.*?)\$/g; // Регулярное выражение для LaTeX
+  const codeRegex = /```(\w+)?\s*([\s\S]*?)```/g; // Регулярное выражение для блоков кода
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+
+  // Обработка кода и LaTeX
+  while ((match = codeRegex.exec(cleanedText)) !== null || (match = latexRegex.exec(cleanedText)) !== null) {
+    if (match.index > lastIndex) {
+      const nonLatexText = cleanedText.slice(lastIndex, match.index);
+      parts.push(<ReactMarkdown key={`text-${lastIndex}`}>{removeVisibleDollars(nonLatexText)}</ReactMarkdown>);
+    }
+
+    if (match[0].startsWith('```')) {
+      // Это блок кода
+      const language = match[1]?.toLowerCase() || 'plaintext'; // Язык программирования (приводим к нижнему регистру)
+      const codeContent = match[2].trim(); // Содержимое кода
+
+      // Убедимся, что language не содержит лишних символов
+      const validLanguage = language.replace(/[^a-zA-Z]/g, ''); // Убираем все не-буквенные символы
+
+      parts.push(
+        <div key={`code-${lastIndex}`} className="relative my-2">
+          <SyntaxHighlighter
+            language={validLanguage} // Используем очищенный язык
+            style={a11yLight}
+            customStyle={{
+              borderRadius: '8px',
+              padding: '16px',
+              fontSize: '14px',
+              backgroundColor: '#f5f5f5',
+            }}
+          >
+            {codeContent}
+          </SyntaxHighlighter>
+          <div className="flex justify-between items-center mt-1">
+            <span className="text-xs text-muted-foreground">{validLanguage}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleCopyCode(codeContent)}
+              className="text-xs"
+            >
+              <Copy className="w-4 h-4 mr-1" />
+              Копировать
+            </Button>
+          </div>
+        </div>
+      );
+    } else {
+      // Это LaTeX
+      const latexContent = match[1] || match[2];
+      if (latexContent) {
+        if (match[1]) {
+          // Блочная формула ($$...$$)
+          const cleanedLatexContent = replaceDoubleBackslashes(latexContent.replace(/\s+/g, ' ').trim());
+          parts.push(
+            <div style={latexStyles.block} key={`block-latex-${lastIndex}`}>
+              <BlockMath>{cleanedLatexContent}</BlockMath>
+            </div>
+          );
+        } else {
+          // Встроенная формула ($...$)
+          const cleanedInlineContent = replaceDoubleBackslashes(latexContent.replace(/\s+/g, ' ').trim());
+          parts.push(
+            <span style={latexStyles.inline} key={`inline-latex-${lastIndex}`}>
+              <InlineMath>{cleanedInlineContent}</InlineMath>
+            </span>
+          );
+        }
+      }
+    }
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < cleanedText.length) {
+    const remainingText = cleanedText.slice(lastIndex);
+    parts.push(<ReactMarkdown key={`text-${lastIndex}`}>{removeVisibleDollars(remainingText)}</ReactMarkdown>);
+  }
+
+  return <>{parts}</>;
+};
 export default function ChatPage() {
   const { setTheme, theme } = useTheme();
   const params = useParams();
@@ -281,6 +382,7 @@ export default function ChatPage() {
               )}
             </div>
           </div>
+          <InlineMath>{"\\vec{a}\\cdot\\vec{b} = a_1b_1 + a_2b_2"}</InlineMath>
           <nav className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild className="md:hidden">
               <Link href="/">
@@ -342,47 +444,8 @@ export default function ChatPage() {
                                 : "bg-muted"
                             }`}
                           >
-                            {/* Используем ReactMarkdown для обработки Markdown и кастомную логику для LaTeX */}
-                            <ReactMarkdown
-                              components={{
-                                // Обработка кода
-                                code({ node, inline, className, children, ...props }) {
-                                  const match = /language-(\w+)/.exec(className || '');
-                                  return !inline && match ? (
-                                    <div className="relative">
-                                      <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        className="absolute right-2 top-2 h-8 w-8"
-                                        onClick={() => handleCopyCode(String(children))}
-                                      >
-                                        <Copy className="h-4 w-4" />
-                                      </Button>
-                                      <SyntaxHighlighter
-                                        style={a11yLight}
-                                        language={match[1]}
-                                        PreTag="div"
-                                        {...props}
-                                        customStyle={{ backgroundColor: '#F3F3F3' }}
-                                      >
-                                        {String(children).replace(/\n$/, '')}
-                                      </SyntaxHighlighter>
-                                    </div>
-                                  ) : (
-                                    <code className={className} {...props}>
-                                      {children}
-                                    </code>
-                                  );
-                                },
-                                // Обработка текста (включая LaTeX)
-                                text({ node, children }) {
-                                  const text = String(children);
-                                  return <>{renderMessageWithLaTeX(text)}</>;
-                                },
-                              }}
-                            >
-                              {message.text}
-                            </ReactMarkdown>
+                            {/* Используем renderMessageWithLaTeX для обработки текста */}
+                            {renderMessageWithLaTeX(message.text)}
                           </Card>
                           {message.message_belong === "user" && (
                             <Avatar className="mt-1">
