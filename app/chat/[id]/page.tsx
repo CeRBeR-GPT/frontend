@@ -90,11 +90,13 @@ const renderMessageWithLaTeX = (text: string) => {
       const nonLatexText = cleanedText.slice(lastIndex, match.index);
       parts.push(<ReactMarkdown key={`text-${lastIndex}`}>{removeVisibleDollars(nonLatexText)}</ReactMarkdown>);
     }
-
+    //console.log(match)
     if (match[0].startsWith('```')) {
       // Это блок кода
       const language = match[1]?.toLowerCase() || 'plaintext'; // Язык программирования (приводим к нижнему регистру)
       const codeContent = match[2].trim(); // Содержимое кода
+
+
 
       // Убедимся, что language не содержит лишних символов
       const validLanguage = language.replace(/[^a-zA-Z]/g, ''); // Убираем все не-буквенные символы
@@ -200,6 +202,7 @@ export default function ChatPage() {
       const history = response.data.messages;
       setMessages(history);
       setChatTitle(response.data.name);
+      console.log(history)
     } catch (error) {
       console.error("Failed to load chat history:", error);
       toast({
