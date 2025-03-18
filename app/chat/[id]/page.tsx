@@ -1,5 +1,8 @@
 'use client'
 
+import ReactMarkdown from 'react-markdown';
+import 'katex/dist/katex.min.css'; // Импортируем стили KaTeX
+import { InlineMath, BlockMath } from 'react-katex'; // Компоненты для рендеринга LaTeX
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -7,7 +10,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowUp, Bot, User, ArrowLeft } from "lucide-react";
+import { ArrowUp, Bot, User, ArrowLeft, Copy } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { ChatSidebar } from "@/components/chat-sidebar";
@@ -17,6 +20,9 @@ import { ChatOptionsMenu } from "@/components/chat-options-menu";
 import { toast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import axios from "axios";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { a11yLight } from "react-syntax-highlighter/dist/esm/styles/prism"; // Используем светлый стиль
+import { useTheme } from "next-themes";
 
 interface Message {
   id: number;
@@ -25,7 +31,139 @@ interface Message {
   timestamp: Date;
 }
 
+// Функция для экранирования обратных слэшей
+const escapeBackslashes = (text: string) => {
+  return text.replace(/\\/g, '\\\\');
+};
+
+// Функция для обработки текста и применения LaTeX только к формулам
+// Функция для удаления лишних вставок и обработки формул
+// Функция для замены \(...\) на $...$
+const replaceInlineLatex = (text: string) => {
+  return text.replace(/\\\((.*?)\\\)/g, '$$$1$$');
+};
+
+const replaceDoubleBackslashes = (text: string) => {
+  return text.replace(/\\\\/g, '\\');
+};
+const removeVisibleDollars = (text: string) => {
+  return text.replace(/\$\$/g, '').replace(/\$/g, '');
+};
+const latexStyles = {
+  inline: {
+    whiteSpace: 'nowrap', // Запрещаем автоматический перенос
+    display: 'inline-block', // Отображаем в одну строку
+  },
+  block: {
+    whiteSpace: 'nowrap', // Запрещаем автоматический перенос
+    display: 'inline-block', // Отображаем в одну строку
+  },
+};
+
+const replaceLatexDelimiters = (text: string) => {
+  // Заменяем \(...\) на $...$
+  let cleanedText = text.replace(/\\\((.*?)\\\)/g, '$$$1$$');
+  // Заменяем \[...\] на $$...$$
+  cleanedText = cleanedText.replace(/\\\[([\s\S]*?)\\\]/g, '$$$1$$');
+  // Убираем переносы строк внутри формул
+  cleanedText = cleanedText.replace(/\$([\s\S]*?)\$/g, (match, p1) => {
+    const cleanedFormula = p1.replace(/\n/g, ' ').trim(); // Убираем переносы строк
+    return `$$${cleanedFormula}$$`;
+  });
+  // Включаем знаки препинания внутрь формулы
+  cleanedText = cleanedText.replace(/\$\$([\s\S]*?)\$\$([.,;:!?])/g, '$$$1$2$$$');
+  console.log(cleanedText)
+  return cleanedText;
+};
+
+const renderMessageWithLaTeX = (text: string) => {
+  const cleanedText = replaceLatexDelimiters(text);
+  const latexRegex = /\$\$([\s\S]*?)\$\$|\$(.*?)\$/g; // Регулярное выражение для LaTeX
+  const codeRegex = /```(\w+)?\s*([\s\S]*?)```/g; // Регулярное выражение для блоков кода
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+
+  // Обработка кода и LaTeX
+  while ((match = codeRegex.exec(cleanedText)) !== null || (match = latexRegex.exec(cleanedText)) !== null) {
+    if (match.index > lastIndex) {
+      const nonLatexText = cleanedText.slice(lastIndex, match.index);
+      parts.push(<ReactMarkdown key={`text-${lastIndex}`}>{removeVisibleDollars(nonLatexText)}</ReactMarkdown>);
+    }
+    //console.log(match)
+    if (match[0].startsWith('```')) {
+      // Это блок кода
+      const language = match[1]?.toLowerCase() || 'plaintext'; // Язык программирования (приводим к нижнему регистру)
+      const codeContent = match[2].trim(); // Содержимое кода
+
+
+
+      // Убедимся, что language не содержит лишних символов
+      const validLanguage = language.replace(/[^a-zA-Z]/g, ''); // Убираем все не-буквенные символы
+
+      parts.push(
+        <div key={`code-${lastIndex}`} className="relative my-2">
+          <SyntaxHighlighter
+            language={validLanguage} // Используем очищенный язык
+            style={a11yLight}
+            customStyle={{
+              borderRadius: '8px',
+              padding: '16px',
+              fontSize: '14px',
+              backgroundColor: '#f5f5f5',
+            }}
+          >
+            {codeContent}
+          </SyntaxHighlighter>
+          <div className="flex justify-between items-center mt-1">
+            <span className="text-xs text-muted-foreground">{validLanguage}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleCopyCode(codeContent)}
+              className="text-xs"
+            >
+              <Copy className="w-4 h-4 mr-1" />
+              Копировать
+            </Button>
+          </div>
+        </div>
+      );
+    } else {
+      // Это LaTeX
+      const latexContent = match[1] || match[2];
+      if (latexContent) {
+        if (match[1]) {
+          // Блочная формула ($$...$$)
+          const cleanedLatexContent = replaceDoubleBackslashes(latexContent.replace(/\s+/g, ' ').trim());
+          parts.push(
+            <div style={latexStyles.block} key={`block-latex-${lastIndex}`}>
+              <BlockMath>{cleanedLatexContent}</BlockMath>
+            </div>
+          );
+        } else {
+          // Встроенная формула ($...$)
+          const cleanedInlineContent = replaceDoubleBackslashes(latexContent.replace(/\s+/g, ' ').trim());
+          parts.push(
+            <span style={latexStyles.inline} key={`inline-latex-${lastIndex}`}>
+              <InlineMath>{cleanedInlineContent}</InlineMath>
+            </span>
+          );
+        }
+      }
+    }
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < cleanedText.length) {
+    const remainingText = cleanedText.slice(lastIndex);
+    parts.push(<ReactMarkdown key={`text-${lastIndex}`}>{removeVisibleDollars(remainingText)}</ReactMarkdown>);
+  }
+
+  return <>{parts}</>;
+};
 export default function ChatPage() {
+  const { setTheme, theme } = useTheme();
   const params = useParams();
   const router = useRouter();
   const chatId = params.id as string;
@@ -39,7 +177,7 @@ export default function ChatPage() {
   const [chats, setChats] = useState(null);
 
   const ws = useRef<WebSocket | null>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null); // Ссылка на контейнер сообщений
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const getToken = () => {
     if (typeof window !== "undefined") {
@@ -50,7 +188,6 @@ export default function ChatPage() {
 
   const token = getToken();
 
-  // Загрузка истории сообщений
   const loadChatHistory = async (chatId: string) => {
     setIsLoadingHistory(true);
     try {
@@ -65,6 +202,7 @@ export default function ChatPage() {
       const history = response.data.messages;
       setMessages(history);
       setChatTitle(response.data.name);
+      console.log(history)
     } catch (error) {
       console.error("Failed to load chat history:", error);
       toast({
@@ -77,7 +215,6 @@ export default function ChatPage() {
     }
   };
 
-  // Инициализация WebSocket
   const initializeWebSocket = (chatId: string) => {
     const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}`;
     console.log("WebSocket URL:", wsUrl);
@@ -122,7 +259,6 @@ export default function ChatPage() {
     };
   };
 
-  // Скролл вниз при изменении messages
   useEffect(() => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTo({
@@ -148,7 +284,6 @@ export default function ChatPage() {
     ]);
     setChatTitle("Новый чат");
 
-    // Загружаем историю сообщений для существующего чата
     const fetchData = async () => {
       await loadChatHistory(chatId);
       initializeWebSocket(chatId);
@@ -156,7 +291,6 @@ export default function ChatPage() {
 
     fetchData();
 
-    // Закрываем WebSocket при размонтировании компонента
     return () => {
       if (ws.current) {
         ws.current.close();
@@ -168,7 +302,6 @@ export default function ChatPage() {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    // Добавляем сообщение пользователя
     const userMessage: Message = {
       id: messages.length + 1,
       text: input,
@@ -177,10 +310,9 @@ export default function ChatPage() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    setIsLoading(true); // Устанавливаем состояние загрузки
+    setIsLoading(true);
     setInput("");
 
-    // Отправляем сообщение через WebSocket
     if (ws.current) {
       ws.current.send(input);
     }
@@ -217,6 +349,14 @@ export default function ChatPage() {
     });
   };
 
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    toast({
+      title: "Код скопирован",
+      description: "Код был успешно скопирован в буфер обмена.",
+    });
+  };
+
   if (!isAuthenticated) {
     return null;
   }
@@ -245,6 +385,7 @@ export default function ChatPage() {
               )}
             </div>
           </div>
+          <InlineMath>{"\\vec{a}\\cdot\\vec{b} = a_1b_1 + a_2b_2"}</InlineMath>
           <nav className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild className="md:hidden">
               <Link href="/">
@@ -280,7 +421,7 @@ export default function ChatPage() {
               ) : (
                 <>
                   <div
-                    ref={messagesContainerRef} // Привязка ссылки
+                    ref={messagesContainerRef}
                     className="flex-1 overflow-y-auto mb-4 space-y-4 p-4"
                   >
                     {messages.map((message) => (
@@ -299,13 +440,15 @@ export default function ChatPage() {
                             </Avatar>
                           )}
                           <Card
+                            style={{ backgroundColor: message.message_belong === "assistant" && theme !== 'dark' ? '#F0F0F0' : '' }}
                             className={`p-3 ${
                               message.message_belong === "user"
                                 ? "bg-primary text-primary-foreground"
                                 : "bg-muted"
                             }`}
                           >
-                            <p className="whitespace-pre-wrap">{message.text}</p>
+                            {/* Используем renderMessageWithLaTeX для обработки текста */}
+                            {renderMessageWithLaTeX(message.text)}
                           </Card>
                           {message.message_belong === "user" && (
                             <Avatar className="mt-1">
@@ -373,4 +516,3 @@ export default function ChatPage() {
     </div>
   );
 }
-

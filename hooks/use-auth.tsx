@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/login?email=${email}&password=${password}`)
+      const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/login`, {email, password})
 
       if (response.data && response.status === 200) {
         const user = {
