@@ -21,7 +21,7 @@ import { toast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import axios from "axios";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { a11yLight } from "react-syntax-highlighter/dist/esm/styles/prism"; // Используем светлый стиль
+import { a11yLight } from "react-syntax-highlighter/dist/esm/styles/hljs"; // Используем светлый стиль
 import { useTheme } from "next-themes";
 
 interface Message {
@@ -120,7 +120,7 @@ const renderMessageWithLaTeX = (text: string) => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => handleCopyCode(codeContent)}
+              //onClick={() => handleCopyCode(codeContent)}
               className="text-xs"
             >
               <Copy className="w-4 h-4 mr-1" />
@@ -174,7 +174,6 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [chatTitle, setChatTitle] = useState("");
-  const [chats, setChats] = useState(null);
 
   const ws = useRef<WebSocket | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -216,7 +215,7 @@ export default function ChatPage() {
   };
 
   const initializeWebSocket = (chatId: string) => {
-    const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}`;
+    const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}?provider=default`;
     console.log("WebSocket URL:", wsUrl);
 
     ws.current = new WebSocket(wsUrl);
