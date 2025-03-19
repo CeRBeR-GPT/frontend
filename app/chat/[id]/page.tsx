@@ -215,7 +215,7 @@ export default function ChatPage() {
   };
 
   const initializeWebSocket = (chatId: string) => {
-    const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}?provider=default`;
+    const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}`;
     console.log("WebSocket URL:", wsUrl);
 
     ws.current = new WebSocket(wsUrl);
@@ -384,7 +384,6 @@ export default function ChatPage() {
               )}
             </div>
           </div>
-          <InlineMath>{"\\vec{a}\\cdot\\vec{b} = a_1b_1 + a_2b_2"}</InlineMath>
           <nav className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild className="md:hidden">
               <Link href="/">
