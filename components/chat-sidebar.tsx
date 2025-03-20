@@ -41,49 +41,51 @@ export function ChatSidebar() {
 
   useEffect(() => {
     const fetchChats = async () => {
-      setIsLoading(true) // Устанавливаем состояние загрузки в true
+      setIsLoading(true);
       try {
         const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        })
-        const chats = response.data
-
+        });
+        const chats = response.data;
+  
         const formattedChats = chats.map((chat: any) => {
-          const date = new Date(chat.created_at)
-          date.setHours(date.getHours() + 3)
-
+          const lastMessageDate = chat.messages.length > 0 
+            ? new Date(chat.messages[chat.messages.length - 1].created_at) 
+            : new Date(chat.created_at);
+          lastMessageDate.setHours(lastMessageDate.getHours() + 3);
+  
           return {
             id: chat.id,
             title: chat.name,
             preview: chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].content : "Нет сообщений",
-            date: date,
+            date: lastMessageDate, // Используем дату последнего сообщения
             messages: chat.messages.length,
-          }
-        })
-
-        const sortedChats = formattedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
+          };
+        });
+  
+        const sortedChats = formattedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime());
         if (sortedChats.length > 0) {
-          const lastChat = sortedChats[0].id
-          localStorage.setItem("lastSavedChat", JSON.stringify(lastChat))
+          const lastChat = sortedChats[0].id;
+          localStorage.setItem("lastSavedChat", JSON.stringify(lastChat));
         }
-
-        setChatHistory(sortedChats)
+  
+        setChatHistory(sortedChats);
       } catch (error) {
-        console.error("Error fetching chats:", error)
+        console.error("Error fetching chats:", error);
         toast({
           title: "Ошибка",
           description: "Не удалось загрузить чаты",
           variant: "destructive",
-        })
+        });
       } finally {
-        setIsLoading(false) // Устанавливаем состояние загрузки в false
+        setIsLoading(false);
       }
-    }
-
-    fetchChats()
-  }, [token])
+    };
+  
+    fetchChats();
+  }, [token]);
 
   const filteredChats = chatHistory.filter(
     (chat) =>
@@ -121,31 +123,43 @@ export function ChatSidebar() {
 
   const clearChatMessages = async (id: string) => {
     try {
+      // Выполняем запрос на очистку сообщений
       await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}/clear`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
-
+      });
+  
+      // Обновляем состояние chatHistory
       setChatHistory((prev) =>
         prev.map((chat) =>
-          chat.id === id ? { ...chat, messages: 0, preview: "Нет сообщений" } : chat
+          chat.id === id
+            ? {
+                ...chat,
+                messages: 0, // Устанавливаем количество сообщений в 0
+                preview: "Нет сообщений", // Обновляем превью
+                date: new Date(), // Обновляем дату последнего действия (если нужно)
+              }
+            : chat
         )
-      )
+      );
 
+
+  
+      // Показываем уведомление об успешной очистке
       toast({
         title: "Сообщения очищены",
         description: "Все сообщения в чате были удалены",
-      })
+      });
     } catch (error) {
-      console.error("Error clearing chat messages:", error)
+      console.error("Error clearing chat messages:", error);
       toast({
         title: "Ошибка",
         description: "Не удалось очистить сообщения",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const renameChatTitle = async (id: string, newTitle: string) => {
     console.log("Функция renameChatTitle вызвана с id:", id, "и newTitle:", newTitle)
@@ -280,4 +294,3 @@ export function ChatSidebar() {
     </>
   )
 }
-
