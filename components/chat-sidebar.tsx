@@ -143,6 +143,8 @@ export function ChatSidebar() {
             : chat
         )
       );
+
+
   
       // Показываем уведомление об успешной очистке
       toast({
@@ -292,4 +294,3 @@ export function ChatSidebar() {
     </>
   )
 }
-

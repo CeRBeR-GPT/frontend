@@ -1,7 +1,5 @@
 'use client'
 
-import 'katex/dist/katex.min.css'; // Импортируем стили KaTeX
-import { InlineMath, BlockMath } from 'react-katex'; // Компоненты для рендеринга LaTeX
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -19,12 +17,9 @@ import { ChatOptionsMenu } from "@/components/chat-options-menu";
 import { toast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import axios from "axios";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import  a11yLight from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { useTheme } from "next-themes";
-import ReactMarkdown from 'react-markdown'; // Для рендеринга Markdown
-import remarkGfm from 'remark-gfm'; // Поддержка GitHub Flavored Markdown
-import rehypeKatex from 'rehype-katex'; // Поддержка LaTeX в Markdown
+import ReactMarkdown from "react-markdown";
+import hljs from "highlight.js"; // Импортируем highlight.js
+import "highlight.js/styles/github.css"; // Светлая тема
 
 interface Message {
   id: number;
@@ -33,73 +28,7 @@ interface Message {
   timestamp: Date;
 }
 
-
-// Функция для обработки текста и применения LaTeX только к формулам
-const replaceLatexDelimiters = (text: string) => {
-  // Заменяем \(...\) на $...$
-  let cleanedText = text.replace(/\\\((.*?)\\\)/g, '$$$1$$');
-  // Заменяем \[...\] на $$...$$
-  cleanedText = cleanedText.replace(/\\\[([\s\S]*?)\\\]/g, '$$$1$$');
-  // Заменяем $...$ с переносами строк на $$...$$
-  cleanedText = cleanedText.replace(/\$([\s\S]*?)\$/g, (match, p1) => {
-    // Убираем переносы строк внутри формулы
-    const cleanedFormula = p1.replace(/\n/g, ' ').trim();
-    return `$$${cleanedFormula}$$`;
-  });
-  return cleanedText;
-};
-
-// Функция для рендеринга сообщений с поддержкой Markdown и LaTeX
-const renderMessageWithMarkdownAndLaTeX = (text: string) => {
-  const handleCopyCode = (code: string) => {
-    navigator.clipboard.writeText(code);
-    toast({
-      title: "Код скопирован",
-      description: "Код был успешно скопирован в буфер обмена.",
-    });
-  };
-
-  return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      rehypePlugins={[rehypeKatex]}
-      components={{
-        code({ node, inline, className, children, ...props }: { node: any, inline?: boolean, className?: string, children: any }) {
-          const match = /language-(\w+)/.exec(className || '');
-          return !inline ? (
-            <div className="relative">
-              <SyntaxHighlighter
-                style={a11yLight as { [key: string]: React.CSSProperties }}
-                language={match ? match[1] : 'text'}
-                PreTag="div"
-                {...props}
-              >
-                {String(children).replace(/\n$/, '')}
-              </SyntaxHighlighter>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute top-2 right-2"
-                onClick={() => handleCopyCode(String(children))}
-              >
-                <Copy className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : (
-            <code className={className} {...props}>
-              {children}
-            </code>
-          );
-        },
-      }}
-    >
-      {text}
-    </ReactMarkdown>
-  );
-};
-
 export default function ChatPage() {
-  const { setTheme, theme } = useTheme();
   const params = useParams();
   const router = useRouter();
   const chatId = params.id as string;
@@ -110,26 +39,11 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [chatTitle, setChatTitle] = useState("");
-  const [chats, setChats] = useState(null);
 
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Функция для автоматического изменения высоты textarea
-  const adjustTextareaHeight = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto"; // Сбрасываем высоту
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`; // Устанавливаем новую высоту
-    }
-  };
-
-  // Обработчик изменения текста
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(e.target.value);
-    adjustTextareaHeight(); // Вызываем функцию для изменения высоты
-  };
   const ws = useRef<WebSocket | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
+  // Получение токена из localStorage
   const getToken = () => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("access_token");
@@ -139,6 +53,7 @@ export default function ChatPage() {
 
   const token = getToken();
 
+  // Загрузка истории чата
   const loadChatHistory = async (chatId: string) => {
     setIsLoadingHistory(true);
     try {
@@ -165,6 +80,7 @@ export default function ChatPage() {
     }
   };
 
+  // Инициализация WebSocket
   const initializeWebSocket = (chatId: string) => {
     const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}`;
     console.log("WebSocket URL:", wsUrl);
@@ -209,6 +125,7 @@ export default function ChatPage() {
     };
   };
 
+  // Автоматическая прокрутка к последнему сообщению
   useEffect(() => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTo({
@@ -218,21 +135,25 @@ export default function ChatPage() {
     }
   }, [messages]);
 
+  // Инициализация чата при загрузке
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/auth/login");
       return;
     }
 
-    setMessages([
-      {
-        id: 1,
-        text: "Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?",
-        message_belong: "assistant",
-        timestamp: new Date(),
-      },
-    ]);
-    setChatTitle("Новый чат");
+    if (chatId === "new") {
+      setMessages([
+        {
+          id: 1,
+          text: "Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?",
+          message_belong: "assistant",
+          timestamp: new Date(),
+        },
+      ]);
+      setChatTitle("Новый чат");
+      return;
+    }
 
     const fetchData = async () => {
       await loadChatHistory(chatId);
@@ -248,6 +169,7 @@ export default function ChatPage() {
     };
   }, [chatId, isAuthenticated, router]);
 
+  // Отправка сообщения
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
@@ -268,6 +190,7 @@ export default function ChatPage() {
     }
   };
 
+  // Удаление чата
   const handleDeleteChat = (id: string) => {
     toast({
       title: "Чат удален",
@@ -276,6 +199,7 @@ export default function ChatPage() {
     router.push("/chat/new");
   };
 
+  // Очистка сообщений в чате
   const handleClearChat = (id: string) => {
     setMessages([
       {
@@ -291,6 +215,7 @@ export default function ChatPage() {
     });
   };
 
+  // Переименование чата
   const handleRenameChat = (id: string, newTitle: string) => {
     setChatTitle(newTitle);
     toast({
@@ -299,6 +224,7 @@ export default function ChatPage() {
     });
   };
 
+  // Копирование кода
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
     toast({
@@ -335,7 +261,6 @@ export default function ChatPage() {
               )}
             </div>
           </div>
-          <InlineMath>{"\\vec{a}\\cdot\\vec{b} = a_1b_1 + a_2b_2"}</InlineMath>
           <nav className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild className="md:hidden">
               <Link href="/">
@@ -360,7 +285,7 @@ export default function ChatPage() {
         </div>
       </header>
       <div className="flex flex-1 overflow-hidden">
-        <ChatSidebar />
+        <ChatSidebar/>
         <main className="flex-1 overflow-auto">
           <div className="container mx-auto px-4 py-6 md:px-6 max-w-4xl">
             <div className="flex flex-col h-[calc(100vh-12rem)]">
@@ -390,14 +315,46 @@ export default function ChatPage() {
                             </Avatar>
                           )}
                           <Card
-                            style={{ backgroundColor: message.message_belong === "assistant" && theme !== 'dark' ? '#F0F0F0' : '' }}
                             className={`p-3 ${
                               message.message_belong === "user"
                                 ? "bg-primary text-primary-foreground"
                                 : "bg-muted"
                             }`}
                           >
-                            {renderMessageWithMarkdownAndLaTeX(message.text)}
+                            <ReactMarkdown
+                              components={{
+                                code({ node, className, children, ...props }) {
+                                  const match = /language-(\w+)/.exec(className || '');
+                                  const language = match ? match[1] : 'plaintext';
+                                  const highlightedCode = hljs.highlightAuto(String(children), [language]).value;
+
+                                  return match ? (
+                                    <div className="relative">
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        className="absolute right-2 top-2 h-8 w-8"
+                                        onClick={() => handleCopyCode(String(children))}
+                                      >
+                                        <Copy className="h-4 w-4" />
+                                      </Button>
+                                      <pre className="bg-gray-100 p-4 rounded-md overflow-x-auto">
+                                        <code
+                                          className={`hljs language-${language}`}
+                                          dangerouslySetInnerHTML={{ __html: highlightedCode }}
+                                        />
+                                      </pre>
+                                    </div>
+                                  ) : (
+                                    <code className={className} {...props}>
+                                      {children}
+                                    </code>
+                                  );
+                                },
+                              }}
+                            >
+                              {message.text}
+                            </ReactMarkdown>
                           </Card>
                           {message.message_belong === "user" && (
                             <Avatar className="mt-1">
@@ -431,10 +388,9 @@ export default function ChatPage() {
                   <form onSubmit={handleSubmit} className="sticky bottom-0 bg-background pt-2">
                     <div className="relative">
                       <Textarea
-                        ref={textareaRef}
                         placeholder="Напишите ваш запрос..."
                         value={input}
-                        onChange={handleInputChange}
+                        onChange={(e) => setInput(e.target.value)}
                         className="min-h-[60px] resize-none pr-14 rounded-xl border-gray-300 focus:border-primary"
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && !e.shiftKey) {
