@@ -42,6 +42,7 @@ export default function ChatPage() {
 
   const ws = useRef<WebSocket | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Получение токена из localStorage
   const getToken = () => {
@@ -233,6 +234,14 @@ export default function ChatPage() {
     });
   };
 
+  // Автоматическое изменение высоты textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [input]);
+
   if (!isAuthenticated) {
     return null;
   }
@@ -388,16 +397,18 @@ export default function ChatPage() {
                   <form onSubmit={handleSubmit} className="sticky bottom-0 bg-background pt-2">
                     <div className="relative">
                       <Textarea
+                        ref={textareaRef}
                         placeholder="Напишите ваш запрос..."
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        className="min-h-[60px] resize-none pr-14 rounded-xl border-gray-300 focus:border-primary"
+                        className="min-h-[60px] resize-none pr-14 rounded-xl border-gray-300 focus:border-primary overflow-hidden"
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && !e.shiftKey) {
                             e.preventDefault();
                             handleSubmit(e);
                           }
                         }}
+                        rows={1}
                       />
                       <Button
                         type="submit"
