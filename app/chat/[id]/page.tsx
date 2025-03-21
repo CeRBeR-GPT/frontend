@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
@@ -24,11 +23,20 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism"
 import { useTheme } from "next-themes"
 import { CSSProperties } from "react"
+
 interface Message {
   id: number
   text: string
   message_belong: "user" | "assistant"
   timestamp: Date
+}
+
+interface ChatHistory {
+  id: string
+  title: string
+  preview: string
+  date: Date
+  messages: number
 }
 
 // Список поддерживаемых языков программирования
@@ -95,14 +103,12 @@ const PROGRAMMING_LANGUAGES = [
 const detectLanguage = (className: string | undefined): string => {
   if (!className) return "text"
 
-  // Проверяем каждый язык из списка
   for (const lang of PROGRAMMING_LANGUAGES) {
     if (className.includes(`language-${lang}`)) {
       return lang
     }
   }
 
-  // Если не нашли конкретный язык, пытаемся извлечь из строки language-*
   const match = /language-(\w+)/.exec(className)
   if (match && match[1]) {
     return match[1]
@@ -133,20 +139,35 @@ export default function ChatPage() {
   const [chatTitle, setChatTitle] = useState("")
   const [chats, setChats] = useState(null)
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
+  const [isTestMessageShown, setIsTestMessageShown] = useState(true)
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]) // Состояние для истории чатов
 
   const ws = useRef<WebSocket | null>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Функция для обновления chatHistory
+  const updateChatHistory = (newMessage: Message) => {
+    setChatHistory((prev) =>
+      prev.map((chat) =>
+        chat.id === chatId
+          ? {
+              ...chat,
+              preview: newMessage.text, // Обновляем превью последним сообщением
+              date: new Date(), // Обновляем дату
+              messages: chat.messages + 1, // Увеличиваем количество сообщений
+            }
+          : chat
+      )
+    )
+  }
 
   // Функция для автоматического изменения высоты textarea
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current
     if (!textarea) return
 
-    // Сбрасываем высоту, чтобы получить правильную высоту содержимого
     textarea.style.height = "auto"
-
-    // Устанавливаем новую высоту на основе содержимого
     const newHeight = Math.max(60, Math.min(textarea.scrollHeight, 200))
     textarea.style.height = `${newHeight}px`
   }
@@ -171,6 +192,24 @@ export default function ChatPage() {
       const history = response.data.messages
       setMessages(history)
       setChatTitle(response.data.name)
+
+      // Обновляем chatHistory
+      setChatHistory((prev) =>
+        prev.map((chat) =>
+          chat.id === chatId
+            ? {
+                ...chat,
+                preview: history.length > 0 ? history[history.length - 1].text : "Нет сообщений",
+                date: new Date(),
+                messages: history.length,
+              }
+            : chat
+        )
+      )
+
+      if (history.length > 0) {
+        setIsTestMessageShown(false)
+      }
     } catch (error) {
       console.error("Failed to load chat history:", error)
       toast({
@@ -203,6 +242,9 @@ export default function ChatPage() {
       }
       setMessages((prev) => [...prev, newMessage])
       setIsLoading(false)
+
+      // Обновляем chatHistory при получении сообщения от ассистента
+      updateChatHistory(newMessage)
     }
 
     ws.current.onerror = (error) => {
@@ -361,7 +403,6 @@ export default Counter;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value)
-    // Вызываем функцию изменения высоты при изменении текста
     adjustTextareaHeight()
   }
 
@@ -380,7 +421,9 @@ export default Counter;
     setIsLoading(true)
     setInput("")
 
-    // Сбрасываем высоту textarea после отправки
+    // Обновляем chatHistory при отправке сообщения
+    updateChatHistory(userMessage)
+
     if (textareaRef.current) {
       textareaRef.current.style.height = "60px"
     }
@@ -399,11 +442,7 @@ export default Counter;
   }
 
   const handleClearChat = (id: string) => {
-    // Добавляем тестовое сообщение с примерами Markdown
     const testMessage = `# Привет! Я ваш AI ассистент.
-
-Я поддерживаю **полный** *Markdown* синтаксис.
-
 Чем я могу вам помочь сегодня?`
 
     setMessages([
@@ -437,7 +476,6 @@ export default Counter;
       description: "Код был успешно скопирован в буфер обмена.",
     })
 
-    // Сбрасываем состояние кнопки копирования через 2 секунды
     setTimeout(() => {
       setCopiedCode(null)
     }, 2000)
@@ -495,7 +533,7 @@ export default Counter;
         </div>
       </header>
       <div className="flex flex-1 overflow-hidden">
-        <ChatSidebar />
+        <ChatSidebar chatHistory={chatHistory} onMessageSent={updateChatHistory} />
         <main className="flex-1 overflow-auto">
           <div className="container mx-auto px-4 py-6 md:px-6 max-w-4xl">
             <div className="flex flex-col h-[calc(100vh-12rem)]">
@@ -506,30 +544,18 @@ export default Counter;
               ) : (
                 <>
                   <div ref={messagesContainerRef} className="flex-1 overflow-y-auto mb-4 space-y-4 p-4">
-                    {messages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex ${
-                          message.message_belong === "user" ? "justify-end" : "justify-start"
-                        } animate-in fade-in-0 slide-in-from-bottom-3 duration-300`}
-                      >
+                    {isTestMessageShown && messages.length === 0 ? (
+                      <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-3 duration-300">
                         <div className="flex items-start gap-3 max-w-[80%]">
-                          {message.message_belong === "assistant" && (
-                            <Avatar className="mt-1">
-                              <AvatarFallback>
-                                <Bot className="w-4 h-4" />
-                              </AvatarFallback>
-                            </Avatar>
-                          )}
-                          <Card
-                            className={`p-3 ${
-                              message.message_belong === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
-                            }`}
-                          >
+                          <Avatar className="mt-1">
+                            <AvatarFallback>
+                              <Bot className="w-4 h-4" />
+                            </AvatarFallback>
+                          </Avatar>
+                          <Card className="p-3 bg-muted">
                             <div className="prose dark:prose-invert max-w-none">
                               <ReactMarkdown
                                 components={{
-                                  // В компоненте ReactMarkdown обновляем типизацию для code
                                   code: ({ className, children, inline, ...props }: CodeProps) => {
                                     if (inline) {
                                       return (
@@ -579,20 +605,101 @@ export default Counter;
                                   },
                                 }}
                               >
-                                {message.text}
+                                {`# Привет! Я ваш AI ассистент.
+Чем я могу вам помочь сегодня?`}
                               </ReactMarkdown>
                             </div>
                           </Card>
-                          {message.message_belong === "user" && (
-                            <Avatar className="mt-1">
-                              <AvatarFallback>
-                                <User className="w-4 h-4" />
-                              </AvatarFallback>
-                            </Avatar>
-                          )}
                         </div>
                       </div>
-                    ))}
+                    ) : (
+                      messages.map((message) => (
+                        <div
+                          key={message.id}
+                          className={`flex ${
+                            message.message_belong === "user" ? "justify-end" : "justify-start"
+                          } animate-in fade-in-0 slide-in-from-bottom-3 duration-300`}
+                        >
+                          <div className="flex items-start gap-3 max-w-[80%]">
+                            {message.message_belong === "assistant" && (
+                              <Avatar className="mt-1">
+                                <AvatarFallback>
+                                  <Bot className="w-4 h-4" />
+                                </AvatarFallback>
+                              </Avatar>
+                            )}
+                            <Card
+                              className={`p-3 ${
+                                message.message_belong === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
+                              }`}
+                            >
+                              <div className="prose dark:prose-invert max-w-none">
+                                <ReactMarkdown
+                                  components={{
+                                    code: ({ className, children, inline, ...props }: CodeProps) => {
+                                      if (inline) {
+                                        return (
+                                          <code className={className} {...props}>
+                                            {children}
+                                          </code>
+                                        )
+                                      }
+
+                                      const codeString = String(children || "").replace(/\n$/, "")
+                                      const language = detectLanguage(className)
+
+                                      return (
+                                        <div className="relative group">
+                                          <div className="absolute right-2 top-2 z-10">
+                                            <Button
+                                              variant="ghost"
+                                              className="h-8 w-8 bg-background/80 backdrop-blur-sm opacity-80 hover:opacity-100"
+                                              onClick={() => handleCopyCode(codeString)}
+                                            >
+                                              {copiedCode === codeString ? (
+                                                <Check className="h-4 w-4 text-green-500" />
+                                              ) : (
+                                                <Copy className="h-4 w-4" />
+                                              )}
+                                            </Button>
+                                          </div>
+                                          <div className="absolute left-2 top-0 text-xs font-mono text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
+                                            {language}
+                                          </div>
+                                          <SyntaxHighlighter
+                                            language={language}
+                                            PreTag="div"
+                                            {...props}
+                                            customStyle={{
+                                              marginTop: "0",
+                                              marginBottom: "0",
+                                              paddingTop: "2rem",
+                                              borderRadius: "0.375rem",
+                                            }}
+                                            style={theme === "dark" ? vscDarkPlus : vs as { [key: string]: CSSProperties }}
+                                          >
+                                            {codeString}
+                                          </SyntaxHighlighter>
+                                        </div>
+                                      )
+                                    },
+                                  }}
+                                >
+                                  {message.text}
+                                </ReactMarkdown>
+                              </div>
+                            </Card>
+                            {message.message_belong === "user" && (
+                              <Avatar className="mt-1">
+                                <AvatarFallback>
+                                  <User className="w-4 h-4" />
+                                </AvatarFallback>
+                              </Avatar>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
                     {isLoading && (
                       <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-3 duration-300">
                         <div className="flex items-start gap-3 max-w-[80%]">
