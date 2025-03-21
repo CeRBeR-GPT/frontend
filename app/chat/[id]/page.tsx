@@ -1,249 +1,450 @@
-'use client'
+"use client"
 
-import { useState, useEffect, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { ArrowUp, Bot, User, ArrowLeft, Copy } from "lucide-react";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { UserMenu } from "@/components/user-menu";
-import { ChatSidebar } from "@/components/chat-sidebar";
-import { useAuth } from "@/hooks/use-auth";
-import { NavLinks } from "@/components/nav-links";
-import { ChatOptionsMenu } from "@/components/chat-options-menu";
-import { toast } from "@/components/ui/use-toast";
-import { Toaster } from "@/components/ui/toaster";
-import axios from "axios";
-import ReactMarkdown from "react-markdown";
-import hljs from "highlight.js"; // Импортируем highlight.js
-import "highlight.js/styles/github.css"; // Светлая тема
+import type React from "react"
 
+import { useState, useEffect, useRef } from "react"
+import { useParams, useRouter } from "next/navigation"
+import Link from "next/link"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Textarea } from "@/components/ui/textarea"
+import { ArrowUp, Bot, User, ArrowLeft, Copy, Check } from "lucide-react"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { UserMenu } from "@/components/user-menu"
+import { ChatSidebar } from "@/components/chat-sidebar"
+import { useAuth } from "@/hooks/use-auth"
+import { NavLinks } from "@/components/nav-links"
+import { ChatOptionsMenu } from "@/components/chat-options-menu"
+import { toast } from "@/components/ui/use-toast"
+import { Toaster } from "@/components/ui/toaster"
+import axios from "axios"
+import ReactMarkdown from "react-markdown"
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
+import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism"
+import { useTheme } from "next-themes"
+import { CSSProperties } from "react"
 interface Message {
-  id: number;
-  text: string;
-  message_belong: "user" | "assistant";
-  timestamp: Date;
+  id: number
+  text: string
+  message_belong: "user" | "assistant"
+  timestamp: Date
+}
+
+// Список поддерживаемых языков программирования
+const PROGRAMMING_LANGUAGES = [
+  "javascript",
+  "typescript",
+  "jsx",
+  "tsx",
+  "python",
+  "java",
+  "c",
+  "cpp",
+  "csharp",
+  "go",
+  "rust",
+  "swift",
+  "kotlin",
+  "php",
+  "ruby",
+  "scala",
+  "perl",
+  "haskell",
+  "r",
+  "matlab",
+  "sql",
+  "html",
+  "css",
+  "scss",
+  "sass",
+  "less",
+  "json",
+  "xml",
+  "yaml",
+  "markdown",
+  "md",
+  "bash",
+  "shell",
+  "powershell",
+  "dockerfile",
+  "graphql",
+  "solidity",
+  "dart",
+  "elixir",
+  "erlang",
+  "fortran",
+  "groovy",
+  "lua",
+  "objectivec",
+  "pascal",
+  "prolog",
+  "scheme",
+  "vb",
+  "vbnet",
+  "clojure",
+  "coffeescript",
+  "fsharp",
+  "julia",
+  "ocaml",
+  "reasonml",
+  "svelte",
+]
+
+// Функция для определения языка программирования из className
+const detectLanguage = (className: string | undefined): string => {
+  if (!className) return "text"
+
+  // Проверяем каждый язык из списка
+  for (const lang of PROGRAMMING_LANGUAGES) {
+    if (className.includes(`language-${lang}`)) {
+      return lang
+    }
+  }
+
+  // Если не нашли конкретный язык, пытаемся извлечь из строки language-*
+  const match = /language-(\w+)/.exec(className)
+  if (match && match[1]) {
+    return match[1]
+  }
+
+  return "text"
+}
+
+// Обновляем интерфейс CodeProps, чтобы он соответствовал ожиданиям ReactMarkdown
+interface CodeProps extends React.HTMLAttributes<HTMLElement> {
+  className?: string
+  node?: any
+  children?: React.ReactNode
+  inline?: boolean
 }
 
 export default function ChatPage() {
-  const params = useParams();
-  const router = useRouter();
-  const chatId = params.id as string;
-  const { isAuthenticated } = useAuth();
+  const { theme } = useTheme()
+  const params = useParams()
+  const router = useRouter()
+  const chatId = params.id as string
+  const { isAuthenticated } = useAuth()
 
-  const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
-  const [chatTitle, setChatTitle] = useState("");
+  const [input, setInput] = useState("")
+  const [messages, setMessages] = useState<Message[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+  const [chatTitle, setChatTitle] = useState("")
+  const [chats, setChats] = useState(null)
+  const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
-  const ws = useRef<WebSocket | null>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const ws = useRef<WebSocket | null>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Получение токена из localStorage
+  // Функция для автоматического изменения высоты textarea
+  const adjustTextareaHeight = () => {
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    // Сбрасываем высоту, чтобы получить правильную высоту содержимого
+    textarea.style.height = "auto"
+
+    // Устанавливаем новую высоту на основе содержимого
+    const newHeight = Math.max(60, Math.min(textarea.scrollHeight, 200))
+    textarea.style.height = `${newHeight}px`
+  }
+
   const getToken = () => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("access_token");
+      return localStorage.getItem("access_token")
     }
-    return null;
-  };
+    return null
+  }
 
-  const token = getToken();
+  const token = getToken()
 
-  // Загрузка истории чата
   const loadChatHistory = async (chatId: string) => {
-    setIsLoadingHistory(true);
+    setIsLoadingHistory(true)
     try {
-      const response = await axios.get(
-        `https://api-gpt.energy-cerber.ru/chat/${chatId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const history = response.data.messages;
-      setMessages(history);
-      setChatTitle(response.data.name);
+      const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/${chatId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      const history = response.data.messages
+      setMessages(history)
+      setChatTitle(response.data.name)
     } catch (error) {
-      console.error("Failed to load chat history:", error);
+      console.error("Failed to load chat history:", error)
       toast({
         title: "Ошибка загрузки истории",
         description: "Не удалось загрузить историю сообщений.",
         variant: "destructive",
-      });
+      })
     } finally {
-      setIsLoadingHistory(false);
+      setIsLoadingHistory(false)
     }
-  };
+  }
 
-  // Инициализация WebSocket
   const initializeWebSocket = (chatId: string) => {
-    const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}`;
-    console.log("WebSocket URL:", wsUrl);
+    const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}`
+    console.log("WebSocket URL:", wsUrl)
 
-    ws.current = new WebSocket(wsUrl);
+    ws.current = new WebSocket(wsUrl)
 
     ws.current.onopen = () => {
-      console.log("WebSocket connection established");
-    };
+      console.log("WebSocket connection established")
+    }
 
     ws.current.onmessage = (event) => {
-      console.log("WebSocket message received:", event.data);
+      console.log("WebSocket message received:", event.data)
       const newMessage: Message = {
         id: messages.length + 1,
         text: event.data,
         message_belong: "assistant",
         timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, newMessage]);
-      setIsLoading(false);
-    };
+      }
+      setMessages((prev) => [...prev, newMessage])
+      setIsLoading(false)
+    }
 
     ws.current.onerror = (error) => {
-      console.error("WebSocket error:", error);
+      console.error("WebSocket error:", error)
       toast({
         title: "Ошибка WebSocket",
         description: "Не удалось подключиться к серверу.",
         variant: "destructive",
-      });
-    };
+      })
+    }
 
     ws.current.onclose = (event) => {
-      console.log("WebSocket connection closed:", event);
+      console.log("WebSocket connection closed:", event)
       if (event.code !== 1000) {
         toast({
           title: "Соединение закрыто",
           description: "Попытка переподключения...",
           variant: "destructive",
-        });
-        setTimeout(() => initializeWebSocket(chatId), 5000);
+        })
+        setTimeout(() => initializeWebSocket(chatId), 5000)
       }
-    };
-  };
+    }
+  }
 
-  // Автоматическая прокрутка к последнему сообщению
   useEffect(() => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTo({
         top: messagesContainerRef.current.scrollHeight,
         behavior: "smooth",
-      });
+      })
     }
-  }, [messages]);
+  }, [messages])
 
-  // Инициализация чата при загрузке
+  // Эффект для инициализации высоты textarea
+  useEffect(() => {
+    adjustTextareaHeight()
+  }, [])
+
   useEffect(() => {
     if (!isAuthenticated) {
-      router.push("/auth/login");
-      return;
+      router.push("/auth/login")
+      return
     }
 
-    if (chatId === "new") {
-      setMessages([
-        {
-          id: 1,
-          text: "Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?",
-          message_belong: "assistant",
-          timestamp: new Date(),
-        },
-      ]);
-      setChatTitle("Новый чат");
-      return;
-    }
+    // Добавляем тестовое сообщение с примерами Markdown
+    const testMessage = `# Привет! Я ваш AI ассистент.
+
+Я поддерживаю **полный** *Markdown* синтаксис:
+
+## Markdown
+
+### Списки
+
+* Пункт 1
+* Пункт 2
+  * Вложенный пункт
+
+### Ссылки
+
+[Пример ссылки](https://example.com)
+
+### Цитаты
+
+> Это пример цитаты
+> Она может быть многострочной
+
+### Код
+
+Встроенный код: \`const x = 1;\`
+
+Блок кода с подсветкой синтаксиса:
+
+\`\`\`javascript
+// Пример кода на JavaScript
+function hello() {
+  console.log("Привет, мир!");
+  return 42;
+}
+
+const result = hello();
+\`\`\`
+
+\`\`\`python
+# Пример кода на Python
+def factorial(n):
+    if n == 0:
+        return 1
+    else:
+        return n * factorial(n-1)
+        
+print(factorial(5))  # Выведет: 120
+\`\`\`
+
+\`\`\`sql
+-- Пример SQL запроса
+SELECT users.name, orders.product
+FROM users
+JOIN orders ON users.id = orders.user_id
+WHERE orders.status = 'completed'
+ORDER BY orders.created_at DESC
+LIMIT 10;
+\`\`\`
+
+\`\`\`javascriptreact
+// Пример React компонента
+import React, { useState } from 'react';
+
+function Counter() {
+  const [count, setCount] = useState(0);
+  
+  return (
+    <div>
+      <p>Вы кликнули {count} раз</p>
+      <button onClick={() => setCount(count + 1)}>
+        Нажми на меня
+      </button>
+    </div>
+  );
+}
+
+export default Counter;
+\`\`\`
+
+### Таблицы
+
+| Имя | Возраст | Город |
+|-----|---------|-------|
+| Иван | 25 | Москва |
+| Мария | 30 | Санкт-Петербург |
+
+Чем я могу вам помочь сегодня?`
+
+    setMessages([
+      {
+        id: 1,
+        text: testMessage,
+        message_belong: "assistant",
+        timestamp: new Date(),
+      },
+    ])
+    setChatTitle("Новый чат")
 
     const fetchData = async () => {
-      await loadChatHistory(chatId);
-      initializeWebSocket(chatId);
-    };
+      await loadChatHistory(chatId)
+      initializeWebSocket(chatId)
+    }
 
-    fetchData();
+    fetchData()
 
     return () => {
       if (ws.current) {
-        ws.current.close();
+        ws.current.close()
       }
-    };
-  }, [chatId, isAuthenticated, router]);
+    }
+  }, [chatId, isAuthenticated, router])
 
-  // Отправка сообщения
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value)
+    // Вызываем функцию изменения высоты при изменении текста
+    adjustTextareaHeight()
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    e.preventDefault()
+    if (!input.trim() || isLoading) return
 
     const userMessage: Message = {
       id: messages.length + 1,
       text: input,
       message_belong: "user",
       timestamp: new Date(),
-    };
+    }
 
-    setMessages((prev) => [...prev, userMessage]);
-    setIsLoading(true);
-    setInput("");
+    setMessages((prev) => [...prev, userMessage])
+    setIsLoading(true)
+    setInput("")
+
+    // Сбрасываем высоту textarea после отправки
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "60px"
+    }
 
     if (ws.current) {
-      ws.current.send(input);
+      ws.current.send(input)
     }
-  };
+  }
 
-  // Удаление чата
   const handleDeleteChat = (id: string) => {
     toast({
       title: "Чат удален",
       description: "Чат был успешно удален",
-    });
-    router.push("/chat/new");
-  };
+    })
+    router.push("/chat/new")
+  }
 
-  // Очистка сообщений в чате
   const handleClearChat = (id: string) => {
+    // Добавляем тестовое сообщение с примерами Markdown
+    const testMessage = `# Привет! Я ваш AI ассистент.
+
+Я поддерживаю **полный** *Markdown* синтаксис.
+
+Чем я могу вам помочь сегодня?`
+
     setMessages([
       {
         id: 1,
-        text: "Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?",
+        text: testMessage,
         message_belong: "assistant",
         timestamp: new Date(),
       },
-    ]);
+    ])
     toast({
       title: "Сообщения очищены",
       description: "Все сообщения в чате были удалены",
-    });
-  };
+    })
+  }
 
-  // Переименование чата
   const handleRenameChat = (id: string, newTitle: string) => {
-    setChatTitle(newTitle);
+    setChatTitle(newTitle)
     toast({
       title: "Название обновлено",
       description: "Название чата было успешно изменено",
-    });
-  };
+    })
+  }
 
-  // Копирование кода
   const handleCopyCode = (code: string) => {
-    navigator.clipboard.writeText(code);
+    navigator.clipboard.writeText(code)
+    setCopiedCode(code)
+
     toast({
       title: "Код скопирован",
       description: "Код был успешно скопирован в буфер обмена.",
-    });
-  };
+    })
 
-  // Автоматическое изменение высоты textarea
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
-  }, [input]);
+    // Сбрасываем состояние кнопки копирования через 2 секунды
+    setTimeout(() => {
+      setCopiedCode(null)
+    }, 2000)
+  }
 
   if (!isAuthenticated) {
-    return null;
+    return null
   }
 
   return (
@@ -271,7 +472,7 @@ export default function ChatPage() {
             </div>
           </div>
           <nav className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" asChild className="md:hidden">
+            <Button variant="ghost" asChild className="md:hidden">
               <Link href="/">
                 <ArrowLeft className="h-4 w-4" />
               </Link>
@@ -294,7 +495,7 @@ export default function ChatPage() {
         </div>
       </header>
       <div className="flex flex-1 overflow-hidden">
-        <ChatSidebar/>
+        <ChatSidebar />
         <main className="flex-1 overflow-auto">
           <div className="container mx-auto px-4 py-6 md:px-6 max-w-4xl">
             <div className="flex flex-col h-[calc(100vh-12rem)]">
@@ -304,10 +505,7 @@ export default function ChatPage() {
                 </div>
               ) : (
                 <>
-                  <div
-                    ref={messagesContainerRef}
-                    className="flex-1 overflow-y-auto mb-4 space-y-4 p-4"
-                  >
+                  <div ref={messagesContainerRef} className="flex-1 overflow-y-auto mb-4 space-y-4 p-4">
                     {messages.map((message) => (
                       <div
                         key={message.id}
@@ -325,45 +523,65 @@ export default function ChatPage() {
                           )}
                           <Card
                             className={`p-3 ${
-                              message.message_belong === "user"
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-muted"
+                              message.message_belong === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
                             }`}
                           >
-                            <ReactMarkdown
-                              components={{
-                                code({ node, className, children, ...props }) {
-                                  const match = /language-(\w+)/.exec(className || '');
-                                  const language = match ? match[1] : 'plaintext';
-                                  const highlightedCode = hljs.highlightAuto(String(children), [language]).value;
+                            <div className="prose dark:prose-invert max-w-none">
+                              <ReactMarkdown
+                                components={{
+                                  // В компоненте ReactMarkdown обновляем типизацию для code
+                                  code: ({ className, children, inline, ...props }: CodeProps) => {
+                                    if (inline) {
+                                      return (
+                                        <code className={className} {...props}>
+                                          {children}
+                                        </code>
+                                      )
+                                    }
 
-                                  return match ? (
-                                    <div className="relative">
-                                      <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        className="absolute right-2 top-2 h-8 w-8"
-                                        onClick={() => handleCopyCode(String(children))}
-                                      >
-                                        <Copy className="h-4 w-4" />
-                                      </Button>
-                                      <pre className="bg-gray-100 p-4 rounded-md overflow-x-auto">
-                                        <code
-                                          className={`hljs language-${language}`}
-                                          dangerouslySetInnerHTML={{ __html: highlightedCode }}
-                                        />
-                                      </pre>
-                                    </div>
-                                  ) : (
-                                    <code className={className} {...props}>
-                                      {children}
-                                    </code>
-                                  );
-                                },
-                              }}
-                            >
-                              {message.text}
-                            </ReactMarkdown>
+                                    const codeString = String(children || "").replace(/\n$/, "")
+                                    const language = detectLanguage(className)
+
+                                    return (
+                                      <div className="relative group">
+                                        <div className="absolute right-2 top-2 z-10">
+                                          <Button
+                                            variant="ghost"
+                                            className="h-8 w-8 bg-background/80 backdrop-blur-sm opacity-80 hover:opacity-100"
+                                            onClick={() => handleCopyCode(codeString)}
+                                          >
+                                            {copiedCode === codeString ? (
+                                              <Check className="h-4 w-4 text-green-500" />
+                                            ) : (
+                                              <Copy className="h-4 w-4" />
+                                            )}
+                                          </Button>
+                                        </div>
+                                        <div className="absolute left-2 top-0 text-xs font-mono text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
+                                          {language}
+                                        </div>
+                                        <SyntaxHighlighter
+                                          language={language}
+                                          PreTag="div"
+                                          {...props}
+                                          customStyle={{
+                                            marginTop: "0",
+                                            marginBottom: "0",
+                                            paddingTop: "2rem",
+                                            borderRadius: "0.375rem",
+                                          }}
+                                          style={theme === "dark" ? vscDarkPlus : vs as { [key: string]: CSSProperties }}
+                                        >
+                                          {codeString}
+                                        </SyntaxHighlighter>
+                                      </div>
+                                    )
+                                  },
+                                }}
+                              >
+                                {message.text}
+                              </ReactMarkdown>
+                            </div>
                           </Card>
                           {message.message_belong === "user" && (
                             <Avatar className="mt-1">
@@ -400,23 +618,21 @@ export default function ChatPage() {
                         ref={textareaRef}
                         placeholder="Напишите ваш запрос..."
                         value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        className="min-h-[60px] resize-none pr-14 rounded-xl border-gray-300 focus:border-primary overflow-hidden"
+                        onChange={handleInputChange}
+                        className="min-h-[60px] max-h-[200px] resize-none pr-14 rounded-xl border-gray-300 focus:border-primary"
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault();
-                            handleSubmit(e);
+                            e.preventDefault()
+                            handleSubmit(e)
                           }
                         }}
-                        rows={1}
                       />
                       <Button
                         type="submit"
-                        size="icon"
-                        className="absolute right-2 bottom-2 rounded-full"
+                        className="absolute right-2 bottom-2 rounded-full w-10 h-10 p-0"
                         disabled={!input.trim() || isLoading}
                       >
-                        <ArrowUp className="w-4 h-4" />
+                        <ArrowUp className="h-4 w-4" />
                         <span className="sr-only">Отправить</span>
                       </Button>
                     </div>
@@ -431,5 +647,6 @@ export default function ChatPage() {
         </main>
       </div>
     </div>
-  );
+  )
 }
+
