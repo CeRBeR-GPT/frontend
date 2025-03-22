@@ -112,6 +112,10 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
         onChatDeleted(nextChatId);
       }
 
+      if (chatHistory.length === 1) {
+        router.push("/chat");
+      }
+
       toast({
         title: "Чат удален",
         description: "Чат был успешно удален",
