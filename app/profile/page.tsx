@@ -12,6 +12,8 @@ import {NavLinks} from "@/components/nav-links"
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { useRef } from "react"
+import { ActivityStats } from "@/components/activity-stats"
+import { subDays } from "date-fns"
 
 interface UserData {
   id: string;
@@ -61,6 +63,33 @@ export default function ProfilePage() {
       getUserData();
     }
   }, []);
+
+  const generateActivityData = () => {
+    const data = []
+    const today = new Date()
+
+    for (let i = 0; i < 365; i++) {
+      const date = subDays(today, i)
+
+      // Генерируем случайное количество активности для каждого дня
+      // С большей вероятностью низкой активности
+      const random = Math.random()
+      let count = 0
+
+      if (random > 0.7) count = Math.floor(Math.random() * 5) + 1
+      if (random > 0.85) count = Math.floor(Math.random() * 10) + 5
+      if (random > 0.95) count = Math.floor(Math.random() * 15) + 10
+
+      data.push({
+        date: date.toISOString(),
+        count,
+      })
+    }
+
+    return data
+  }
+
+  const activityData = generateActivityData()
 
   const payForPremium = async (plan: string) => {
     const getToken = () => localStorage.getItem('access_token');
@@ -318,6 +347,7 @@ export default function ProfilePage() {
             </Card>
           </div>
           <div>
+            <ActivityStats data={activityData} />
             <Card className="mb-6">
               <CardHeader>
                 <CardTitle>Ваша подписка</CardTitle>
