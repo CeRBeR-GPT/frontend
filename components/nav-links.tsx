@@ -21,7 +21,7 @@ export const NavLinks = () => {
     if (typeof window !== "undefined") {
       const lastSavedChat = localStorage.getItem("lastSavedChat")
       if (lastSavedChat) {
-        setChat(JSON.parse(lastSavedChat))
+        setChat(lastSavedChat)
       }
     }
   }, [])

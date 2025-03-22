@@ -131,6 +131,7 @@ export default function ChatPage() {
   }
 
   useEffect(() => {
+    console.log("Hereee")
     loadChatHistory(chatId)
   }, [chatHistory])
 

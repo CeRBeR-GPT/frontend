@@ -71,6 +71,13 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
 
         const sortedChats = formattedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime());
         setChatHistory(sortedChats);
+
+        // Сохраняем ID последнего чата в localStorage
+        if (sortedChats.length > 0) {
+          localStorage.setItem("lastSavedChat", sortedChats[0].id);
+        } else {
+          localStorage.removeItem("lastSavedChat");
+        }
       } catch (error) {
         console.error("Error fetching chats:", error);
         toast({
@@ -85,6 +92,19 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
 
     fetchChats();
   }, [token]);
+
+  // Перенаправление на последний сохраненный чат или создание нового
+  useEffect(() => {
+    if (pathname === "/chat") {
+      const lastSavedChat = localStorage.getItem("lastSavedChat");
+      if (lastSavedChat) {
+        router.push(`/chat/${lastSavedChat}`);
+      } else {
+        // Если нет сохраненного чата, создаем новый с ID "new"
+        router.push("/chat/new");
+      }
+    }
+  }, [pathname, router]);
 
   const filteredChats = (chatHistory || []).filter(
     (chat) =>
@@ -102,6 +122,16 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
 
       const remainingChats = chatHistory.filter(chat => chat.id !== id);
       setChatHistory(remainingChats);
+
+      // Обновляем localStorage, если удаленный чат был последним сохраненным
+      const lastSavedChat = localStorage.getItem("lastSavedChat");
+      if (lastSavedChat === id) {
+        if (remainingChats.length > 0) {
+          localStorage.setItem("lastSavedChat", remainingChats[0].id);
+        } else {
+          //localStorage.removeItem("lastSavedChat");
+        }
+      }
 
       let nextChatId: string | null = null;
       if (remainingChats.length > 0) {
@@ -155,7 +185,6 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
         onClearChat(id);
       }
       
-
       toast({
         title: "Сообщения очищены",
         description: "Все сообщения в чате были удалены",
