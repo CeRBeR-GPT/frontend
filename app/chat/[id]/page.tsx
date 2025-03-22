@@ -1,5 +1,4 @@
 "use client"
-
 import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
@@ -31,75 +30,12 @@ interface Message {
   timestamp: Date
 }
 
-interface ChatHistory {
-  id: string
-  title: string
-  preview: string
-  date: Date
-  messages: number
-}
+const PROGRAMMING_LANGUAGES = [ "javascript", "typescript", "jsx", "tsx", "python", "java", "c", "cpp", "csharp", "go",
+  "rust", "swift", "kotlin", "php", "ruby", "scala", "perl", "haskell", "r", "matlab", "sql", "html", "css", "scss","sass",
+  "less", "json", "xml", "yaml", "markdown", "md", "bash", "shell", "powershell", "dockerfile", "graphql", "solidity",
+  "dart", "elixir", "erlang", "fortran", "groovy", "lua", "objectivec", "pascal", "prolog", "scheme", "vb", "vbnet",
+  "clojure", "coffeescript", "fsharp", "julia", "ocaml", "reasonml","svelte",]
 
-// Список поддерживаемых языков программирования
-const PROGRAMMING_LANGUAGES = [
-  "javascript",
-  "typescript",
-  "jsx",
-  "tsx",
-  "python",
-  "java",
-  "c",
-  "cpp",
-  "csharp",
-  "go",
-  "rust",
-  "swift",
-  "kotlin",
-  "php",
-  "ruby",
-  "scala",
-  "perl",
-  "haskell",
-  "r",
-  "matlab",
-  "sql",
-  "html",
-  "css",
-  "scss",
-  "sass",
-  "less",
-  "json",
-  "xml",
-  "yaml",
-  "markdown",
-  "md",
-  "bash",
-  "shell",
-  "powershell",
-  "dockerfile",
-  "graphql",
-  "solidity",
-  "dart",
-  "elixir",
-  "erlang",
-  "fortran",
-  "groovy",
-  "lua",
-  "objectivec",
-  "pascal",
-  "prolog",
-  "scheme",
-  "vb",
-  "vbnet",
-  "clojure",
-  "coffeescript",
-  "fsharp",
-  "julia",
-  "ocaml",
-  "reasonml",
-  "svelte",
-]
-
-// Функция для определения языка программирования из className
 const detectLanguage = (className: string | undefined): string => {
   if (!className) return "text"
 
@@ -109,6 +45,7 @@ const detectLanguage = (className: string | undefined): string => {
     }
   }
 
+  // Если не нашли конкретный язык, пытаемся извлечь из строки language-*
   const match = /language-(\w+)/.exec(className)
   if (match && match[1]) {
     return match[1]
@@ -140,34 +77,19 @@ export default function ChatPage() {
   const [chats, setChats] = useState(null)
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [isTestMessageShown, setIsTestMessageShown] = useState(true)
-  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]) // Состояние для истории чатов
 
   const ws = useRef<WebSocket | null>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Функция для обновления chatHistory
-  const updateChatHistory = (newMessage: Message) => {
-    setChatHistory((prev) =>
-      prev.map((chat) =>
-        chat.id === chatId
-          ? {
-              ...chat,
-              preview: newMessage.text, // Обновляем превью последним сообщением
-              date: new Date(), // Обновляем дату
-              messages: chat.messages + 1, // Увеличиваем количество сообщений
-            }
-          : chat
-      )
-    )
-  }
-
-  // Функция для автоматического изменения высоты textarea
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current
     if (!textarea) return
 
+    // Сбрасываем высоту, чтобы получить правильную высоту содержимого
     textarea.style.height = "auto"
+
+    // Устанавливаем новую высоту на основе содержимого
     const newHeight = Math.max(60, Math.min(textarea.scrollHeight, 200))
     textarea.style.height = `${newHeight}px`
   }
@@ -192,21 +114,6 @@ export default function ChatPage() {
       const history = response.data.messages
       setMessages(history)
       setChatTitle(response.data.name)
-
-      // Обновляем chatHistory
-      setChatHistory((prev) =>
-        prev.map((chat) =>
-          chat.id === chatId
-            ? {
-                ...chat,
-                preview: history.length > 0 ? history[history.length - 1].text : "Нет сообщений",
-                date: new Date(),
-                messages: history.length,
-              }
-            : chat
-        )
-      )
-
       if (history.length > 0) {
         setIsTestMessageShown(false)
       }
@@ -242,9 +149,6 @@ export default function ChatPage() {
       }
       setMessages((prev) => [...prev, newMessage])
       setIsLoading(false)
-
-      // Обновляем chatHistory при получении сообщения от ассистента
-      updateChatHistory(newMessage)
     }
 
     ws.current.onerror = (error) => {
@@ -403,6 +307,7 @@ export default Counter;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value)
+    // Вызываем функцию изменения высоты при изменении текста
     adjustTextareaHeight()
   }
 
@@ -421,9 +326,7 @@ export default Counter;
     setIsLoading(true)
     setInput("")
 
-    // Обновляем chatHistory при отправке сообщения
-    updateChatHistory(userMessage)
-
+    // Сбрасываем высоту textarea после отправки
     if (textareaRef.current) {
       textareaRef.current.style.height = "60px"
     }
@@ -442,6 +345,7 @@ export default Counter;
   }
 
   const handleClearChat = (id: string) => {
+    // Добавляем тестовое сообщение с примерами Markdown
     const testMessage = `# Привет! Я ваш AI ассистент.
 Чем я могу вам помочь сегодня?`
 
@@ -476,6 +380,7 @@ export default Counter;
       description: "Код был успешно скопирован в буфер обмена.",
     })
 
+    // Сбрасываем состояние кнопки копирования через 2 секунды
     setTimeout(() => {
       setCopiedCode(null)
     }, 2000)
@@ -485,6 +390,7 @@ export default Counter;
     return null
   }
 
+  
   return (
     <div className="flex flex-col min-h-screen">
       <Toaster />
@@ -533,7 +439,7 @@ export default Counter;
         </div>
       </header>
       <div className="flex flex-1 overflow-hidden">
-        <ChatSidebar chatHistory={chatHistory} onMessageSent={updateChatHistory} />
+        <ChatSidebar key = {messages.length}/>
         <main className="flex-1 overflow-auto">
           <div className="container mx-auto px-4 py-6 md:px-6 max-w-4xl">
             <div className="flex flex-col h-[calc(100vh-12rem)]">
