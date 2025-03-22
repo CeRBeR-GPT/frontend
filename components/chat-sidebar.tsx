@@ -86,7 +86,7 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
     fetchChats();
   }, [token]);
 
-  const filteredChats = chatHistory.filter(
+  const filteredChats = (chatHistory || []).filter(
     (chat) =>
       chat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       chat.preview.toLowerCase().includes(searchQuery.toLowerCase()),
