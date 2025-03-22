@@ -45,7 +45,6 @@ const detectLanguage = (className: string | undefined): string => {
     }
   }
 
-  // Если не нашли конкретный язык, пытаемся извлечь из строки language-*
   const match = /language-(\w+)/.exec(className)
   if (match && match[1]) {
     return match[1]
@@ -54,12 +53,19 @@ const detectLanguage = (className: string | undefined): string => {
   return "text"
 }
 
-// Обновляем интерфейс CodeProps, чтобы он соответствовал ожиданиям ReactMarkdown
 interface CodeProps extends React.HTMLAttributes<HTMLElement> {
   className?: string
   node?: any
   children?: React.ReactNode
   inline?: boolean
+}
+
+interface ChatHistory {
+  id: string
+  title: string
+  preview: string
+  date: Date
+  messages: number
 }
 
 export default function ChatPage() {
@@ -68,28 +74,23 @@ export default function ChatPage() {
   const router = useRouter()
   const chatId = params.id as string
   const { isAuthenticated } = useAuth()
-
   const [input, setInput] = useState("")
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const [chatTitle, setChatTitle] = useState("")
-  const [chats, setChats] = useState(null)
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [isTestMessageShown, setIsTestMessageShown] = useState(true)
-
   const ws = useRef<WebSocket | null>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
 
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current
     if (!textarea) return
 
-    // Сбрасываем высоту, чтобы получить правильную высоту содержимого
     textarea.style.height = "auto"
-
-    // Устанавливаем новую высоту на основе содержимого
     const newHeight = Math.max(60, Math.min(textarea.scrollHeight, 200))
     textarea.style.height = `${newHeight}px`
   }
@@ -127,6 +128,35 @@ export default function ChatPage() {
     } finally {
       setIsLoadingHistory(false)
     }
+  }
+
+  useEffect(() => {
+    loadChatHistory(chatId)
+  }, [chatHistory])
+
+  const handleChatDeleted = (nextChatId: string | null) => {
+    if (nextChatId) {
+      router.push(`/chat/${nextChatId}`)
+    } else {
+      router.push("/chat/new")
+    }
+  }
+
+  const handleClearChat = (id: string) => {
+    const testMessage = `# Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?`
+
+    setMessages([
+      {
+        id: 1,
+        text: testMessage,
+        message_belong: "assistant",
+        timestamp: new Date(),
+      },
+    ])
+    toast({
+      title: "Сообщения очищены",
+      description: "Все сообщения в чате были удалены",
+    })
   }
 
   const initializeWebSocket = (chatId: string) => {
@@ -182,7 +212,6 @@ export default function ChatPage() {
     }
   }, [messages])
 
-  // Эффект для инициализации высоты textarea
   useEffect(() => {
     adjustTextareaHeight()
   }, [])
@@ -192,94 +221,7 @@ export default function ChatPage() {
       router.push("/auth/login")
       return
     }
-
-    // Добавляем тестовое сообщение с примерами Markdown
-    const testMessage = `# Привет! Я ваш AI ассистент.
-
-Я поддерживаю **полный** *Markdown* синтаксис:
-
-## Markdown
-
-### Списки
-
-* Пункт 1
-* Пункт 2
-  * Вложенный пункт
-
-### Ссылки
-
-[Пример ссылки](https://example.com)
-
-### Цитаты
-
-> Это пример цитаты
-> Она может быть многострочной
-
-### Код
-
-Встроенный код: \`const x = 1;\`
-
-Блок кода с подсветкой синтаксиса:
-
-\`\`\`javascript
-// Пример кода на JavaScript
-function hello() {
-  console.log("Привет, мир!");
-  return 42;
-}
-
-const result = hello();
-\`\`\`
-
-\`\`\`python
-# Пример кода на Python
-def factorial(n):
-    if n == 0:
-        return 1
-    else:
-        return n * factorial(n-1)
-        
-print(factorial(5))  # Выведет: 120
-\`\`\`
-
-\`\`\`sql
--- Пример SQL запроса
-SELECT users.name, orders.product
-FROM users
-JOIN orders ON users.id = orders.user_id
-WHERE orders.status = 'completed'
-ORDER BY orders.created_at DESC
-LIMIT 10;
-\`\`\`
-
-\`\`\`javascriptreact
-// Пример React компонента
-import React, { useState } from 'react';
-
-function Counter() {
-  const [count, setCount] = useState(0);
-  
-  return (
-    <div>
-      <p>Вы кликнули {count} раз</p>
-      <button onClick={() => setCount(count + 1)}>
-        Нажми на меня
-      </button>
-    </div>
-  );
-}
-
-export default Counter;
-\`\`\`
-
-### Таблицы
-
-| Имя | Возраст | Город |
-|-----|---------|-------|
-| Иван | 25 | Москва |
-| Мария | 30 | Санкт-Петербург |
-
-Чем я могу вам помочь сегодня?`
+    const testMessage = `# Привет! Я ваш AI ассистент.`
 
     setMessages([
       {
@@ -307,7 +249,6 @@ export default Counter;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value)
-    // Вызываем функцию изменения высоты при изменении текста
     adjustTextareaHeight()
   }
 
@@ -326,7 +267,6 @@ export default Counter;
     setIsLoading(true)
     setInput("")
 
-    // Сбрасываем высоту textarea после отправки
     if (textareaRef.current) {
       textareaRef.current.style.height = "60px"
     }
@@ -342,25 +282,6 @@ export default Counter;
       description: "Чат был успешно удален",
     })
     router.push("/chat/new")
-  }
-
-  const handleClearChat = (id: string) => {
-    // Добавляем тестовое сообщение с примерами Markdown
-    const testMessage = `# Привет! Я ваш AI ассистент.
-Чем я могу вам помочь сегодня?`
-
-    setMessages([
-      {
-        id: 1,
-        text: testMessage,
-        message_belong: "assistant",
-        timestamp: new Date(),
-      },
-    ])
-    toast({
-      title: "Сообщения очищены",
-      description: "Все сообщения в чате были удалены",
-    })
   }
 
   const handleRenameChat = (id: string, newTitle: string) => {
@@ -380,7 +301,6 @@ export default Counter;
       description: "Код был успешно скопирован в буфер обмена.",
     })
 
-    // Сбрасываем состояние кнопки копирования через 2 секунды
     setTimeout(() => {
       setCopiedCode(null)
     }, 2000)
@@ -390,7 +310,6 @@ export default Counter;
     return null
   }
 
-  
   return (
     <div className="flex flex-col min-h-screen">
       <Toaster />
@@ -439,7 +358,7 @@ export default Counter;
         </div>
       </header>
       <div className="flex flex-1 overflow-hidden">
-        <ChatSidebar key = {messages.length}/>
+        <ChatSidebar key={messages.length} chatHistory={chatHistory} setChatHistory={setChatHistory} onChatDeleted={handleChatDeleted} />
         <main className="flex-1 overflow-auto">
           <div className="container mx-auto px-4 py-6 md:px-6 max-w-4xl">
             <div className="flex flex-col h-[calc(100vh-12rem)]">
@@ -511,8 +430,7 @@ export default Counter;
                                   },
                                 }}
                               >
-                                {`# Привет! Я ваш AI ассистент.
-Чем я могу вам помочь сегодня?`}
+                                {`# Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?`}
                               </ReactMarkdown>
                             </div>
                           </Card>

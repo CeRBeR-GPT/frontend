@@ -1,5 +1,4 @@
 "use client"
-
 import type React from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
@@ -16,7 +15,7 @@ import { NewChatDialog } from "@/components/new-chat-dialog"
 import { ChatOptionsMenu } from "@/components/chat-options-menu"
 import { toast } from "@/components/ui/use-toast"
 import axios from "axios"
-import { Loader2 } from "lucide-react" // Импортируем спиннер
+import { Loader2 } from "lucide-react"
 
 interface ChatHistory {
   id: string
@@ -26,16 +25,21 @@ interface ChatHistory {
   messages: number
 }
 
-export function ChatSidebar() {
+interface ChatSidebarProps {
+  chatHistory: ChatHistory[];
+  setChatHistory: (value: ChatHistory[] | ((prev: ChatHistory[]) => ChatHistory[])) => void;
+  onChatDeleted?: (nextChatId: string | null) => void;
+  onClearChat?: (id: string) => void;
+}
+
+export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClearChat }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("")
-  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false) // Состояние загрузки
+  const [isLoading, setIsLoading] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
   const currentChatId = pathname.split("/").pop() || ""
-
   const getToken = () => localStorage.getItem('access_token')
   const token = getToken()
 
@@ -49,28 +53,23 @@ export function ChatSidebar() {
           },
         });
         const chats = response.data;
-  
+
         const formattedChats = chats.map((chat: any) => {
           const lastMessageDate = chat.messages.length > 0 
             ? new Date(chat.messages[chat.messages.length - 1].created_at) 
             : new Date(chat.created_at);
           lastMessageDate.setHours(lastMessageDate.getHours() + 3);
-  
+
           return {
             id: chat.id,
             title: chat.name,
             preview: chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].content : "Нет сообщений",
-            date: lastMessageDate, // Используем дату последнего сообщения
+            date: lastMessageDate,
             messages: chat.messages.length,
           };
         });
-  
+
         const sortedChats = formattedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime());
-        if (sortedChats.length > 0) {
-          const lastChat = sortedChats[0].id;
-          localStorage.setItem("lastSavedChat", JSON.stringify(lastChat));
-        }
-  
         setChatHistory(sortedChats);
       } catch (error) {
         console.error("Error fetching chats:", error);
@@ -83,7 +82,7 @@ export function ChatSidebar() {
         setIsLoading(false);
       }
     };
-  
+
     fetchChats();
   }, [token]);
 
@@ -91,7 +90,7 @@ export function ChatSidebar() {
     (chat) =>
       chat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       chat.preview.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  );
 
   const deleteChat = async (id: string) => {
     try {
@@ -99,54 +98,60 @@ export function ChatSidebar() {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
+      });
 
-      setChatHistory((prev) => prev.filter((chat) => chat.id !== id))
+      const remainingChats = chatHistory.filter(chat => chat.id !== id);
+      setChatHistory(remainingChats);
 
-      if (currentChatId === id) {
-        router.push("/chat/new")
+      let nextChatId: string | null = null;
+      if (remainingChats.length > 0) {
+        nextChatId = remainingChats[0].id;
+      }
+
+      if (onChatDeleted) {
+        onChatDeleted(nextChatId);
       }
 
       toast({
         title: "Чат удален",
         description: "Чат был успешно удален",
-      })
+      });
     } catch (error) {
-      console.error("Error deleting chat:", error)
+      console.error("Error deleting chat:", error);
       toast({
         title: "Ошибка",
         description: "Не удалось удалить чат",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const clearChatMessages = async (id: string) => {
     try {
-      // Выполняем запрос на очистку сообщений
       await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}/clear`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-  
-      // Обновляем состояние chatHistory
-      setChatHistory((prev) =>
+
+      setChatHistory((prev: ChatHistory[]) =>
         prev.map((chat) =>
           chat.id === id
             ? {
                 ...chat,
-                messages: 0, // Устанавливаем количество сообщений в 0
-                preview: "Нет сообщений", // Обновляем превью
-                date: new Date(), // Обновляем дату последнего действия (если нужно)
+                messages: 0,
+                preview: "Нет сообщений",
+                date: new Date(),
               }
             : chat
         )
       );
+      
+      if (onClearChat) {
+        onClearChat(id);
+      }
+      
 
-
-  
-      // Показываем уведомление об успешной очистке
       toast({
         title: "Сообщения очищены",
         description: "Все сообщения в чате были удалены",
@@ -162,9 +167,8 @@ export function ChatSidebar() {
   };
 
   const renameChatTitle = async (id: string, newTitle: string) => {
-    console.log("Функция renameChatTitle вызвана с id:", id, "и newTitle:", newTitle)
     try {
-      const response = await axios.put(
+      await axios.put(
         `https://api-gpt.energy-cerber.ru/chat/${id}?new_name=${newTitle}`,
         {},
         {
@@ -172,31 +176,30 @@ export function ChatSidebar() {
             Authorization: `Bearer ${token}`,
           },
         }
-      )
-      console.log("Ответ сервера:", response.data)
-  
-      setChatHistory((prev) =>
+      );
+
+      setChatHistory((prev: ChatHistory[]) =>
         prev.map((chat) => (chat.id === id ? { ...chat, title: newTitle } : chat))
-      )
-  
+      );
+
       toast({
         title: "Название обновлено",
         description: "Название чата было успешно изменено",
-      })
+      });
     } catch (error) {
-      console.error("Ошибка при переименовании чата:", error)
+      console.error("Ошибка при переименовании чата:", error);
       toast({
         title: "Ошибка",
         description: "Не удалось обновить название чата",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const handleNewChatClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    setIsNewChatDialogOpen(true)
-  }
+    e.preventDefault();
+    setIsNewChatDialogOpen(true);
+  };
 
   const sidebarContent = (
     <div className="flex flex-col gap-4 h-full">
@@ -265,7 +268,7 @@ export function ChatSidebar() {
 
       <NewChatDialog open={isNewChatDialogOpen} onOpenChange={setIsNewChatDialogOpen} />
     </div>
-  )
+  );
 
   const mobileSidebar = (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -279,18 +282,18 @@ export function ChatSidebar() {
         {sidebarContent}
       </SheetContent>
     </Sheet>
-  )
+  );
 
   const desktopSidebar = (
     <div className="hidden md:block w-[260px] border-r h-[calc(100vh-4rem)] overflow-hidden">
       <div className="p-4 h-full">{sidebarContent}</div>
     </div>
-  )
+  );
 
   return (
     <>
       {mobileSidebar}
       {desktopSidebar}
     </>
-  )
+  );
 }
