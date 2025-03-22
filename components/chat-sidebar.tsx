@@ -14,6 +14,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { NewChatDialog } from "@/components/new-chat-dialog"
 import { ChatOptionsMenu } from "@/components/chat-options-menu"
 import { toast } from "@/components/ui/use-toast"
+import { Toaster } from "./ui/toaster"
 import axios from "axios"
 import { Loader2 } from "lucide-react"
 
@@ -150,6 +151,7 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
         title: "Чат удален",
         description: "Чат был успешно удален",
       });
+      console.log("chat")
     } catch (error) {
       console.error("Error deleting chat:", error);
       toast({

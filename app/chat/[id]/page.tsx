@@ -129,10 +129,12 @@ export default function ChatPage() {
       setIsLoadingHistory(false)
     }
   }
-
+  // Добавьте задержку перед перенаправлением
   useEffect(() => {
-    console.log("Hereee")
-    loadChatHistory(chatId)
+    setTimeout(() => {
+      console.log("Hereee")
+      loadChatHistory(chatId)
+    }, 300);
   }, [chatHistory])
 
   const handleChatDeleted = (nextChatId: string | null) => {
