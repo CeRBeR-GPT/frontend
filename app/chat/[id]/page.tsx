@@ -1,7 +1,5 @@
 "use client"
-
 import type React from "react"
-
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
@@ -24,6 +22,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism"
 import { useTheme } from "next-themes"
 import { CSSProperties } from "react"
+
 interface Message {
   id: number
   text: string
@@ -31,78 +30,21 @@ interface Message {
   timestamp: Date
 }
 
-// Список поддерживаемых языков программирования
-const PROGRAMMING_LANGUAGES = [
-  "javascript",
-  "typescript",
-  "jsx",
-  "tsx",
-  "python",
-  "java",
-  "c",
-  "cpp",
-  "csharp",
-  "go",
-  "rust",
-  "swift",
-  "kotlin",
-  "php",
-  "ruby",
-  "scala",
-  "perl",
-  "haskell",
-  "r",
-  "matlab",
-  "sql",
-  "html",
-  "css",
-  "scss",
-  "sass",
-  "less",
-  "json",
-  "xml",
-  "yaml",
-  "markdown",
-  "md",
-  "bash",
-  "shell",
-  "powershell",
-  "dockerfile",
-  "graphql",
-  "solidity",
-  "dart",
-  "elixir",
-  "erlang",
-  "fortran",
-  "groovy",
-  "lua",
-  "objectivec",
-  "pascal",
-  "prolog",
-  "scheme",
-  "vb",
-  "vbnet",
-  "clojure",
-  "coffeescript",
-  "fsharp",
-  "julia",
-  "ocaml",
-  "reasonml",
-  "svelte",
-]
+const PROGRAMMING_LANGUAGES = [ "javascript", "typescript", "jsx", "tsx", "python", "java", "c", "cpp", "csharp", "go",
+  "rust", "swift", "kotlin", "php", "ruby", "scala", "perl", "haskell", "r", "matlab", "sql", "html", "css", "scss","sass",
+  "less", "json", "xml", "yaml", "markdown", "md", "bash", "shell", "powershell", "dockerfile", "graphql", "solidity",
+  "dart", "elixir", "erlang", "fortran", "groovy", "lua", "objectivec", "pascal", "prolog", "scheme", "vb", "vbnet",
+  "clojure", "coffeescript", "fsharp", "julia", "ocaml", "reasonml","svelte",]
 
-// Функция для определения языка программирования из className
 const detectLanguage = (className: string | undefined): string => {
   if (!className) return "text"
 
-  // Проверяем каждый язык из списка
   for (const lang of PROGRAMMING_LANGUAGES) {
     if (className.includes(`language-${lang}`)) {
       return lang
     }
   }
 
-  // Если не нашли конкретный язык, пытаемся извлечь из строки language-*
   const match = /language-(\w+)/.exec(className)
   if (match && match[1]) {
     return match[1]
@@ -111,12 +53,19 @@ const detectLanguage = (className: string | undefined): string => {
   return "text"
 }
 
-// Обновляем интерфейс CodeProps, чтобы он соответствовал ожиданиям ReactMarkdown
 interface CodeProps extends React.HTMLAttributes<HTMLElement> {
   className?: string
   node?: any
   children?: React.ReactNode
   inline?: boolean
+}
+
+interface ChatHistory {
+  id: string
+  title: string
+  preview: string
+  date: Date
+  messages: number
 }
 
 export default function ChatPage() {
@@ -125,28 +74,23 @@ export default function ChatPage() {
   const router = useRouter()
   const chatId = params.id as string
   const { isAuthenticated } = useAuth()
-
   const [input, setInput] = useState("")
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const [chatTitle, setChatTitle] = useState("")
-  const [chats, setChats] = useState(null)
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
-
+  const [isTestMessageShown, setIsTestMessageShown] = useState(true)
   const ws = useRef<WebSocket | null>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
 
-  // Функция для автоматического изменения высоты textarea
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current
     if (!textarea) return
 
-    // Сбрасываем высоту, чтобы получить правильную высоту содержимого
     textarea.style.height = "auto"
-
-    // Устанавливаем новую высоту на основе содержимого
     const newHeight = Math.max(60, Math.min(textarea.scrollHeight, 200))
     textarea.style.height = `${newHeight}px`
   }
@@ -171,6 +115,9 @@ export default function ChatPage() {
       const history = response.data.messages
       setMessages(history)
       setChatTitle(response.data.name)
+      if (history.length > 0) {
+        setIsTestMessageShown(false)
+      }
     } catch (error) {
       console.error("Failed to load chat history:", error)
       toast({
@@ -181,6 +128,38 @@ export default function ChatPage() {
     } finally {
       setIsLoadingHistory(false)
     }
+  }
+  // Добавьте задержку перед перенаправлением
+  useEffect(() => {
+    setTimeout(() => {
+      console.log("Hereee")
+      loadChatHistory(chatId)
+    }, 300);
+  }, [chatHistory])
+
+  const handleChatDeleted = (nextChatId: string | null) => {
+    if (nextChatId) {
+      router.push(`/chat/${nextChatId}`)
+    } else {
+      router.push("/chat/new")
+    }
+  }
+
+  const handleClearChat = (id: string) => {
+    const testMessage = `# Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?`
+
+    setMessages([
+      {
+        id: 1,
+        text: testMessage,
+        message_belong: "assistant",
+        timestamp: new Date(),
+      },
+    ])
+    toast({
+      title: "Сообщения очищены",
+      description: "Все сообщения в чате были удалены",
+    })
   }
 
   const initializeWebSocket = (chatId: string) => {
@@ -236,7 +215,6 @@ export default function ChatPage() {
     }
   }, [messages])
 
-  // Эффект для инициализации высоты textarea
   useEffect(() => {
     adjustTextareaHeight()
   }, [])
@@ -246,94 +224,7 @@ export default function ChatPage() {
       router.push("/auth/login")
       return
     }
-
-    // Добавляем тестовое сообщение с примерами Markdown
-    const testMessage = `# Привет! Я ваш AI ассистент.
-
-Я поддерживаю **полный** *Markdown* синтаксис:
-
-## Markdown
-
-### Списки
-
-* Пункт 1
-* Пункт 2
-  * Вложенный пункт
-
-### Ссылки
-
-[Пример ссылки](https://example.com)
-
-### Цитаты
-
-> Это пример цитаты
-> Она может быть многострочной
-
-### Код
-
-Встроенный код: \`const x = 1;\`
-
-Блок кода с подсветкой синтаксиса:
-
-\`\`\`javascript
-// Пример кода на JavaScript
-function hello() {
-  console.log("Привет, мир!");
-  return 42;
-}
-
-const result = hello();
-\`\`\`
-
-\`\`\`python
-# Пример кода на Python
-def factorial(n):
-    if n == 0:
-        return 1
-    else:
-        return n * factorial(n-1)
-        
-print(factorial(5))  # Выведет: 120
-\`\`\`
-
-\`\`\`sql
--- Пример SQL запроса
-SELECT users.name, orders.product
-FROM users
-JOIN orders ON users.id = orders.user_id
-WHERE orders.status = 'completed'
-ORDER BY orders.created_at DESC
-LIMIT 10;
-\`\`\`
-
-\`\`\`javascriptreact
-// Пример React компонента
-import React, { useState } from 'react';
-
-function Counter() {
-  const [count, setCount] = useState(0);
-  
-  return (
-    <div>
-      <p>Вы кликнули {count} раз</p>
-      <button onClick={() => setCount(count + 1)}>
-        Нажми на меня
-      </button>
-    </div>
-  );
-}
-
-export default Counter;
-\`\`\`
-
-### Таблицы
-
-| Имя | Возраст | Город |
-|-----|---------|-------|
-| Иван | 25 | Москва |
-| Мария | 30 | Санкт-Петербург |
-
-Чем я могу вам помочь сегодня?`
+    const testMessage = `# Привет! Я ваш AI ассистент.`
 
     setMessages([
       {
@@ -361,7 +252,6 @@ export default Counter;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value)
-    // Вызываем функцию изменения высоты при изменении текста
     adjustTextareaHeight()
   }
 
@@ -380,7 +270,6 @@ export default Counter;
     setIsLoading(true)
     setInput("")
 
-    // Сбрасываем высоту textarea после отправки
     if (textareaRef.current) {
       textareaRef.current.style.height = "60px"
     }
@@ -396,28 +285,6 @@ export default Counter;
       description: "Чат был успешно удален",
     })
     router.push("/chat/new")
-  }
-
-  const handleClearChat = (id: string) => {
-    // Добавляем тестовое сообщение с примерами Markdown
-    const testMessage = `# Привет! Я ваш AI ассистент.
-
-Я поддерживаю **полный** *Markdown* синтаксис.
-
-Чем я могу вам помочь сегодня?`
-
-    setMessages([
-      {
-        id: 1,
-        text: testMessage,
-        message_belong: "assistant",
-        timestamp: new Date(),
-      },
-    ])
-    toast({
-      title: "Сообщения очищены",
-      description: "Все сообщения в чате были удалены",
-    })
   }
 
   const handleRenameChat = (id: string, newTitle: string) => {
@@ -437,7 +304,6 @@ export default Counter;
       description: "Код был успешно скопирован в буфер обмена.",
     })
 
-    // Сбрасываем состояние кнопки копирования через 2 секунды
     setTimeout(() => {
       setCopiedCode(null)
     }, 2000)
@@ -495,158 +361,229 @@ export default Counter;
         </div>
       </header>
       <div className="flex flex-1 overflow-hidden">
-        <ChatSidebar />
-        <main className="flex-1 overflow-auto">
-          <div className="container mx-auto px-4 py-6 md:px-6 max-w-4xl">
-            <div className="flex flex-col h-[calc(100vh-12rem)]">
-              {isLoadingHistory ? (
-                <div className="flex justify-center items-center h-full">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                </div>
-              ) : (
-                <>
-                  <div ref={messagesContainerRef} className="flex-1 overflow-y-auto mb-4 space-y-4 p-4">
-                    {messages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex ${
-                          message.message_belong === "user" ? "justify-end" : "justify-start"
-                        } animate-in fade-in-0 slide-in-from-bottom-3 duration-300`}
-                      >
-                        <div className="flex items-start gap-3 max-w-[80%]">
-                          {message.message_belong === "assistant" && (
+        <ChatSidebar key={messages.length} chatHistory={chatHistory} setChatHistory={setChatHistory} onChatDeleted={handleChatDeleted} />
+        {/* Условный рендеринг основного контента */}
+        {chatHistory.length > 0 ? (
+          <main className="flex-1 overflow-auto">
+            <div className="container mx-auto px-4 py-6 md:px-6 max-w-4xl">
+              <div className="flex flex-col h-[calc(100vh-12rem)]">
+                {isLoadingHistory ? (
+                  <div className="flex justify-center items-center h-full">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                  </div>
+                ) : (
+                  <>
+                    <div ref={messagesContainerRef} className="flex-1 overflow-y-auto mb-4 space-y-4 p-4">
+                      {isTestMessageShown && messages.length === 0 ? (
+                        <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-3 duration-300">
+                          <div className="flex items-start gap-3 max-w-[80%]">
                             <Avatar className="mt-1">
                               <AvatarFallback>
                                 <Bot className="w-4 h-4" />
                               </AvatarFallback>
                             </Avatar>
-                          )}
-                          <Card
-                            className={`p-3 ${
-                              message.message_belong === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
-                            }`}
-                          >
-                            <div className="prose dark:prose-invert max-w-none">
-                              <ReactMarkdown
-                                components={{
-                                  // В компоненте ReactMarkdown обновляем типизацию для code
-                                  code: ({ className, children, inline, ...props }: CodeProps) => {
-                                    if (inline) {
+                            <Card className="p-3 bg-muted">
+                              <div className="prose dark:prose-invert max-w-none">
+                                <ReactMarkdown
+                                  components={{
+                                    code: ({ className, children, inline, ...props }: CodeProps) => {
+                                      if (inline) {
+                                        return (
+                                          <code className={className} {...props}>
+                                            {children}
+                                          </code>
+                                        )
+                                      }
+
+                                      const codeString = String(children || "").replace(/\n$/, "")
+                                      const language = detectLanguage(className)
+
                                       return (
-                                        <code className={className} {...props}>
-                                          {children}
-                                        </code>
-                                      )
-                                    }
-
-                                    const codeString = String(children || "").replace(/\n$/, "")
-                                    const language = detectLanguage(className)
-
-                                    return (
-                                      <div className="relative group">
-                                        <div className="absolute right-2 top-2 z-10">
-                                          <Button
-                                            variant="ghost"
-                                            className="h-8 w-8 bg-background/80 backdrop-blur-sm opacity-80 hover:opacity-100"
-                                            onClick={() => handleCopyCode(codeString)}
+                                        <div className="relative group">
+                                          <div className="absolute right-2 top-2 z-10">
+                                            <Button
+                                              variant="ghost"
+                                              className="h-8 w-8 bg-background/80 backdrop-blur-sm opacity-80 hover:opacity-100"
+                                              onClick={() => handleCopyCode(codeString)}
+                                            >
+                                              {copiedCode === codeString ? (
+                                                <Check className="h-4 w-4 text-green-500" />
+                                              ) : (
+                                                <Copy className="h-4 w-4" />
+                                              )}
+                                            </Button>
+                                          </div>
+                                          <div className="absolute left-2 top-0 text-xs font-mono text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
+                                            {language}
+                                          </div>
+                                          <SyntaxHighlighter
+                                            language={language}
+                                            PreTag="div"
+                                            {...props}
+                                            customStyle={{
+                                              marginTop: "0",
+                                              marginBottom: "0",
+                                              paddingTop: "2rem",
+                                              borderRadius: "0.375rem",
+                                            }}
+                                            style={theme === "dark" ? vscDarkPlus : vs as { [key: string]: CSSProperties }}
                                           >
-                                            {copiedCode === codeString ? (
-                                              <Check className="h-4 w-4 text-green-500" />
-                                            ) : (
-                                              <Copy className="h-4 w-4" />
-                                            )}
-                                          </Button>
+                                            {codeString}
+                                          </SyntaxHighlighter>
                                         </div>
-                                        <div className="absolute left-2 top-0 text-xs font-mono text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
-                                          {language}
-                                        </div>
-                                        <SyntaxHighlighter
-                                          language={language}
-                                          PreTag="div"
-                                          {...props}
-                                          customStyle={{
-                                            marginTop: "0",
-                                            marginBottom: "0",
-                                            paddingTop: "2rem",
-                                            borderRadius: "0.375rem",
-                                          }}
-                                          style={theme === "dark" ? vscDarkPlus : vs as { [key: string]: CSSProperties }}
-                                        >
-                                          {codeString}
-                                        </SyntaxHighlighter>
-                                      </div>
-                                    )
-                                  },
-                                }}
+                                      )
+                                    },
+                                  }}
+                                >
+                                  {`# Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?`}
+                                </ReactMarkdown>
+                              </div>
+                            </Card>
+                          </div>
+                        </div>
+                      ) : (
+                        messages.map((message) => (
+                          <div
+                            key={message.id}
+                            className={`flex ${
+                              message.message_belong === "user" ? "justify-end" : "justify-start"
+                            } animate-in fade-in-0 slide-in-from-bottom-3 duration-300`}
+                          >
+                            <div className="flex items-start gap-3 max-w-[80%]">
+                              {message.message_belong === "assistant" && (
+                                <Avatar className="mt-1">
+                                  <AvatarFallback>
+                                    <Bot className="w-4 h-4" />
+                                  </AvatarFallback>
+                                </Avatar>
+                              )}
+                              <Card
+                                className={`p-3 ${
+                                  message.message_belong === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
+                                }`}
                               >
-                                {message.text}
-                              </ReactMarkdown>
+                                <div className="prose dark:prose-invert max-w-none">
+                                  <ReactMarkdown
+                                    components={{
+                                      code: ({ className, children, inline, ...props }: CodeProps) => {
+                                        if (inline) {
+                                          return (
+                                            <code className={className} {...props}>
+                                              {children}
+                                            </code>
+                                          )
+                                        }
+
+                                        const codeString = String(children || "").replace(/\n$/, "")
+                                        const language = detectLanguage(className)
+
+                                        return (
+                                          <div className="relative group">
+                                            <div className="absolute right-2 top-2 z-10">
+                                              <Button
+                                                variant="ghost"
+                                                className="h-8 w-8 bg-background/80 backdrop-blur-sm opacity-80 hover:opacity-100"
+                                                onClick={() => handleCopyCode(codeString)}
+                                              >
+                                                {copiedCode === codeString ? (
+                                                  <Check className="h-4 w-4 text-green-500" />
+                                                ) : (
+                                                  <Copy className="h-4 w-4" />
+                                                )}
+                                              </Button>
+                                            </div>
+                                            <div className="absolute left-2 top-0 text-xs font-mono text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
+                                              {language}
+                                            </div>
+                                            <SyntaxHighlighter
+                                              language={language}
+                                              PreTag="div"
+                                              {...props}
+                                              customStyle={{
+                                                marginTop: "0",
+                                                marginBottom: "0",
+                                                paddingTop: "2rem",
+                                                borderRadius: "0.375rem",
+                                              }}
+                                              style={theme === "dark" ? vscDarkPlus : vs as { [key: string]: CSSProperties }}
+                                            >
+                                              {codeString}
+                                            </SyntaxHighlighter>
+                                          </div>
+                                        )
+                                      },
+                                    }}
+                                  >
+                                    {message.text}
+                                  </ReactMarkdown>
+                                </div>
+                              </Card>
+                              {message.message_belong === "user" && (
+                                <Avatar className="mt-1">
+                                  <AvatarFallback>
+                                    <User className="w-4 h-4" />
+                                  </AvatarFallback>
+                                </Avatar>
+                              )}
                             </div>
-                          </Card>
-                          {message.message_belong === "user" && (
+                          </div>
+                        ))
+                      )}
+                      {isLoading && (
+                        <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-3 duration-300">
+                          <div className="flex items-start gap-3 max-w-[80%]">
                             <Avatar className="mt-1">
                               <AvatarFallback>
-                                <User className="w-4 h-4" />
+                                <Bot className="w-4 h-4" />
                               </AvatarFallback>
                             </Avatar>
-                          )}
+                            <Card className="p-3 bg-muted">
+                              <div className="flex space-x-2">
+                                <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
+                                <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.2s]" />
+                                <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.4s]" />
+                              </div>
+                            </Card>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                    {isLoading && (
-                      <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-3 duration-300">
-                        <div className="flex items-start gap-3 max-w-[80%]">
-                          <Avatar className="mt-1">
-                            <AvatarFallback>
-                              <Bot className="w-4 h-4" />
-                            </AvatarFallback>
-                          </Avatar>
-                          <Card className="p-3 bg-muted">
-                            <div className="flex space-x-2">
-                              <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
-                              <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.2s]" />
-                              <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.4s]" />
-                            </div>
-                          </Card>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <form onSubmit={handleSubmit} className="sticky bottom-0 bg-background pt-2">
-                    <div className="relative">
-                      <Textarea
-                        ref={textareaRef}
-                        placeholder="Напишите ваш запрос..."
-                        value={input}
-                        onChange={handleInputChange}
-                        className="min-h-[60px] max-h-[200px] resize-none pr-14 rounded-xl border-gray-300 focus:border-primary"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault()
-                            handleSubmit(e)
-                          }
-                        }}
-                      />
-                      <Button
-                        type="submit"
-                        className="absolute right-2 bottom-2 rounded-full w-10 h-10 p-0"
-                        disabled={!input.trim() || isLoading}
-                      >
-                        <ArrowUp className="h-4 w-4" />
-                        <span className="sr-only">Отправить</span>
-                      </Button>
+                      )}
                     </div>
-                    <p className="text-xs text-center text-muted-foreground mt-2">
-                      AI может допускать ошибки. Проверяйте важную информацию.
-                    </p>
-                  </form>
-                </>
-              )}
+                    <form onSubmit={handleSubmit} className="sticky bottom-0 bg-background pt-2">
+                      <div className="relative">
+                        <Textarea
+                          ref={textareaRef}
+                          placeholder="Напишите ваш запрос..."
+                          value={input}
+                          onChange={handleInputChange}
+                          className="min-h-[60px] max-h-[200px] resize-none pr-14 rounded-xl border-gray-300 focus:border-primary"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              e.preventDefault()
+                              handleSubmit(e)
+                            }
+                          }}
+                        />
+                        <Button
+                          type="submit"
+                          className="absolute right-2 bottom-2 rounded-full w-10 h-10 p-0"
+                          disabled={!input.trim() || isLoading}
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                          <span className="sr-only">Отправить</span>
+                        </Button>
+                      </div>
+                      <p className="text-xs text-center text-muted-foreground mt-2">
+                        AI может допускать ошибки. Проверяйте важную информацию.
+                      </p>
+                    </form>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        </main>
+          </main>
+        ) : null}
       </div>
     </div>
-  )
+  );
 }
 

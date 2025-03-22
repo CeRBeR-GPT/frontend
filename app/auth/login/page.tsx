@@ -29,12 +29,16 @@ export default function LoginPage() {
   const router = useRouter()
   const {login, isAuthenticated} = useAuth()
 
+
   useEffect(() => {
-      if (!isAuthenticated) {
+    const token = getToken()
+    console.log(token)
+    const lastSavedChat = localStorage.getItem("lastSavedChat") || 1
+      if (!isAuthenticated || !token) {
         router.push("/auth/login")
       }
       else{
-        router.push("/chat")
+        router.push(`/chat/${lastSavedChat}`)
       }
     }, [isAuthenticated, router])
 

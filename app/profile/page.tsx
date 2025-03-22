@@ -287,7 +287,7 @@ export default function ProfilePage() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="text-center">
-                    <h2 className="text-xl font-bold">{userData?.email}</h2>
+                    <h2 className="text-lg font-bold">{userData?.email}</h2>
                   </div>
                   <Button variant="outline" asChild>
                       <Link href="/profile/change-password" className="w-full">

@@ -15,12 +15,12 @@ export default function ChatRedirect() {
       console.log(lastSavedChat)
 
       if (lastSavedChat) {
-        const chat = JSON.parse(lastSavedChat)
-        console.log("Последний сохраненный чат:", chat)
+        //const chat = JSON.parse(lastSavedChat)
+        //console.log("Последний сохраненный чат:", chat)
 
         // Формируем путь для редиректа
          // Предполагаем, что у чата есть поле `id`
-        router.replace(`/chat/${chat}`) // Редирект на страницу чата с конкретным ID
+        router.replace(`/chat/${lastSavedChat}`) // Редирект на страницу чата с конкретным ID
       } else {
         // Если последний чат не найден, редиректим на страницу по умолчанию
         router.replace("/chat")
