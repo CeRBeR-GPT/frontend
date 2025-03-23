@@ -14,6 +14,8 @@ import axios from "axios"
 import { ActivityStats } from "@/components/activity-stats"
 import { subDays, format } from "date-fns"
 
+import { toZonedTime } from "date-fns-tz";
+
 interface UserData {
   id: string
   email: string
@@ -105,37 +107,42 @@ export default function ProfilePage() {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
-      const chats: Chat[] = response.data
-
+      });
+      const chats: Chat[] = response.data;
+  
       // Создаем объект для группировки сообщений по дате
-      const messagesByDate: { [key: string]: number } = {}
-
+      const messagesByDate: { [key: string]: number } = {};
+  
       // Проходим по всем чатам и их сообщениям
       chats.forEach((chat) => {
         chat.messages.forEach((message) => {
-          const messageDate = format(new Date(message.created_at), 'yyyy-MM-dd')
+          // Преобразуем дату из UTC в московское время (MSK, UTC+3)
+          const utcDate = new Date(message.created_at);
+          const mskTime = new Date(utcDate.getTime() + 3 * 60 * 60 * 1000); // Добавляем 3 часа
+          console.log("time", mskTime);
+          const messageDate = format(mskTime, 'yyyy-MM-dd');
+  
           if (messagesByDate[messageDate]) {
-            messagesByDate[messageDate] += 1
+            messagesByDate[messageDate] += 1;
           } else {
-            messagesByDate[messageDate] = 1
+            messagesByDate[messageDate] = 1;
           }
-        })
-      })
-
+        });
+      });
+  
       // Преобразуем объект в массив для использования в `usageHistory`
       const updatedHistory = Object.keys(messagesByDate).map((date) => ({
         date,
         usedMessages: messagesByDate[date],
-      }))
-
+      }));
+  
       // Обновляем состояние и локальное хранилище
-      localStorage.setItem("usageHistory", JSON.stringify(updatedHistory))
-      setUsageHistory(updatedHistory)
+      localStorage.setItem("usageHistory", JSON.stringify(updatedHistory));
+      setUsageHistory(updatedHistory);
     } catch (error) {
-      console.error("Error fetching chats:", error)
+      console.error("Error fetching chats:", error);
     }
-  }
+  };
 
   const generateActivityData = () => {
     const data = []
