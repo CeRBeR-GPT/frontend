@@ -14,8 +14,6 @@ import axios from "axios"
 import { ActivityStats } from "@/components/activity-stats"
 import { subDays, format } from "date-fns"
 
-import { toZonedTime } from "date-fns-tz";
-
 interface UserData {
   id: string
   email: string
