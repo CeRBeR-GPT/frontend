@@ -1,6 +1,6 @@
 "use client"
 import React from "react"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useReducer, useCallback, useMemo } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -17,104 +17,17 @@ import { ChatOptionsMenu } from "@/components/chat-options-menu"
 import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import axios from "axios"
-import ReactMarkdown from "react-markdown"
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
-import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism"
 import { useTheme } from "next-themes"
-import type { CSSProperties } from "react"
 import "katex/dist/katex.min.css"
 import { MarkdownWithLatex } from "@/components/markdown-with-latex"
 import { preprocessLatexInText } from "@/utils/latex-utils"
-import { BlockMath, InlineMath } from "react-katex"
+import { throttle } from "lodash-es"
 
 interface Message {
   id: number
   text: string
   message_belong: "user" | "assistant"
   timestamp: Date
-}
-
-const PROGRAMMING_LANGUAGES = [
-  "javascript",
-  "typescript",
-  "jsx",
-  "tsx",
-  "python",
-  "java",
-  "c",
-  "cpp",
-  "csharp",
-  "go",
-  "rust",
-  "swift",
-  "kotlin",
-  "php",
-  "ruby",
-  "scala",
-  "perl",
-  "haskell",
-  "r",
-  "matlab",
-  "sql",
-  "html",
-  "css",
-  "scss",
-  "sass",
-  "less",
-  "json",
-  "xml",
-  "yaml",
-  "markdown",
-  "md",
-  "bash",
-  "shell",
-  "powershell",
-  "dockerfile",
-  "graphql",
-  "solidity",
-  "dart",
-  "elixir",
-  "erlang",
-  "fortran",
-  "groovy",
-  "lua",
-  "objectivec",
-  "pascal",
-  "prolog",
-  "scheme",
-  "vb",
-  "vbnet",
-  "clojure",
-  "coffeescript",
-  "fsharp",
-  "julia",
-  "ocaml",
-  "reasonml",
-  "svelte",
-]
-
-const detectLanguage = (className: string | undefined): string => {
-  if (!className) return "text"
-
-  for (const lang of PROGRAMMING_LANGUAGES) {
-    if (className.includes(`language-${lang}`)) {
-      return lang
-    }
-  }
-
-  const match = /language-(\w+)/.exec(className)
-  if (match && match[1]) {
-    return match[1]
-  }
-
-  return "text"
-}
-
-interface CodeProps extends React.HTMLAttributes<HTMLElement> {
-  className?: string
-  node?: any
-  children?: React.ReactNode
-  inline?: boolean
 }
 
 interface ChatHistory {
@@ -125,121 +38,136 @@ interface ChatHistory {
   messages: number
 }
 
-interface CodeBlockProps {
-  codeString: string
-  language: string
+// Отдельный компонент для сообщения
+const MessageItem = React.memo(({ 
+  message,
+  theme,
+  onCopy,
+  copiedCode
+}: {
+  message: Message
   theme: string | undefined
   onCopy: (code: string) => void
   copiedCode: string | null
-}
-
-const CodeBlock: React.FC<CodeBlockProps> = ({ codeString, language, theme, onCopy, copiedCode }) => {
+}) => {
   return (
-    <div className="relative group">
-      <div className="absolute right-2 top-2 z-10">
-        <Button
-          variant="ghost"
-          className="h-8 w-8 bg-background/80 backdrop-blur-sm opacity-80 hover:opacity-100"
-          onClick={() => onCopy(codeString)}
-        >
-          {copiedCode === codeString ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-        </Button>
+    <div className={`flex ${
+      message.message_belong === "user" ? "justify-end" : "justify-start"
+    } animate-in fade-in-0 slide-in-from-bottom-3 duration-300`}>
+      <div className="flex items-start gap-3 max-w-[98%] sm:gap-3 sm:max-w-[90%] md:max-w-[80%]">
+        {message.message_belong === "assistant" && (
+          <Avatar className="mt-1">
+            <AvatarFallback>
+              <Bot className="w-4 h-4" />
+            </AvatarFallback>
+          </Avatar>
+        )}
+        <Card className={`p-3 ${
+          message.message_belong === "user" 
+            ? "bg-primary text-primary-foreground" 
+            : "bg-muted"
+        }`}>
+          <div className="prose dark:prose-invert max-w-none">
+            <MarkdownWithLatex 
+              content={message.text} 
+              theme={theme} 
+              onCopy={onCopy} 
+              copiedCode={copiedCode} 
+            />
+          </div>
+        </Card>
+        {message.message_belong === "user" && (
+          <Avatar className="mt-1">
+            <AvatarFallback>
+              <User className="w-4 h-4" />
+            </AvatarFallback>
+          </Avatar>
+        )}
       </div>
-      <div className="absolute left-2 top-0 text-xs font-mono text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
-        {language}
-      </div>
-      <SyntaxHighlighter
-        language={language}
-        PreTag="div"
-        customStyle={{
-          marginTop: "0",
-          marginBottom: "0",
-          paddingTop: "2rem",
-          borderRadius: "0.375rem",
-        }}
-        style={theme === "dark" ? vscDarkPlus : (vs as { [key: string]: CSSProperties })}
-      >
-        {codeString}
-      </SyntaxHighlighter>
     </div>
   )
-}
+})
 
-// Update the renderMessageWithLaTeX function to directly convert parenthesized expressions
-const renderMessageWithLaTeX = (
-  text: string,
-  theme: string | undefined,
-  onCopy: (code: string) => void,
-  copiedCode: string | null,
-) => {
-  // Check if the entire message is a block math formula
-  if (text.trim().startsWith("$$") && text.trim().endsWith("$$")) {
-    return (
-      <div className="flex justify-center w-full py-2">
-        <MarkdownWithLatex content={text.trim()} theme={theme} onCopy={onCopy} copiedCode={copiedCode} />
+MessageItem.displayName = "MessageItem"
+
+// Отдельный компонент для ввода сообщений
+const MessageInput = React.memo(({ 
+  value, 
+  onChange, 
+  onSubmit, 
+  isLoading 
+}: {
+  value: string
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
+  onSubmit: (e: React.FormEvent) => void
+  isLoading: boolean
+}) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  const adjustTextareaHeight = useCallback(() => {
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    textarea.style.height = "auto"
+    const newHeight = Math.max(60, Math.min(textarea.scrollHeight, 200))
+    textarea.style.height = `${newHeight}px`
+  }, [])
+
+  useEffect(() => {
+    adjustTextareaHeight()
+  }, [value, adjustTextareaHeight])
+
+  return (
+    <form onSubmit={onSubmit} className="sticky bottom-0 bg-background pt-2">
+      <div className="relative">
+        <Textarea
+          ref={textareaRef}
+          placeholder="Напишите ваш запрос..."
+          value={value}
+          onChange={onChange}
+          className="min-h-[60px] max-h-[200px] resize-none pr-14 rounded-xl border-gray-300 focus:border-primary"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault()
+              onSubmit(e)
+            }
+          }}
+        />
+        <Button
+          type="submit"
+          className="absolute right-2 bottom-2 rounded-full w-10 h-10 p-0"
+          disabled={!value.trim() || isLoading}
+        >
+          <ArrowUp className="h-4 w-4" />
+          <span className="sr-only">Отправить</span>
+        </Button>
       </div>
-    )
+      <p className="text-xs text-center text-muted-foreground mt-2">
+        AI может допускать ошибки. Проверяйте важную информацию.
+      </p>
+    </form>
+  )
+})
+
+MessageInput.displayName = "MessageInput"
+
+// Редуктор для управления состоянием сообщений
+function messagesReducer(state: Message[], action: { type: string; payload?: any }) {
+  switch (action.type) {
+    case 'ADD':
+      return [...state, action.payload]
+    case 'SET':
+      return action.payload
+    case 'CLEAR':
+      return [{
+        id: 1,
+        text: '# Привет! Я ваш AI ассистент.',
+        message_belong: "assistant",
+        timestamp: new Date(),
+      }]
+    default:
+      return state
   }
-
-  // Preprocess the text - convert parenthesized LaTeX to $formula$ format
-  let preprocessedText = text
-
-  // Handle LaTeX expressions in parentheses with any LaTeX command
-  const parenthesesLatexRegex = /$$\s*(\\[a-zA-Z]+(\{[^}]*\})?)\s*$$/g
-  preprocessedText = preprocessedText.replace(parenthesesLatexRegex, (match) => {
-    const formula = match.slice(1, -1).trim()
-    return `$${formula}$`
-  })
-
-  // Now process with the standard preprocessLatexInText function
-  preprocessedText = preprocessLatexInText(preprocessedText)
-
-  // First handle code blocks separately
-  const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g
-  const parts = []
-  let lastIndex = 0
-  let match
-
-  while ((match = codeBlockRegex.exec(preprocessedText)) !== null) {
-    // Text before code block
-    if (match.index > lastIndex) {
-      const nonCodeText = preprocessedText.slice(lastIndex, match.index)
-      parts.push(
-        <div key={`text-${lastIndex}`}>
-          <MarkdownWithLatex content={nonCodeText} theme={theme} onCopy={onCopy} copiedCode={copiedCode} />
-        </div>,
-      )
-    }
-
-    // Code block
-    const language = match[1] || "text"
-    const codeContent = match[2]
-
-    parts.push(
-      <CodeBlock
-        key={`code-${lastIndex}`}
-        codeString={codeContent}
-        language={language}
-        theme={theme}
-        onCopy={onCopy}
-        copiedCode={copiedCode}
-      />,
-    )
-
-    lastIndex = match.index + match[0].length
-  }
-
-  // Text after the last code block
-  if (lastIndex < preprocessedText.length) {
-    const remainingText = preprocessedText.slice(lastIndex)
-    parts.push(
-      <div key={`text-${lastIndex}`}>
-        <MarkdownWithLatex content={remainingText} theme={theme} onCopy={onCopy} copiedCode={copiedCode} />
-      </div>,
-    )
-  }
-
-  return <>{parts}</>
 }
 
 export default function ChatPage() {
@@ -248,59 +176,52 @@ export default function ChatPage() {
   const router = useRouter()
   const chatId = params.id as string
   const { isAuthenticated } = useAuth()
+  
+  // Состояния
   const [input, setInput] = useState("")
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, dispatchMessages] = useReducer(messagesReducer, [])
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const [chatTitle, setChatTitle] = useState("")
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [isTestMessageShown, setIsTestMessageShown] = useState(true)
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
+  const [sidebarVersion, setSidebarVersion] = useState(0)
+  
   const ws = useRef<WebSocket | null>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
-  const [sidebarVersion, setSidebarVersion] = useState(0);
-  //const MemoizedSidebar = React.memo(sidebarVersion);
+  const isRequested = useRef(false)
 
-  const updateSidebar = () => {
-    setSidebarVersion(v => v + 1);
-  };
+  // Обновление сайдбара
+  const updateSidebar = useCallback(() => {
+    setSidebarVersion(v => v + 1)
+  }, [])
 
-  const adjustTextareaHeight = () => {
-    const textarea = textareaRef.current
-    if (!textarea) return
-
-    textarea.style.height = "auto"
-    const newHeight = Math.max(60, Math.min(textarea.scrollHeight, 200))
-    textarea.style.height = `${newHeight}px`
-  }
-
-  const getToken = () => {
+  // Получение токена
+  const getToken = useCallback(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("access_token")
     }
     return null
-  }
+  }, [])
 
   const token = getToken()
-  const isRequested = useRef(false)
 
-  const loadChatHistory = async (chatId: string) => {
+  // Загрузка истории чата
+  const loadChatHistory = useCallback(async (chatId: string) => {
     setIsLoadingHistory(true)
     if (isRequested.current) return
     isRequested.current = true
+    
     try {
       const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/${chatId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
+      
       const history = response.data.messages
-      setMessages(history)
+      dispatchMessages({ type: 'SET', payload: history })
       setChatTitle(response.data.name)
-      if (history.length > 0) {
-        setIsTestMessageShown(false)
-      }
+      setIsTestMessageShown(history.length === 0)
     } catch (error) {
       console.error("Failed to load chat history:", error)
       toast({
@@ -311,34 +232,12 @@ export default function ChatPage() {
     } finally {
       setIsLoadingHistory(false)
     }
-  }
+  }, [token])
 
-  const handleChatDeleted = (nextChatId: string | null) => {
-    if (nextChatId) {
-      router.push(`/chat/${nextChatId}`)
-    } else {
-      router.push("/chat/new")
-    }
-  }
+  // Инициализация WebSocket
+  const initializeWebSocket = useCallback((chatId: string) => {
+    if (!token) return
 
-  const handleClearChat = (id: string) => {
-    const testMessage = `# Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?`
-
-    setMessages([
-      {
-        id: 1,
-        text: testMessage,
-        message_belong: "assistant",
-        timestamp: new Date(),
-      },
-    ])
-    toast({
-      title: "Сообщения очищены",
-      description: "Все сообщения в чате были удалены",
-    })
-  }
-
-  const initializeWebSocket = (chatId: string) => {
     const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}`
     console.log("WebSocket URL:", wsUrl)
 
@@ -350,15 +249,17 @@ export default function ChatPage() {
 
     ws.current.onmessage = (event) => {
       console.log("WebSocket message received:", event.data)
-      const newMessage: Message = {
-        id: messages.length + 1,
-        text: event.data,
-        message_belong: "assistant",
-        timestamp: new Date(),
-      }
-      setMessages((prev) => [...prev, newMessage])
+      dispatchMessages({
+        type: 'ADD',
+        payload: {
+          id: Date.now(),
+          text: event.data,
+          message_belong: "assistant",
+          timestamp: new Date(),
+        }
+      })
       setIsLoading(false)
-      updateSidebar();
+      updateSidebar()
     }
 
     ws.current.onerror = (error) => {
@@ -381,8 +282,135 @@ export default function ChatPage() {
         setTimeout(() => initializeWebSocket(chatId), 5000)
       }
     }
-  }
 
+    return () => {
+      if (ws.current) {
+        ws.current.close()
+      }
+    }
+  }, [token, updateSidebar])
+
+  // Загрузка списка чатов
+  const fetchChats = useCallback(async () => {
+    if (!token) return
+    
+    try {
+      const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      
+      const formattedChats = response.data.map((chat: any) => {
+        const lastMessageDate = chat.messages.length > 0 
+          ? new Date(chat.messages[chat.messages.length - 1].created_at) 
+          : new Date(chat.created_at)
+        lastMessageDate.setHours(lastMessageDate.getHours() + 3)
+
+        return {
+          id: chat.id,
+          title: chat.name,
+          preview: chat.messages.length > 0 
+            ? chat.messages[chat.messages.length - 1].content 
+            : "Нет сообщений",
+          date: lastMessageDate,
+          messages: chat.messages.length,
+        }
+      })
+
+      const sortedChats = formattedChats.sort((a: any, b: any) => 
+        b.date.getTime() - a.date.getTime())
+      
+      setChatHistory(sortedChats)
+      
+      if (sortedChats.length > 0) {
+        localStorage.setItem("lastSavedChat", sortedChats[0].id)
+      } else {
+        localStorage.removeItem("lastSavedChat")
+      }
+    } catch (error) {
+      console.error("Error fetching chats:", error)
+      toast({
+        title: "Ошибка",
+        description: "Не удалось загрузить чаты",
+        variant: "destructive",
+      })
+    }
+  }, [token])
+
+  // Обработчики действий
+  const handleChatDeleted = useCallback((nextChatId: string | null) => {
+    if (nextChatId) {
+      router.push(`/chat/${nextChatId}`)
+    } else {
+      router.push("/chat/new")
+    }
+  }, [router])
+
+  const handleClearChat = useCallback(() => {
+    dispatchMessages({ type: 'CLEAR' })
+    toast({
+      title: "Сообщения очищены",
+      description: "Все сообщения в чате были удалены",
+    })
+  }, [])
+
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value)
+  }, [])
+
+  const throttledSubmit = useMemo(
+    () => throttle((input: string) => {
+      if (!input.trim() || isLoading) return
+
+      const userMessage: Message = {
+        id: Date.now(),
+        text: input,
+        message_belong: "user",
+        timestamp: new Date(),
+      }
+
+      dispatchMessages({ type: 'ADD', payload: userMessage })
+      setIsLoading(true)
+      setInput("")
+
+      if (ws.current) {
+        ws.current.send(input)
+      }
+    }, 500),
+    [isLoading]
+  )
+
+  const handleSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault()
+    throttledSubmit(input)
+  }, [input, throttledSubmit])
+
+  const handleDeleteChat = useCallback((id: string) => {
+    toast({
+      title: "Чат удален",
+      description: "Чат был успешно удален",
+    })
+    router.push("/chat/new")
+  }, [router])
+
+  const handleRenameChat = useCallback((id: string, newTitle: string) => {
+    setChatTitle(newTitle)
+    toast({
+      title: "Название обновлено",
+      description: "Название чата было успешно изменено",
+    })
+  }, [])
+
+  const handleCopyCode = useCallback((code: string) => {
+    navigator.clipboard.writeText(code)
+    setCopiedCode(code)
+    toast({
+      title: "Код скопирован",
+      description: "Код был успешно скопирован в буфер обмена.",
+    })
+    setTimeout(() => setCopiedCode(null), 2000)
+  }, [])
+
+  // Эффекты
   useEffect(() => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTo({
@@ -393,29 +421,18 @@ export default function ChatPage() {
   }, [messages])
 
   useEffect(() => {
-    adjustTextareaHeight()
-  }, [])
-
-  useEffect(() => {
     if (!isAuthenticated) {
       router.push("/auth/login")
       return
     }
-    const testMessage = `# Привет! Я ваш AI ассистент.`
 
-    setMessages([
-      {
-        id: 1,
-        text: testMessage,
-        message_belong: "assistant",
-        timestamp: new Date(),
-      },
-    ])
+    dispatchMessages({ type: 'CLEAR' })
     setChatTitle("Новый чат")
 
     const fetchData = async () => {
       await loadChatHistory(chatId)
       initializeWebSocket(chatId)
+      await fetchChats()
     }
 
     fetchData()
@@ -425,70 +442,24 @@ export default function ChatPage() {
         ws.current.close()
       }
     }
-  }, [chatId, isAuthenticated, router])
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(e.target.value)
-    adjustTextareaHeight()
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!input.trim() || isLoading) return
-
-    const userMessage: Message = {
-      id: messages.length + 1,
-      text: input,
-      message_belong: "user",
-      timestamp: new Date(),
-    }
-
-    setMessages((prev) => [...prev, userMessage])
-    setIsLoading(true)
-    setInput("")
-
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "60px"
-    }
-
-    if (ws.current) {
-      ws.current.send(input)
-    }
-  }
-
-  const handleDeleteChat = (id: string) => {
-    toast({
-      title: "Чат удален",
-      description: "Чат был успешно удален",
-    })
-    router.push("/chat/new")
-  }
-
-  const handleRenameChat = (id: string, newTitle: string) => {
-    setChatTitle(newTitle)
-    toast({
-      title: "Название обновлено",
-      description: "Название чата было успешно изменено",
-    })
-  }
-
-  const handleCopyCode = (code: string) => {
-    navigator.clipboard.writeText(code)
-    setCopiedCode(code)
-
-    toast({
-      title: "Код скопирован",
-      description: "Код был успешно скопирован в буфер обмена.",
-    })
-
-    setTimeout(() => {
-      setCopiedCode(null)
-    }, 2000)
-  }
+  }, [chatId, isAuthenticated, router, loadChatHistory, initializeWebSocket, fetchChats])
 
   if (!isAuthenticated) {
     return null
   }
+
+  // Мемоизированные значения
+  const renderedMessages = useMemo(() => (
+    messages.map((message) => (
+      <MessageItem
+        key={message.id}
+        message={message}
+        theme={theme}
+        onCopy={handleCopyCode}
+        copiedCode={copiedCode}
+      />
+    ))
+  ), [messages, theme, copiedCode, handleCopyCode])
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -565,73 +536,18 @@ export default function ChatPage() {
                             </Avatar>
                             <Card className="p-3 bg-muted">
                               <div className="prose dark:prose-invert max-w-none">
-                                <ReactMarkdown
-                                  components={{
-                                    code: ({ className, children, inline, ...props }: CodeProps) => {
-                                      if (inline) {
-                                        return (
-                                          <code className={className} {...props}>
-                                            {children}
-                                          </code>
-                                        )
-                                      }
-
-                                      const codeString = String(children || "").replace(/\n$/, "")
-                                      const language = detectLanguage(className)
-
-                                      return (
-                                        <CodeBlock
-                                          codeString={codeString}
-                                          language={language}
-                                          theme={theme}
-                                          onCopy={handleCopyCode}
-                                          copiedCode={copiedCode}
-                                        />
-                                      )
-                                    },
-                                  }}
-                                >
-                                  {`# Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?`}
-                                </ReactMarkdown>
+                                <MarkdownWithLatex 
+                                  content="# Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?"
+                                  theme={theme}
+                                  onCopy={handleCopyCode}
+                                  copiedCode={copiedCode}
+                                />
                               </div>
                             </Card>
                           </div>
                         </div>
                       ) : (
-                        messages.map((message) => (
-                          <div
-                            key={message.id}
-                            className={`flex ${
-                              message.message_belong === "user" ? "justify-end" : "justify-start"
-                            } animate-in fade-in-0 slide-in-from-bottom-3 duration-300`}
-                          >
-                            <div className="flex items-start gap-3 max-w-[98%] sm:gap-3 sm:max-w-[90%] md:max-w-[80%]">
-                              {message.message_belong === "assistant" && (
-                                <Avatar className="mt-1">
-                                  <AvatarFallback>
-                                    <Bot className="w-4 h-4" />
-                                  </AvatarFallback>
-                                </Avatar>
-                              )}
-                              <Card
-                                className={`p-3 ${
-                                  message.message_belong === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
-                                }`}
-                              >
-                                <div className="prose dark:prose-invert max-w-none">
-                                  {renderMessageWithLaTeX(message.text, theme, handleCopyCode, copiedCode)}
-                                </div>
-                              </Card>
-                              {message.message_belong === "user" && (
-                                <Avatar className="mt-1">
-                                  <AvatarFallback>
-                                    <User className="w-4 h-4" />
-                                  </AvatarFallback>
-                                </Avatar>
-                              )}
-                            </div>
-                          </div>
-                        ))
+                        renderedMessages
                       )}
                       {isLoading && (
                         <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-3 duration-300">
@@ -652,34 +568,12 @@ export default function ChatPage() {
                         </div>
                       )}
                     </div>
-                    <form onSubmit={handleSubmit} className="sticky bottom-0 bg-background pt-2">
-                      <div className="relative">
-                        <Textarea
-                          ref={textareaRef}
-                          placeholder="Напишите ваш запрос..."
-                          value={input}
-                          onChange={handleInputChange}
-                          className="min-h-[60px] max-h-[200px] resize-none pr-14 rounded-xl border-gray-300 focus:border-primary"
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                              e.preventDefault()
-                              handleSubmit(e)
-                            }
-                          }}
-                        />
-                        <Button
-                          type="submit"
-                          className="absolute right-2 bottom-2 rounded-full w-10 h-10 p-0"
-                          disabled={!input.trim() || isLoading}
-                        >
-                          <ArrowUp className="h-4 w-4" />
-                          <span className="sr-only">Отправить</span>
-                        </Button>
-                      </div>
-                      <p className="text-xs text-center text-muted-foreground mt-2">
-                        AI может допускать ошибки. Проверяйте важную информацию.
-                      </p>
-                    </form>
+                    <MessageInput
+                      value={input}
+                      onChange={handleInputChange}
+                      onSubmit={handleSubmit}
+                      isLoading={isLoading}
+                    />
                   </>
                 )}
               </div>
