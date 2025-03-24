@@ -1,5 +1,5 @@
 "use client"
-import type React from "react"
+import React from "react"
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
@@ -21,7 +21,11 @@ import ReactMarkdown from "react-markdown"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism"
 import { useTheme } from "next-themes"
-import { CSSProperties } from "react"
+import type { CSSProperties } from "react"
+import "katex/dist/katex.min.css"
+import { MarkdownWithLatex } from "@/components/markdown-with-latex"
+import { preprocessLatexInText } from "@/utils/latex-utils"
+import { BlockMath, InlineMath } from "react-katex"
 
 interface Message {
   id: number
@@ -30,11 +34,64 @@ interface Message {
   timestamp: Date
 }
 
-const PROGRAMMING_LANGUAGES = [ "javascript", "typescript", "jsx", "tsx", "python", "java", "c", "cpp", "csharp", "go",
-  "rust", "swift", "kotlin", "php", "ruby", "scala", "perl", "haskell", "r", "matlab", "sql", "html", "css", "scss","sass",
-  "less", "json", "xml", "yaml", "markdown", "md", "bash", "shell", "powershell", "dockerfile", "graphql", "solidity",
-  "dart", "elixir", "erlang", "fortran", "groovy", "lua", "objectivec", "pascal", "prolog", "scheme", "vb", "vbnet",
-  "clojure", "coffeescript", "fsharp", "julia", "ocaml", "reasonml","svelte",]
+const PROGRAMMING_LANGUAGES = [
+  "javascript",
+  "typescript",
+  "jsx",
+  "tsx",
+  "python",
+  "java",
+  "c",
+  "cpp",
+  "csharp",
+  "go",
+  "rust",
+  "swift",
+  "kotlin",
+  "php",
+  "ruby",
+  "scala",
+  "perl",
+  "haskell",
+  "r",
+  "matlab",
+  "sql",
+  "html",
+  "css",
+  "scss",
+  "sass",
+  "less",
+  "json",
+  "xml",
+  "yaml",
+  "markdown",
+  "md",
+  "bash",
+  "shell",
+  "powershell",
+  "dockerfile",
+  "graphql",
+  "solidity",
+  "dart",
+  "elixir",
+  "erlang",
+  "fortran",
+  "groovy",
+  "lua",
+  "objectivec",
+  "pascal",
+  "prolog",
+  "scheme",
+  "vb",
+  "vbnet",
+  "clojure",
+  "coffeescript",
+  "fsharp",
+  "julia",
+  "ocaml",
+  "reasonml",
+  "svelte",
+]
 
 const detectLanguage = (className: string | undefined): string => {
   if (!className) return "text"
@@ -68,6 +125,123 @@ interface ChatHistory {
   messages: number
 }
 
+interface CodeBlockProps {
+  codeString: string
+  language: string
+  theme: string | undefined
+  onCopy: (code: string) => void
+  copiedCode: string | null
+}
+
+const CodeBlock: React.FC<CodeBlockProps> = ({ codeString, language, theme, onCopy, copiedCode }) => {
+  return (
+    <div className="relative group">
+      <div className="absolute right-2 top-2 z-10">
+        <Button
+          variant="ghost"
+          className="h-8 w-8 bg-background/80 backdrop-blur-sm opacity-80 hover:opacity-100"
+          onClick={() => onCopy(codeString)}
+        >
+          {copiedCode === codeString ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+        </Button>
+      </div>
+      <div className="absolute left-2 top-0 text-xs font-mono text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
+        {language}
+      </div>
+      <SyntaxHighlighter
+        language={language}
+        PreTag="div"
+        customStyle={{
+          marginTop: "0",
+          marginBottom: "0",
+          paddingTop: "2rem",
+          borderRadius: "0.375rem",
+        }}
+        style={theme === "dark" ? vscDarkPlus : (vs as { [key: string]: CSSProperties })}
+      >
+        {codeString}
+      </SyntaxHighlighter>
+    </div>
+  )
+}
+
+// Update the renderMessageWithLaTeX function to directly convert parenthesized expressions
+const renderMessageWithLaTeX = (
+  text: string,
+  theme: string | undefined,
+  onCopy: (code: string) => void,
+  copiedCode: string | null,
+) => {
+  // Check if the entire message is a block math formula
+  if (text.trim().startsWith("$$") && text.trim().endsWith("$$")) {
+    return (
+      <div className="flex justify-center w-full py-2">
+        <MarkdownWithLatex content={text.trim()} theme={theme} onCopy={onCopy} copiedCode={copiedCode} />
+      </div>
+    )
+  }
+
+  // Preprocess the text - convert parenthesized LaTeX to $formula$ format
+  let preprocessedText = text
+
+  // Handle LaTeX expressions in parentheses with any LaTeX command
+  const parenthesesLatexRegex = /$$\s*(\\[a-zA-Z]+(\{[^}]*\})?)\s*$$/g
+  preprocessedText = preprocessedText.replace(parenthesesLatexRegex, (match) => {
+    const formula = match.slice(1, -1).trim()
+    return `$${formula}$`
+  })
+
+  // Now process with the standard preprocessLatexInText function
+  preprocessedText = preprocessLatexInText(preprocessedText)
+
+  // First handle code blocks separately
+  const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g
+  const parts = []
+  let lastIndex = 0
+  let match
+
+  while ((match = codeBlockRegex.exec(preprocessedText)) !== null) {
+    // Text before code block
+    if (match.index > lastIndex) {
+      const nonCodeText = preprocessedText.slice(lastIndex, match.index)
+      parts.push(
+        <div key={`text-${lastIndex}`}>
+          <MarkdownWithLatex content={nonCodeText} theme={theme} onCopy={onCopy} copiedCode={copiedCode} />
+        </div>,
+      )
+    }
+
+    // Code block
+    const language = match[1] || "text"
+    const codeContent = match[2]
+
+    parts.push(
+      <CodeBlock
+        key={`code-${lastIndex}`}
+        codeString={codeContent}
+        language={language}
+        theme={theme}
+        onCopy={onCopy}
+        copiedCode={copiedCode}
+      />,
+    )
+
+    lastIndex = match.index + match[0].length
+  }
+
+  // Text after the last code block
+  if (lastIndex < preprocessedText.length) {
+    const remainingText = preprocessedText.slice(lastIndex)
+    parts.push(
+      <div key={`text-${lastIndex}`}>
+        <MarkdownWithLatex content={remainingText} theme={theme} onCopy={onCopy} copiedCode={copiedCode} />
+      </div>,
+    )
+  }
+
+  return <>{parts}</>
+}
+
 export default function ChatPage() {
   const { theme } = useTheme()
   const params = useParams()
@@ -85,6 +259,12 @@ export default function ChatPage() {
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
+  const [sidebarVersion, setSidebarVersion] = useState(0);
+  //const MemoizedSidebar = React.memo(sidebarVersion);
+
+  const updateSidebar = () => {
+    setSidebarVersion(v => v + 1);
+  };
 
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current
@@ -103,9 +283,12 @@ export default function ChatPage() {
   }
 
   const token = getToken()
+  const isRequested = useRef(false)
 
   const loadChatHistory = async (chatId: string) => {
     setIsLoadingHistory(true)
+    if (isRequested.current) return
+    isRequested.current = true
     try {
       const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/${chatId}`, {
         headers: {
@@ -129,13 +312,6 @@ export default function ChatPage() {
       setIsLoadingHistory(false)
     }
   }
-  // Добавьте задержку перед перенаправлением
-  useEffect(() => {
-    setTimeout(() => {
-      console.log("Hereee")
-      loadChatHistory(chatId)
-    }, 300);
-  }, [chatHistory])
 
   const handleChatDeleted = (nextChatId: string | null) => {
     if (nextChatId) {
@@ -182,6 +358,7 @@ export default function ChatPage() {
       }
       setMessages((prev) => [...prev, newMessage])
       setIsLoading(false)
+      updateSidebar();
     }
 
     ws.current.onerror = (error) => {
@@ -361,8 +538,12 @@ export default function ChatPage() {
         </div>
       </header>
       <div className="flex flex-1 overflow-hidden">
-        <ChatSidebar key={messages.length} chatHistory={chatHistory} setChatHistory={setChatHistory} onChatDeleted={handleChatDeleted} />
-        {/* Условный рендеринг основного контента */}
+        <ChatSidebar
+          key={`sidebar-${sidebarVersion}`}
+          chatHistory={chatHistory}
+          setChatHistory={setChatHistory}
+          onChatDeleted={handleChatDeleted}
+        />
         {chatHistory.length > 0 ? (
           <main className="flex-1 overflow-auto">
             <div className="container mx-auto px-4 py-6 md:px-6 max-w-4xl">
@@ -399,38 +580,13 @@ export default function ChatPage() {
                                       const language = detectLanguage(className)
 
                                       return (
-                                        <div className="relative group">
-                                          <div className="absolute right-2 top-2 z-10">
-                                            <Button
-                                              variant="ghost"
-                                              className="h-8 w-8 bg-background/80 backdrop-blur-sm opacity-80 hover:opacity-100"
-                                              onClick={() => handleCopyCode(codeString)}
-                                            >
-                                              {copiedCode === codeString ? (
-                                                <Check className="h-4 w-4 text-green-500" />
-                                              ) : (
-                                                <Copy className="h-4 w-4" />
-                                              )}
-                                            </Button>
-                                          </div>
-                                          <div className="absolute left-2 top-0 text-xs font-mono text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
-                                            {language}
-                                          </div>
-                                          <SyntaxHighlighter
-                                            language={language}
-                                            PreTag="div"
-                                            {...props}
-                                            customStyle={{
-                                              marginTop: "0",
-                                              marginBottom: "0",
-                                              paddingTop: "2rem",
-                                              borderRadius: "0.375rem",
-                                            }}
-                                            style={theme === "dark" ? vscDarkPlus : vs as { [key: string]: CSSProperties }}
-                                          >
-                                            {codeString}
-                                          </SyntaxHighlighter>
-                                        </div>
+                                        <CodeBlock
+                                          codeString={codeString}
+                                          language={language}
+                                          theme={theme}
+                                          onCopy={handleCopyCode}
+                                          copiedCode={copiedCode}
+                                        />
                                       )
                                     },
                                   }}
@@ -449,7 +605,7 @@ export default function ChatPage() {
                               message.message_belong === "user" ? "justify-end" : "justify-start"
                             } animate-in fade-in-0 slide-in-from-bottom-3 duration-300`}
                           >
-                            <div className="flex items-start gap-3 max-w-[80%]">
+                            <div className="flex items-start gap-3 max-w-[98%] sm:gap-3 sm:max-w-[90%] md:max-w-[80%]">
                               {message.message_belong === "assistant" && (
                                 <Avatar className="mt-1">
                                   <AvatarFallback>
@@ -463,59 +619,7 @@ export default function ChatPage() {
                                 }`}
                               >
                                 <div className="prose dark:prose-invert max-w-none">
-                                  <ReactMarkdown
-                                    components={{
-                                      code: ({ className, children, inline, ...props }: CodeProps) => {
-                                        if (inline) {
-                                          return (
-                                            <code className={className} {...props}>
-                                              {children}
-                                            </code>
-                                          )
-                                        }
-
-                                        const codeString = String(children || "").replace(/\n$/, "")
-                                        const language = detectLanguage(className)
-
-                                        return (
-                                          <div className="relative group">
-                                            <div className="absolute right-2 top-2 z-10">
-                                              <Button
-                                                variant="ghost"
-                                                className="h-8 w-8 bg-background/80 backdrop-blur-sm opacity-80 hover:opacity-100"
-                                                onClick={() => handleCopyCode(codeString)}
-                                              >
-                                                {copiedCode === codeString ? (
-                                                  <Check className="h-4 w-4 text-green-500" />
-                                                ) : (
-                                                  <Copy className="h-4 w-4" />
-                                                )}
-                                              </Button>
-                                            </div>
-                                            <div className="absolute left-2 top-0 text-xs font-mono text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
-                                              {language}
-                                            </div>
-                                            <SyntaxHighlighter
-                                              language={language}
-                                              PreTag="div"
-                                              {...props}
-                                              customStyle={{
-                                                marginTop: "0",
-                                                marginBottom: "0",
-                                                paddingTop: "2rem",
-                                                borderRadius: "0.375rem",
-                                              }}
-                                              style={theme === "dark" ? vscDarkPlus : vs as { [key: string]: CSSProperties }}
-                                            >
-                                              {codeString}
-                                            </SyntaxHighlighter>
-                                          </div>
-                                        )
-                                      },
-                                    }}
-                                  >
-                                    {message.text}
-                                  </ReactMarkdown>
+                                  {renderMessageWithLaTeX(message.text, theme, handleCopyCode, copiedCode)}
                                 </div>
                               </Card>
                               {message.message_belong === "user" && (
@@ -584,6 +688,18 @@ export default function ChatPage() {
         ) : null}
       </div>
     </div>
-  );
+  )
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
