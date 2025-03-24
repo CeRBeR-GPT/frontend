@@ -10,6 +10,7 @@ import type { CSSProperties } from "react"
 import { Copy, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
+// Типы для пропсов компонента CodeBlock
 interface CodeBlockProps {
   codeString: string
   language: string
@@ -18,21 +19,37 @@ interface CodeBlockProps {
   copiedCode: string | null
 }
 
-const CodeBlock: React.FC<CodeBlockProps> = ({ codeString, language, theme, onCopy, copiedCode }) => {
+// Компонент для отображения блоков кода с подсветкой синтаксиса
+const CodeBlock: React.FC<CodeBlockProps> = ({ 
+  codeString, 
+  language, 
+  theme, 
+  onCopy, 
+  copiedCode 
+}) => {
   return (
     <div className="relative group">
+      {/* Кнопка копирования */}
       <div className="absolute right-2 top-2 z-10">
         <Button
           variant="ghost"
           className="h-8 w-8 bg-background/80 backdrop-blur-sm opacity-80 hover:opacity-100"
           onClick={() => onCopy(codeString)}
         >
-          {copiedCode === codeString ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+          {copiedCode === codeString ? (
+            <Check className="h-4 w-4 text-green-500" />
+          ) : (
+            <Copy className="h-4 w-4" />
+          )}
         </Button>
       </div>
+      
+      {/* Язык программирования */}
       <div className="absolute left-2 top-0 text-xs font-mono text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
         {language}
       </div>
+      
+      {/* Блок с подсветкой синтаксиса */}
       <SyntaxHighlighter
         language={language}
         PreTag="div"
@@ -50,65 +67,20 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ codeString, language, theme, onCo
   )
 }
 
+// Список поддерживаемых языков программирования
 const PROGRAMMING_LANGUAGES = [
-  "javascript",
-  "typescript",
-  "jsx",
-  "tsx",
-  "python",
-  "java",
-  "c",
-  "cpp",
-  "csharp",
-  "go",
-  "rust",
-  "swift",
-  "kotlin",
-  "php",
-  "ruby",
-  "scala",
-  "perl",
-  "haskell",
-  "r",
-  "matlab",
-  "sql",
-  "html",
-  "css",
-  "scss",
-  "sass",
-  "less",
-  "json",
-  "xml",
-  "yaml",
-  "markdown",
-  "md",
-  "bash",
-  "shell",
-  "powershell",
-  "dockerfile",
-  "graphql",
-  "solidity",
-  "dart",
-  "elixir",
-  "erlang",
-  "fortran",
-  "groovy",
-  "lua",
-  "objectivec",
-  "pascal",
-  "prolog",
-  "scheme",
-  "vb",
-  "vbnet",
-  "clojure",
-  "coffeescript",
-  "fsharp",
-  "julia",
-  "ocaml",
-  "reasonml",
-  "svelte",
+  "javascript", "typescript", "jsx", "tsx", "python", "java",
+  "c", "cpp", "csharp", "go", "rust", "swift", "kotlin",
+  "php", "ruby", "scala", "perl", "haskell", "r", "matlab",
+  "sql", "html", "css", "scss", "sass", "less", "json",
+  "xml", "yaml", "markdown", "md", "bash", "shell",
+  "powershell", "dockerfile", "graphql", "solidity", "dart",
+  "elixir", "erlang", "fortran", "groovy", "lua", "objectivec",
+  "pascal", "prolog", "scheme", "vb", "vbnet", "clojure",
+  "coffeescript", "fsharp", "julia", "ocaml", "reasonml", "svelte"
 ]
 
+// Функция для определения языка программирования
 const detectLanguage = (className: string | undefined): string => {
   if (!className) return "text"
 
@@ -119,13 +91,10 @@ const detectLanguage = (className: string | undefined): string => {
   }
 
   const match = /language-(\w+)/.exec(className)
-  if (match && match[1]) {
-    return match[1]
-  }
-
-  return "text"
+  return match && match[1] ? match[1] : "text"
 }
 
+// Пропсы для основного компонента MarkdownWithLatex
 interface MarkdownWithLatexProps {
   content: string
   theme?: string
@@ -133,83 +102,119 @@ interface MarkdownWithLatexProps {
   copiedCode: string | null
 }
 
-// Clean LaTeX formula from various formats
-const cleanLatexFormula = (formula: string): string => {
-  if (!formula) return formula
-
-  // Handle string literal representations of line breaks and escaped characters
-  let cleaned = formula
-    // Replace literal \n with spaces
-    .replace(/\\n/g, " ")
-    // Handle array-like strings ['[...]'] or ["[...]"]
-    .replace(/^\s*\[['"]?\s*\[/g, "$$")
-    .replace(/\]\s*['"]?\]\s*$/g, "$$")
-    // Remove extra backslashes from escaped sequences
-    .replace(/\\\\([^\\])/g, "\\$1")
-    // Remove any remaining line breaks
-    .replace(/\n/g, " ")
-    // Normalize spaces
-    .replace(/\s+/g, " ")
-    .trim()
-
-  // Ensure proper delimiters
-  if (cleaned.startsWith("[") && cleaned.endsWith("]")) {
-    cleaned = "$$" + cleaned.slice(1, -1) + "$$"
-  } else if (cleaned.startsWith("\\[") && cleaned.endsWith("\\]")) {
-    cleaned = "$$" + cleaned.slice(2, -2) + "$$"
-  } else if (cleaned.startsWith("$$") && cleaned.endsWith("$$")) {
-    cleaned = "$" + cleaned.slice(2, -2) + "$"
-  } else if (!cleaned.startsWith("$")) {
-    // If no delimiters, add them
-    cleaned = "$" + cleaned + "$"
-  }
-
-  return cleaned
+// Интерфейс для пропсов code компонента
+interface CodeComponentProps {
+  node?: any
+  className?: string
+  children?: React.ReactNode
+  inline?: boolean
+  [key: string]: any
 }
 
-export const MarkdownWithLatex: React.FC<MarkdownWithLatexProps> = ({ content, theme, onCopy, copiedCode }) => {
-  // Pre-process content to handle special LaTeX cases
-  let processedContent = content
+// Обработка LaTeX в тексте параграфа
+const processLatexInParagraph = (text: string): React.ReactNode => {
+  if (!text) return text
 
-  // Handle array-like LaTeX representations
-  const arrayLatexRegex = /\[['"]?\s*\[\\n.*?\\n\s*\]\s*['"]?\]/g
-  processedContent = processedContent.replace(arrayLatexRegex, (match) => {
-    return cleanLatexFormula(match)
-  })
-
-  // Handle other potential LaTeX expressions with line breaks
-  const multilineLatexRegex =
-    /(\\\[[\s\S]*?\\\])|(\\$$[\s\S]*?\\$$)|(\$\$[\s\S]*?\$\$)|(\$[^\n$]*?(?:\n[^\n$]*?)*?\$)|(\[[\s\S]*?\])/g
-  processedContent = processedContent.replace(multilineLatexRegex, (match) => {
-    if (match.includes("\\n") || match.includes("\n")) {
-      return cleanLatexFormula(match)
+  // Обработка блоков математики ($$...$$)
+  if (text.trim().startsWith("$$") && text.trim().endsWith("$$")) {
+    const formula = text.trim().slice(2, -2)
+    try {
+      return <BlockMath key="block-full">{formula}</BlockMath>
+    } catch (error) {
+      console.error("Ошибка рендеринга BlockMath:", error)
+      return text
     }
-    return match
-  })
+  }
+
+  // Регулярка для поиска LaTeX выражений
+  const latexRegex = /(\$\$([\s\S]*?)\$\$)|(\$((?!\$)[\s\S]*?)\$)/g
+  const parts: React.ReactNode[] = []
+  let lastIndex = 0
+  let match
+
+  while ((match = latexRegex.exec(text)) !== null) {
+    // Текст до формулы
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index))
+    }
+
+    // Обработка блоков ($$...$$)
+    if (match[1]) {
+      try {
+        parts.push(<BlockMath key={`block-${match.index}`}>{match[2]}</BlockMath>)
+      } catch (error) {
+        console.error("Ошибка рендеринга BlockMath:", error)
+        parts.push(`$$${match[2]}$$`)
+      }
+    } 
+    // Обработка inline формул ($...$)
+    else if (match[3]) {
+      try {
+        parts.push(<InlineMath key={`inline-${match.index}`}>{match[4]}</InlineMath>)
+      } catch (error) {
+        console.error("Ошибка рендеринга InlineMath:", error)
+        parts.push(`$${match[4]}$`)
+      }
+    }
+
+    lastIndex = match.index + match[0].length
+  }
+
+  // Остаток текста после формул
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex))
+  }
+
+  return parts.length > 0 ? parts : text
+}
+
+// Основной компонент для рендеринга Markdown с LaTeX
+export const MarkdownWithLatex: React.FC<MarkdownWithLatexProps> = ({ 
+  content, 
+  theme, 
+  onCopy, 
+  copiedCode 
+}) => {
+  // Предварительная обработка контента
+  let processedContent = content
+    .replace(/\[['"]?\s*\[\\n.*?\\n\s*\]\s*['"]?\]/g, (match) => `$${match.slice(1, -1).trim()}$`)
+    .replace(/$$\s*(\\[a-zA-Z]+(\{[^}]*\})?)\s*$$/g, (match) => `$${match.slice(1, -1).trim()}$`)
+    .replace(
+      /(\\\[[\s\S]*?\\\])|(\\$$[\s\S]*?\\$$)|(\$\$[\s\S]*?\$\$)|(\$[^\n$]*?(?:\n[^\n$]*?)*?\$)|(\[[\s\S]*?\])/g, 
+      (match) => {
+        if (match.includes("\\n") || match.includes("\n")) {
+          const formula = match.replace(/^\\\[|\\\]$|^\\$$|\\$$$|\$\$|\$/g, "").trim()
+          return match.startsWith("\\[") || match.startsWith("$$") ? `$$${formula}$$` : `$${formula}$`
+        }
+        return match
+      }
+    )
 
   return (
     <ReactMarkdown
       components={{
+        // Заголовки
         h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mt-4 mb-2" {...props} />,
         h2: ({ node, ...props }) => <h2 className="text-xl font-bold mt-3 mb-1.5" {...props} />,
         h3: ({ node, ...props }) => <h3 className="text-lg font-bold mt-2 mb-1" {...props} />,
+        
+        // Жирный текст
         strong: ({ node, ...props }) => <strong className="font-bold" {...props} />,
+        
+        // Параграфы с обработкой LaTeX
         p: ({ node, children, ...props }) => {
-          // Convert children to string to avoid [object Object]
           const childrenText = React.Children.toArray(children)
             .map((child) => (typeof child === "string" ? child : ""))
             .join("")
-
-          // Process LaTeX in the paragraph text
-          const paragraphContent = processLatexInParagraph(childrenText)
-
           return (
             <p className="mb-2" {...props}>
-              {paragraphContent}
+              {processLatexInParagraph(childrenText)}
             </p>
           )
         },
-        code: ({ className, children, inline, ...props }) => {
+        
+        // Блоки кода
+        code: ({ node, className, children, inline, ...props }: CodeComponentProps) => {
           if (inline) {
             return (
               <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded" {...props}>
@@ -235,58 +240,3 @@ export const MarkdownWithLatex: React.FC<MarkdownWithLatexProps> = ({ content, t
     </ReactMarkdown>
   )
 }
-
-// Process LaTeX in paragraph text
-const processLatexInParagraph = (text: string): React.ReactNode => {
-  if (!text) return text
-
-  const parts: React.ReactNode[] = []
-  let lastIndex = 0
-
-  // Match both inline ($...$) and block ($$...$$) LaTeX
-  const latexRegex = /(\$\$([\s\S]*?)\$\$)|(\$((?!\$)[\s\S]*?)\$)/g
-  let match
-
-  while ((match = latexRegex.exec(text)) !== null) {
-    // Add text before the match
-    if (match.index > lastIndex) {
-      parts.push(text.substring(lastIndex, match.index))
-    }
-
-    // Check if it's a block or inline LaTeX
-    if (match[1]) {
-      // Block LaTeX: $$...$$
-      try {
-        parts.push(<BlockMath key={`block-${match.index}`}>{match[2]}</BlockMath>)
-      } catch (error) {
-        console.error("Error rendering BlockMath:", error)
-        parts.push(`$$${match[2]}$$`) // Fallback to plain text
-      }
-    } else if (match[3]) {
-      // Inline LaTeX: $...$
-      try {
-        parts.push(<InlineMath key={`inline-${match.index}`}>{match[4]}</InlineMath>)
-      } catch (error) {
-        console.error("Error rendering InlineMath:", error)
-        parts.push(`$${match[4]}$`) // Fallback to plain text
-      }
-    }
-
-    lastIndex = match.index + match[0].length
-  }
-
-  // Add remaining text
-  if (lastIndex < text.length) {
-    parts.push(text.substring(lastIndex))
-  }
-
-  console.log(parts)
-
-  return parts
-}
-
-
-
-
-
-

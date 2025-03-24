@@ -25,6 +25,7 @@ import type { CSSProperties } from "react"
 import "katex/dist/katex.min.css"
 import { MarkdownWithLatex } from "@/components/markdown-with-latex"
 import { preprocessLatexInText } from "@/utils/latex-utils"
+import { BlockMath, InlineMath } from "react-katex"
 
 interface Message {
   id: number
@@ -164,15 +165,34 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ codeString, language, theme, onCo
   )
 }
 
-// Modify the renderMessageWithLaTeX function to use the new preprocessing
+// Update the renderMessageWithLaTeX function to directly convert parenthesized expressions
 const renderMessageWithLaTeX = (
   text: string,
   theme: string | undefined,
   onCopy: (code: string) => void,
   copiedCode: string | null,
 ) => {
-  // Preprocess the text to clean LaTeX formulas
-  const preprocessedText = preprocessLatexInText(text)
+  // Check if the entire message is a block math formula
+  if (text.trim().startsWith("$$") && text.trim().endsWith("$$")) {
+    return (
+      <div className="flex justify-center w-full py-2">
+        <MarkdownWithLatex content={text.trim()} theme={theme} onCopy={onCopy} copiedCode={copiedCode} />
+      </div>
+    )
+  }
+
+  // Preprocess the text - convert parenthesized LaTeX to $formula$ format
+  let preprocessedText = text
+
+  // Handle LaTeX expressions in parentheses with any LaTeX command
+  const parenthesesLatexRegex = /$$\s*(\\[a-zA-Z]+(\{[^}]*\})?)\s*$$/g
+  preprocessedText = preprocessedText.replace(parenthesesLatexRegex, (match) => {
+    const formula = match.slice(1, -1).trim()
+    return `$${formula}$`
+  })
+
+  // Now process with the standard preprocessLatexInText function
+  preprocessedText = preprocessLatexInText(preprocessedText)
 
   // First handle code blocks separately
   const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g
@@ -660,6 +680,14 @@ export default function ChatPage() {
     </div>
   )
 }
+
+
+
+
+
+
+
+
 
 
 
