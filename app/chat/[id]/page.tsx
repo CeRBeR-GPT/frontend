@@ -259,6 +259,11 @@ export default function ChatPage() {
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
+  const [sidebarVersion, setSidebarVersion] = useState(0);
+
+  const updateSidebar = () => {
+    setSidebarVersion(v => v + 1);
+  };
 
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current
@@ -352,6 +357,7 @@ export default function ChatPage() {
       }
       setMessages((prev) => [...prev, newMessage])
       setIsLoading(false)
+      updateSidebar();
     }
 
     ws.current.onerror = (error) => {
@@ -388,6 +394,8 @@ export default function ChatPage() {
   useEffect(() => {
     adjustTextareaHeight()
   }, [])
+
+  
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -532,7 +540,7 @@ export default function ChatPage() {
       </header>
       <div className="flex flex-1 overflow-hidden">
         <ChatSidebar
-          key={messages.length}
+          key={`sidebar-${sidebarVersion}`}
           chatHistory={chatHistory}
           setChatHistory={setChatHistory}
           onChatDeleted={handleChatDeleted}
