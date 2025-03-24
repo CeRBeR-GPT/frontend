@@ -1,5 +1,5 @@
 "use client"
-import type React from "react"
+import React from "react"
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
@@ -260,6 +260,7 @@ export default function ChatPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
   const [sidebarVersion, setSidebarVersion] = useState(0);
+  //const MemoizedSidebar = React.memo(sidebarVersion);
 
   const updateSidebar = () => {
     setSidebarVersion(v => v + 1);
@@ -394,8 +395,6 @@ export default function ChatPage() {
   useEffect(() => {
     adjustTextareaHeight()
   }, [])
-
-  
 
   useEffect(() => {
     if (!isAuthenticated) {

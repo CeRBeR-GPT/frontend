@@ -57,18 +57,6 @@ export default function ProfilePage() {
     const token = getToken()
 
     const getUserData = async () => {
-      // if (isRequested.current) return
-      // isRequested.current = true
-      // try {
-      //   const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
-      //     headers: {
-      //       Authorization: `Bearer ${token}`,
-      //     },
-      //   })
-
-      //   const userData = response.data
-      //   console.log("User data fetched:", userData)
-      //   setUserData(userData)
 
         // Обновляем историю использования сообщений
         const today = format(new Date(), 'yyyy-MM-dd')
@@ -96,7 +84,10 @@ export default function ProfilePage() {
     }
   }, [])
 
+  const isRequest = useRef(false)
   const fetchChats = async (token: string | null) => {
+    if (isRequest.current) return
+    isRequest.current = true
     try {
       const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
         headers: {
