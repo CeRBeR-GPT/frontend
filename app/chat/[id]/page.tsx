@@ -70,24 +70,64 @@ interface ChatHistory {
   messages: number
 }
 
+interface CodeBlockProps {
+  codeString: string;
+  language: string;
+  theme: string | undefined;
+  onCopy: (code: string) => void;
+  copiedCode: string | null;
+}
+
+const CodeBlock: React.FC<CodeBlockProps> = ({ codeString, language, theme, onCopy, copiedCode }) => {
+  return (
+    <div className="relative group">
+      <div className="absolute right-2 top-2 z-10">
+        <Button
+          variant="ghost"
+          className="h-8 w-8 bg-background/80 backdrop-blur-sm opacity-80 hover:opacity-100"
+          onClick={() => onCopy(codeString)}
+        >
+          {copiedCode === codeString ? (
+            <Check className="h-4 w-4 text-green-500" />
+          ) : (
+            <Copy className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
+      <div className="absolute left-2 top-0 text-xs font-mono text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
+        {language}
+      </div>
+      <SyntaxHighlighter
+        language={language}
+        PreTag="div"
+        customStyle={{
+          marginTop: "0",
+          marginBottom: "0",
+          paddingTop: "2rem",
+          borderRadius: "0.375rem",
+        }}
+        style={theme === "dark" ? vscDarkPlus : vs as { [key: string]: CSSProperties }}
+      >
+        {codeString}
+      </SyntaxHighlighter>
+    </div>
+  );
+};
+
 const replaceLatexDelimiters = (text: string) => {
-  // Убираем переносы строк вокруг формул, но сохраняем их внутри
   let cleanedText = text.replace(/\s*\$\s*([\s\S]*?)\s*\$\s*/g, (match, p1) => {
-    // Убираем переносы строк только вокруг формулы, но не внутри
-    const cleanedFormula = p1.trim(); // Убираем пробелы и переносы строк только по краям
-    return `$${cleanedFormula}$`; // Возвращаем формулу без лишних переносов
+    const cleanedFormula = p1.trim();
+    return `$${cleanedFormula}$`;
   });
 
-  // Аналогично для блочных формул \[...\]
   cleanedText = cleanedText.replace(/\s*\\\[\s*([\s\S]*?)\s*\\\]\s*/g, (match, p1) => {
-    const cleanedFormula = p1.trim(); // Убираем переносы строк только по краям
-    return `$$${cleanedFormula}$$`; // Возвращаем блочную формулу
+    const cleanedFormula = p1.trim();
+    return `$$${cleanedFormula}$$`;
   });
 
-  // Аналогично для \(...\)
   cleanedText = cleanedText.replace(/\s*\\\(\s*([\s\S]*?)\s*\\\)\s*/g, (match, p1) => {
-    const cleanedFormula = p1.trim(); // Убираем переносы строк только по краям
-    return `$${cleanedFormula}$`; // Возвращаем встроенную формулу
+    const cleanedFormula = p1.trim();
+    return `$${cleanedFormula}$`;
   });
 
   return cleanedText;
@@ -104,18 +144,16 @@ const renderTextWithLaTeX = (text: string) => {
     if (match.index > lastIndex) {
       const nonLatexText = cleanedText.slice(lastIndex, match.index);
       parts.push(
-        <span key={`text-${lastIndex}`}>{nonLatexText}</span> // Добавляем ключ
+        <span key={`text-${lastIndex}`}>{nonLatexText}</span>
       );
     }
     const latexContent = match[1] || match[2];
     if (latexContent) {
       if (match[1]) {
-        // Блочная формула ($$...$$)
         parts.push(
           <BlockMath key={`block-latex-${lastIndex}`}>{latexContent}</BlockMath>
         );
       } else {
-        // Встроенная формула ($...$)
         parts.push(
           <InlineMath key={`inline-latex-${lastIndex}`}>{latexContent}</InlineMath>
         );
@@ -127,55 +165,48 @@ const renderTextWithLaTeX = (text: string) => {
   if (lastIndex < cleanedText.length) {
     const remainingText = cleanedText.slice(lastIndex);
     parts.push(
-      <span key={`text-${lastIndex}`}>{remainingText}</span> // Добавляем ключ
+      <span key={`text-${lastIndex}`}>{remainingText}</span>
     );
   }
 
   return <>{parts}</>;
 };
 
-const renderMessageWithLaTeX = (text: string) => {
-  const codeBlockRegex = /```([\s\S]*?)```/g; // Регулярное выражение для блоков кода
+const renderMessageWithLaTeX = (text: string, theme: string | undefined, onCopy: (code: string) => void, copiedCode: string | null) => {
+  const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
   const parts = [];
   let lastIndex = 0;
   let match;
 
-  // Обрабатываем блоки кода и текст между ними
   while ((match = codeBlockRegex.exec(text)) !== null) {
-    // Текст до блока кода
     if (match.index > lastIndex) {
       const nonCodeText = text.slice(lastIndex, match.index);
       parts.push(
-        <div key={`text-${lastIndex}`}>{renderTextWithLaTeX(nonCodeText)}</div> // Добавляем ключ
+        <div key={`text-${lastIndex}`}>{renderTextWithLaTeX(nonCodeText)}</div>
       );
     }
 
-    // Сам блок кода
-    const codeContent = match[1];
+    const language = match[1] || "text";
+    const codeContent = match[2];
+
     parts.push(
-      <SyntaxHighlighter
+      <CodeBlock
         key={`code-${lastIndex}`}
-        language="text" // Язык кода (можно определить динамически, если нужно)
-        style={vs}
-        customStyle={{
-          marginTop: "0",
-          marginBottom: "0",
-          padding: "1rem",
-          borderRadius: "0.375rem",
-        }}
-      >
-        {codeContent}
-      </SyntaxHighlighter>
+        codeString={codeContent}
+        language={language}
+        theme={theme}
+        onCopy={onCopy}
+        copiedCode={copiedCode}
+      />
     );
 
     lastIndex = match.index + match[0].length;
   }
 
-  // Текст после последнего блока кода
   if (lastIndex < text.length) {
     const remainingText = text.slice(lastIndex);
     parts.push(
-      <div key={`text-${lastIndex}`}>{renderTextWithLaTeX(remainingText)}</div> // Добавляем ключ
+      <div key={`text-${lastIndex}`}>{renderTextWithLaTeX(remainingText)}</div>
     );
   }
 
@@ -243,13 +274,6 @@ export default function ChatPage() {
       setIsLoadingHistory(false)
     }
   }
-
-  useEffect(() => {
-    setTimeout(() => {
-      console.log("Hereee")
-      loadChatHistory(chatId)
-    }, 300);
-  }, [chatHistory])
 
   const handleChatDeleted = (nextChatId: string | null) => {
     if (nextChatId) {
@@ -512,38 +536,13 @@ export default function ChatPage() {
                                       const language = detectLanguage(className)
 
                                       return (
-                                        <div className="relative group">
-                                          <div className="absolute right-2 top-2 z-10">
-                                            <Button
-                                              variant="ghost"
-                                              className="h-8 w-8 bg-background/80 backdrop-blur-sm opacity-80 hover:opacity-100"
-                                              onClick={() => handleCopyCode(codeString)}
-                                            >
-                                              {copiedCode === codeString ? (
-                                                <Check className="h-4 w-4 text-green-500" />
-                                              ) : (
-                                                <Copy className="h-4 w-4" />
-                                              )}
-                                            </Button>
-                                          </div>
-                                          <div className="absolute left-2 top-0 text-xs font-mono text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
-                                            {language}
-                                          </div>
-                                          <SyntaxHighlighter
-                                            language={language}
-                                            PreTag="div"
-                                            {...props}
-                                            customStyle={{
-                                              marginTop: "0",
-                                              marginBottom: "0",
-                                              paddingTop: "2rem",
-                                              borderRadius: "0.375rem",
-                                            }}
-                                            style={theme === "dark" ? vscDarkPlus : vs as { [key: string]: CSSProperties }}
-                                          >
-                                            {codeString}
-                                          </SyntaxHighlighter>
-                                        </div>
+                                        <CodeBlock
+                                          codeString={codeString}
+                                          language={language}
+                                          theme={theme}
+                                          onCopy={handleCopyCode}
+                                          copiedCode={copiedCode}
+                                        />
                                       )
                                     },
                                   }}
@@ -576,7 +575,7 @@ export default function ChatPage() {
                                 }`}
                               >
                                 <div className="prose dark:prose-invert max-w-none">
-                                  {renderMessageWithLaTeX(message.text)}
+                                  {renderMessageWithLaTeX(message.text, theme, handleCopyCode, copiedCode)}
                                 </div>
                               </Card>
                               {message.message_belong === "user" && (
