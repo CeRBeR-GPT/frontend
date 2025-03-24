@@ -21,9 +21,10 @@ import ReactMarkdown from "react-markdown"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism"
 import { useTheme } from "next-themes"
-import { CSSProperties } from "react"
-import 'katex/dist/katex.min.css';
-import { InlineMath, BlockMath } from 'react-katex';
+import type { CSSProperties } from "react"
+import "katex/dist/katex.min.css"
+import { MarkdownWithLatex } from "@/components/markdown-with-latex"
+import { preprocessLatexInText } from "@/utils/latex-utils"
 
 interface Message {
   id: number
@@ -32,11 +33,64 @@ interface Message {
   timestamp: Date
 }
 
-const PROGRAMMING_LANGUAGES = [ "javascript", "typescript", "jsx", "tsx", "python", "java", "c", "cpp", "csharp", "go",
-  "rust", "swift", "kotlin", "php", "ruby", "scala", "perl", "haskell", "r", "matlab", "sql", "html", "css", "scss","sass",
-  "less", "json", "xml", "yaml", "markdown", "md", "bash", "shell", "powershell", "dockerfile", "graphql", "solidity",
-  "dart", "elixir", "erlang", "fortran", "groovy", "lua", "objectivec", "pascal", "prolog", "scheme", "vb", "vbnet",
-  "clojure", "coffeescript", "fsharp", "julia", "ocaml", "reasonml","svelte",]
+const PROGRAMMING_LANGUAGES = [
+  "javascript",
+  "typescript",
+  "jsx",
+  "tsx",
+  "python",
+  "java",
+  "c",
+  "cpp",
+  "csharp",
+  "go",
+  "rust",
+  "swift",
+  "kotlin",
+  "php",
+  "ruby",
+  "scala",
+  "perl",
+  "haskell",
+  "r",
+  "matlab",
+  "sql",
+  "html",
+  "css",
+  "scss",
+  "sass",
+  "less",
+  "json",
+  "xml",
+  "yaml",
+  "markdown",
+  "md",
+  "bash",
+  "shell",
+  "powershell",
+  "dockerfile",
+  "graphql",
+  "solidity",
+  "dart",
+  "elixir",
+  "erlang",
+  "fortran",
+  "groovy",
+  "lua",
+  "objectivec",
+  "pascal",
+  "prolog",
+  "scheme",
+  "vb",
+  "vbnet",
+  "clojure",
+  "coffeescript",
+  "fsharp",
+  "julia",
+  "ocaml",
+  "reasonml",
+  "svelte",
+]
 
 const detectLanguage = (className: string | undefined): string => {
   if (!className) return "text"
@@ -71,11 +125,11 @@ interface ChatHistory {
 }
 
 interface CodeBlockProps {
-  codeString: string;
-  language: string;
-  theme: string | undefined;
-  onCopy: (code: string) => void;
-  copiedCode: string | null;
+  codeString: string
+  language: string
+  theme: string | undefined
+  onCopy: (code: string) => void
+  copiedCode: string | null
 }
 
 const CodeBlock: React.FC<CodeBlockProps> = ({ codeString, language, theme, onCopy, copiedCode }) => {
@@ -87,11 +141,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ codeString, language, theme, onCo
           className="h-8 w-8 bg-background/80 backdrop-blur-sm opacity-80 hover:opacity-100"
           onClick={() => onCopy(codeString)}
         >
-          {copiedCode === codeString ? (
-            <Check className="h-4 w-4 text-green-500" />
-          ) : (
-            <Copy className="h-4 w-4" />
-          )}
+          {copiedCode === codeString ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
         </Button>
       </div>
       <div className="absolute left-2 top-0 text-xs font-mono text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
@@ -106,88 +156,44 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ codeString, language, theme, onCo
           paddingTop: "2rem",
           borderRadius: "0.375rem",
         }}
-        style={theme === "dark" ? vscDarkPlus : vs as { [key: string]: CSSProperties }}
+        style={theme === "dark" ? vscDarkPlus : (vs as { [key: string]: CSSProperties })}
       >
         {codeString}
       </SyntaxHighlighter>
     </div>
-  );
-};
+  )
+}
 
-const replaceLatexDelimiters = (text: string) => {
-  let cleanedText = text.replace(/\s*\$\s*([\s\S]*?)\s*\$\s*/g, (match, p1) => {
-    const cleanedFormula = p1.trim();
-    return `$${cleanedFormula}$`;
-  });
+// Modify the renderMessageWithLaTeX function to use the new preprocessing
+const renderMessageWithLaTeX = (
+  text: string,
+  theme: string | undefined,
+  onCopy: (code: string) => void,
+  copiedCode: string | null,
+) => {
+  // Preprocess the text to clean LaTeX formulas
+  const preprocessedText = preprocessLatexInText(text)
 
-  cleanedText = cleanedText.replace(/\s*\\\[\s*([\s\S]*?)\s*\\\]\s*/g, (match, p1) => {
-    const cleanedFormula = p1.trim();
-    return `$$${cleanedFormula}$$`;
-  });
+  // First handle code blocks separately
+  const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g
+  const parts = []
+  let lastIndex = 0
+  let match
 
-  cleanedText = cleanedText.replace(/\s*\\\(\s*([\s\S]*?)\s*\\\)\s*/g, (match, p1) => {
-    const cleanedFormula = p1.trim();
-    return `$${cleanedFormula}$`;
-  });
-
-  return cleanedText;
-};
-
-const renderTextWithLaTeX = (text: string) => {
-  const cleanedText = replaceLatexDelimiters(text);
-  const latexRegex = /\$\$([\s\S]*?)\$\$|\$(.*?)\$/g;
-  const parts = [];
-  let lastIndex = 0;
-  let match;
-
-  while ((match = latexRegex.exec(cleanedText)) !== null) {
+  while ((match = codeBlockRegex.exec(preprocessedText)) !== null) {
+    // Text before code block
     if (match.index > lastIndex) {
-      const nonLatexText = cleanedText.slice(lastIndex, match.index);
+      const nonCodeText = preprocessedText.slice(lastIndex, match.index)
       parts.push(
-        <span key={`text-${lastIndex}`}>{nonLatexText}</span>
-      );
-    }
-    const latexContent = match[1] || match[2];
-    if (latexContent) {
-      if (match[1]) {
-        parts.push(
-          <BlockMath key={`block-latex-${lastIndex}`}>{latexContent}</BlockMath>
-        );
-      } else {
-        parts.push(
-          <InlineMath key={`inline-latex-${lastIndex}`}>{latexContent}</InlineMath>
-        );
-      }
-    }
-    lastIndex = match.index + match[0].length;
-  }
-
-  if (lastIndex < cleanedText.length) {
-    const remainingText = cleanedText.slice(lastIndex);
-    parts.push(
-      <span key={`text-${lastIndex}`}>{remainingText}</span>
-    );
-  }
-
-  return <>{parts}</>;
-};
-
-const renderMessageWithLaTeX = (text: string, theme: string | undefined, onCopy: (code: string) => void, copiedCode: string | null) => {
-  const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
-  const parts = [];
-  let lastIndex = 0;
-  let match;
-
-  while ((match = codeBlockRegex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      const nonCodeText = text.slice(lastIndex, match.index);
-      parts.push(
-        <div key={`text-${lastIndex}`}>{renderTextWithLaTeX(nonCodeText)}</div>
-      );
+        <div key={`text-${lastIndex}`}>
+          <MarkdownWithLatex content={nonCodeText} theme={theme} onCopy={onCopy} copiedCode={copiedCode} />
+        </div>,
+      )
     }
 
-    const language = match[1] || "text";
-    const codeContent = match[2];
+    // Code block
+    const language = match[1] || "text"
+    const codeContent = match[2]
 
     parts.push(
       <CodeBlock
@@ -197,21 +203,24 @@ const renderMessageWithLaTeX = (text: string, theme: string | undefined, onCopy:
         theme={theme}
         onCopy={onCopy}
         copiedCode={copiedCode}
-      />
-    );
+      />,
+    )
 
-    lastIndex = match.index + match[0].length;
+    lastIndex = match.index + match[0].length
   }
 
-  if (lastIndex < text.length) {
-    const remainingText = text.slice(lastIndex);
+  // Text after the last code block
+  if (lastIndex < preprocessedText.length) {
+    const remainingText = preprocessedText.slice(lastIndex)
     parts.push(
-      <div key={`text-${lastIndex}`}>{renderTextWithLaTeX(remainingText)}</div>
-    );
+      <div key={`text-${lastIndex}`}>
+        <MarkdownWithLatex content={remainingText} theme={theme} onCopy={onCopy} copiedCode={copiedCode} />
+      </div>,
+    )
   }
 
-  return <>{parts}</>;
-};
+  return <>{parts}</>
+}
 
 export default function ChatPage() {
   const { theme } = useTheme()
@@ -499,7 +508,12 @@ export default function ChatPage() {
         </div>
       </header>
       <div className="flex flex-1 overflow-hidden">
-        <ChatSidebar key={messages.length} chatHistory={chatHistory} setChatHistory={setChatHistory} onChatDeleted={handleChatDeleted} />
+        <ChatSidebar
+          key={messages.length}
+          chatHistory={chatHistory}
+          setChatHistory={setChatHistory}
+          onChatDeleted={handleChatDeleted}
+        />
         {chatHistory.length > 0 ? (
           <main className="flex-1 overflow-auto">
             <div className="container mx-auto px-4 py-6 md:px-6 max-w-4xl">
@@ -644,6 +658,10 @@ export default function ChatPage() {
         ) : null}
       </div>
     </div>
-  );
+  )
 }
+
+
+
+
 
