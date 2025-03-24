@@ -1,6 +1,6 @@
 "use client"
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -43,10 +43,13 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
   const currentChatId = pathname.split("/").pop() || ""
   const getToken = () => localStorage.getItem('access_token')
   const token = getToken()
+  const isRequested = useRef(false)
 
   useEffect(() => {
     const fetchChats = async () => {
       setIsLoading(true);
+      if (isRequested.current) return
+      isRequested.current = true
       try {
         const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
           headers: {
@@ -182,6 +185,7 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
             : chat
         )
       );
+      window.location.href = `/chat/${id}`
       
       if (onClearChat) {
         onClearChat(id);
@@ -221,6 +225,7 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
         title: "Название обновлено",
         description: "Название чата было успешно изменено",
       });
+      window.location.href = `/chat/${id}`
     } catch (error) {
       console.error("Ошибка при переименовании чата:", error);
       toast({

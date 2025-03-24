@@ -45,9 +45,9 @@ interface Chat {
 }
 
 export default function ProfilePage() {
-  const { isAuthenticated, logout, user } = useAuth()
+  const { isAuthenticated, logout, userData } = useAuth()
   const router = useRouter()
-  const [userData, setUserData] = useState<UserData | null>(null)
+  //const [userData, setUserData] = useState<UserData | null>(null)
   const [usageHistory, setUsageHistory] = useState<UsageHistory[]>([])
 
   const isRequested = useRef(false)
@@ -57,25 +57,25 @@ export default function ProfilePage() {
     const token = getToken()
 
     const getUserData = async () => {
-      if (isRequested.current) return
-      isRequested.current = true
-      try {
-        const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
+      // if (isRequested.current) return
+      // isRequested.current = true
+      // try {
+      //   const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
+      //     headers: {
+      //       Authorization: `Bearer ${token}`,
+      //     },
+      //   })
 
-        const userData = response.data
-        console.log("User data fetched:", userData)
-        setUserData(userData)
+      //   const userData = response.data
+      //   console.log("User data fetched:", userData)
+      //   setUserData(userData)
 
         // Обновляем историю использования сообщений
         const today = format(new Date(), 'yyyy-MM-dd')
         const existingHistory = JSON.parse(localStorage.getItem("usageHistory") || "[]")
         const todayUsage = existingHistory.find((entry: UsageHistory) => entry.date === today)
         
-        if (!todayUsage) {
+        if (!todayUsage && userData) {
           const newEntry = {
             date: today,
             usedMessages: userData.message_count_limit - userData.available_message_count,
@@ -89,9 +89,6 @@ export default function ProfilePage() {
 
         // Загружаем чаты и обновляем статистику
         await fetchChats(token)
-      } catch (error) {
-        console.error("Failed to fetch user data:", error)
-      }
     }
 
     if (token) {

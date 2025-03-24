@@ -277,9 +277,12 @@ export default function ChatPage() {
   }
 
   const token = getToken()
+  const isRequested = useRef(false)
 
   const loadChatHistory = async (chatId: string) => {
     setIsLoadingHistory(true)
+    if (isRequested.current) return
+    isRequested.current = true
     try {
       const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/${chatId}`, {
         headers: {
