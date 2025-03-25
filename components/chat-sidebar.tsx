@@ -45,58 +45,6 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
   const token = getToken()
   const isRequested = useRef(false)
 
-  // useEffect(() => {
-  //   const fetchChats = async () => {
-  //     setIsLoading(true);
-  //     if (isRequested.current) return
-  //     isRequested.current = true
-  //     try {
-  //       const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       });
-  //       const chats = response.data;
-
-  //       const formattedChats = chats.map((chat: any) => {
-  //         const lastMessageDate = chat.messages.length > 0 
-  //           ? new Date(chat.messages[chat.messages.length - 1].created_at) 
-  //           : new Date(chat.created_at);
-  //         lastMessageDate.setHours(lastMessageDate.getHours() + 3);
-
-  //         return {
-  //           id: chat.id,
-  //           title: chat.name,
-  //           preview: chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].content : "Нет сообщений",
-  //           date: lastMessageDate,
-  //           messages: chat.messages.length,
-  //         };
-  //       });
-
-  //       const sortedChats = formattedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime());
-  //       setChatHistory(sortedChats);
-
-  //       // Сохраняем ID последнего чата в localStorage
-  //       if (sortedChats.length > 0) {
-  //         localStorage.setItem("lastSavedChat", sortedChats[0].id);
-  //       } else {
-  //         localStorage.removeItem("lastSavedChat");
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching chats:", error);
-  //       toast({
-  //         title: "Ошибка",
-  //         description: "Не удалось загрузить чаты",
-  //         variant: "destructive",
-  //       });
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   fetchChats();
-  // }, [token]);
-
   // Перенаправление на последний сохраненный чат или создание нового
   useEffect(() => {
     if (pathname === "/chat") {
@@ -146,8 +94,12 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
         onChatDeleted(nextChatId);
       }
 
+      window.location.href = `${nextChatId || 1}`
+
       if (chatHistory.length === 1) {
-        router.push("/chat");
+        localStorage.setItem("lastSavedChat", "1");
+        console.log("РУУУУУУ")
+         router.push("/chat/1");
       }
 
       toast({
@@ -164,42 +116,7 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
       });
     }
   };
-
-  const updateChatHistory = async () => {
-    try {
-      const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      
-      const updatedChats = response.data.map((chat: any) => {
-        const lastMessageDate = chat.messages.length > 0 
-          ? new Date(chat.messages[chat.messages.length - 1].created_at) 
-          : new Date(chat.created_at)
-        lastMessageDate.setHours(lastMessageDate.getHours() + 3)
   
-        return {
-          id: chat.id,
-          title: chat.name,
-          preview: chat.messages.length > 0 
-            ? chat.messages[chat.messages.length - 1].content 
-            : "Нет сообщений",
-          date: lastMessageDate,
-          messages: chat.messages.length,
-        }
-      })
-  
-      const sortedChats = updatedChats.sort((a: any, b: any) => 
-        b.date.getTime() - a.date.getTime())
-      
-      setChatHistory(sortedChats)
-      
-      if (sortedChats.length > 0) {
-        localStorage.setItem("lastSavedChat", sortedChats[0].id)
-      }
-    } catch (error) {
-      console.error("Error updating chat history:", error)
-    }
-  }
 
   const clearChatMessages = async (id: string) => {
     try {

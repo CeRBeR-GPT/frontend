@@ -238,6 +238,8 @@ export default function ChatPage() {
     setIsLoadingHistory(true)
     if (isRequested.current) return
     isRequested.current = true
+
+    if (chatId === "1") return
     
     try {
       const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/${chatId}`, {
@@ -262,58 +264,60 @@ export default function ChatPage() {
   }, [token])
 
   const initializeWebSocket = useCallback((chatId: string) => {
+    
     if (!token) return
 
-    const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}`
-    console.log("WebSocket URL:", wsUrl)
+    if (chatId != "1"){
+      const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}`
+      console.log("WebSocket URL:", wsUrl)
+      ws.current = new WebSocket(wsUrl)
 
-    ws.current = new WebSocket(wsUrl)
-
-    ws.current.onopen = () => {
-      console.log("WebSocket connection established")
-    }
-
-    ws.current.onmessage = (event) => {
-      console.log("WebSocket message received:", event.data)
-      dispatchMessages({
-        type: 'ADD',
-        payload: {
-          id: Date.now(),
-          text: event.data,
-          message_belong: "assistant",
-          timestamp: new Date(),
-        }
-      })
-      setIsLoading(false)
-      updateSidebar()
-      updateChatHistory().then(() => updateSidebar())
-
-      setTimeout(() => {
-        messagesContainerRef.current?.scrollTo({
-          top: messagesContainerRef.current.scrollHeight,
-          behavior: "smooth",
-        });
-      }, 50);
-    }
-
-    ws.current.onerror = (error) => {
-      console.error("WebSocket error:", error)
-      toast({
-        title: "Ошибка WebSocket",
-        description: "Не удалось подключиться к серверу.",
-        variant: "destructive",
-      })
-    }
-
-    ws.current.onclose = (event) => {
-      console.log("WebSocket connection closed:", event)
-      if (event.code !== 1000) {
+      ws.current.onopen = () => {
+        console.log("WebSocket connection established")
+      }
+  
+      ws.current.onmessage = (event) => {
+        console.log("WebSocket message received:", event.data)
+        dispatchMessages({
+          type: 'ADD',
+          payload: {
+            id: Date.now(),
+            text: event.data,
+            message_belong: "assistant",
+            timestamp: new Date(),
+          }
+        })
+        setIsLoading(false)
+        updateSidebar()
+        updateChatHistory().then(() => updateSidebar())
+  
+        setTimeout(() => {
+          messagesContainerRef.current?.scrollTo({
+            top: messagesContainerRef.current.scrollHeight,
+            behavior: "smooth",
+          });
+        }, 50);
+      }
+  
+      ws.current.onerror = (error) => {
+        console.error("WebSocket error:", error)
         toast({
-          title: "Соединение закрыто",
-          description: "Попытка переподключения...",
+          title: "Ошибка WebSocket",
+          description: "Не удалось подключиться к серверу.",
           variant: "destructive",
         })
-        setTimeout(() => initializeWebSocket(chatId), 5000)
+      }
+  
+      ws.current.onclose = (event) => {
+        console.log("WebSocket connection closed:", event)
+        if (event.code !== 1000) {
+          toast({
+            title: "Соединение закрыто",
+            description: "Попытка переподключения...",
+            variant: "destructive",
+          })
+          setTimeout(() => initializeWebSocket(chatId), 5000)
+        }
       }
     }
 
@@ -375,7 +379,7 @@ export default function ChatPage() {
     if (nextChatId) {
       router.push(`/chat/${nextChatId}`)
     } else {
-      router.push("/chat/new")
+      router.push("/chat/1")
     }
   }, [router])
 
