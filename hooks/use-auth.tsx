@@ -98,6 +98,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           setUserData(userData)
         } catch (error) {
+          setIsAuthenticated(false)
+          localStorage.removeItem('isAuthenticated') // Добавлено
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
           console.error("Failed to fetch user data:", error)
         }
       }
@@ -113,7 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/login`, {email, password})
-  
+
       if (response.data && response.status === 200) {
         const user = {
           email: email,
@@ -121,10 +125,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('access_token', response.data.access_token)
         localStorage.setItem('isAuthenticated', 'true') // Добавлено
         localStorage.setItem('user', JSON.stringify(user)) // Добавлено для согласованности
-        
+
         setUser(user)
         setIsAuthenticated(true)
-        
+
         const lastSavedChat = localStorage.getItem("lastSavedChat")
         return { success: true, lastChatId: lastSavedChat || "chat1" }
       }
@@ -153,6 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const updatedUser = { ...user, password: newPassword }
           setUser(updatedUser)
           localStorage.setItem("user", JSON.stringify(updatedUser))
+          localStorage.setItem('access_token', response.data.access_token)
           setIsAuthenticated(true)
           localStorage.setItem('isAuthenticated', 'true')
         }
@@ -170,7 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const user = {
       email: email,
     }
-    if (user) {
+    if (user.email) {
       setUser(user)
       setIsAuthenticated(true)
       localStorage.setItem('isAuthenticated', 'true')
