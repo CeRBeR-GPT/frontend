@@ -427,7 +427,7 @@ export default function ChatPage() {
       title: "Чат удален",
       description: "Чат был успешно удален",
     })
-    router.push("/chat/new")
+    //router.push("/chat/new")
   }, [router])
 
   const handleRenameChat = useCallback((id: string, newTitle: string) => {
@@ -518,16 +518,7 @@ export default function ChatPage() {
             </Link>
             <div className="hidden md:flex items-center gap-1 text-sm text-muted-foreground">
               <span>/</span>
-              <span className="font-medium text-foreground">{chatTitle}</span>
-              {chatId !== "new" && (
-                <ChatOptionsMenu
-                  chatId={chatId}
-                  chatTitle={chatTitle}
-                  onDelete={handleDeleteChat}
-                  onClear={handleClearChat}
-                  onRename={handleRenameChat}
-                />
-              )}
+              <span className="font-medium text-foreground">{chatTitle === "Новый чат" ? "" : chatTitle}</span>
             </div>
           </div>
           <nav className="flex items-center gap-4">
