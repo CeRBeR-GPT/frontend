@@ -23,7 +23,6 @@ export function UserMenu() {
 
   // Отслеживаем изменения состояния аутентификации
   useEffect(() => {
-    console.log("HEEER", isAuthenticated)
     setIsAuth(isAuthenticated)
   }, [isAuthenticated])
 
