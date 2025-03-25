@@ -82,7 +82,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const getUserData = async () => {
     if (typeof window !== "undefined") {
       const token = localStorage.getItem('access_token')
-      if (token) {
+      const refresh_token = localStorage.getItem('refresh_token')
+      if (token || refresh_token) {
         try {
           const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
             headers: {
@@ -98,7 +99,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           setUserData(userData)
         } catch (error) {
-          console.error("Failed to fetch user data:", error)
+
+          try {
+            const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/refresh`, {}, {
+              headers: {
+                Authorization: `Bearer ${refresh_token}`,
+              },
+            })
+            const newTokensData = response.data
+            console.log("New tokens data:", newTokensData)
+            localStorage.setItem('access_token', response.data.access_token)
+            localStorage.setItem('isAuthenticated', 'true')
+
+            const responseUser = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
+              headers: {
+                Authorization: `Bearer ${response.data.access_token}`,
+              },
+            })
+
+            const userData = responseUser.data
+            console.log("User data fetched:", userData)
+            const user = {
+              email: userData.email,
+            }
+            setUserData(userData)
+          } catch (error) {
+            setIsAuthenticated(false)
+            localStorage.removeItem('isAuthenticated') // Добавлено
+            localStorage.removeItem('access_token')
+            localStorage.removeItem('refresh_token')
+            localStorage.removeItem("user")
+            console.error("Failed to fetch user data:", error)
+          }
+
         }
       }
     }
@@ -113,18 +146,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/login`, {email, password})
-  
+
       if (response.data && response.status === 200) {
         const user = {
           email: email,
         }
         localStorage.setItem('access_token', response.data.access_token)
+        localStorage.setItem('refresh_token', response.data.refresh_token)
         localStorage.setItem('isAuthenticated', 'true') // Добавлено
         localStorage.setItem('user', JSON.stringify(user)) // Добавлено для согласованности
-        
+
         setUser(user)
         setIsAuthenticated(true)
-        
+
         const lastSavedChat = localStorage.getItem("lastSavedChat")
         return { success: true, lastChatId: lastSavedChat || "chat1" }
       }
@@ -150,6 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.data && response.status === 200) {
         if (user) {
           localStorage.setItem('access_token', response.data.access_token)
+          localStorage.setItem('refresh_token', response.data.refresh_token)
           const updatedUser = { ...user, password: newPassword }
           setUser(updatedUser)
           localStorage.setItem("user", JSON.stringify(updatedUser))
@@ -170,7 +205,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const user = {
       email: email,
     }
-    if (user) {
+    if (user.email) {
       setUser(user)
       setIsAuthenticated(true)
       localStorage.setItem('isAuthenticated', 'true')
@@ -200,6 +235,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('isAuthenticated') // Добавлено
     localStorage.removeItem("user")
     localStorage.removeItem('access_token') // Рекомендуется также очистить токен
+    localStorage.removeItem('refresh_token') // Рекомендуется также очистить токен
     setUser(null)
     setIsAuthenticated(false)
   }
