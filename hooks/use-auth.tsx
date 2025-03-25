@@ -113,24 +113,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/login`, {email, password})
-
+  
       if (response.data && response.status === 200) {
         const user = {
           email: email,
         }
         localStorage.setItem('access_token', response.data.access_token)
+        localStorage.setItem('isAuthenticated', 'true') // Добавлено
+        localStorage.setItem('user', JSON.stringify(user)) // Добавлено для согласованности
+        
         setUser(user)
         setIsAuthenticated(true)
+        
         const lastSavedChat = localStorage.getItem("lastSavedChat")
-        if (lastSavedChat) {
-          const chat = JSON.parse(lastSavedChat)
-          console.log("Последний сохраненный чат:", chat)
-        }
-        localStorage.setItem('isAuthenticated', 'true')
         return { success: true, lastChatId: lastSavedChat || "chat1" }
-      } else {
-        return { success: false }
       }
+      return { success: false }
     } catch (error) {
       throw new Error("Произошла ошибка при входе. Пожалуйста, попробуйте снова.")
     }
@@ -189,21 +187,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const verifyCode = async (email: string, code: string, password: string) => {
     if (code.length === 5 && /^\d+$/.test(code)) {
       const newUser = { email, name: email.split("@")[0], password }
+      localStorage.setItem('isAuthenticated', 'true') // Добавлено
+      localStorage.setItem("user", JSON.stringify(newUser))
       setUser(newUser)
       setIsAuthenticated(true)
-      localStorage.setItem("user", JSON.stringify(newUser))
-      localStorage.setItem('isAuthenticated', 'true')
-      localStorage.removeItem("pendingRegistration")
       return { success: true, lastChatId: "chat1" }
     }
     return { success: false }
   }
 
   const logout = () => {
+    localStorage.removeItem('isAuthenticated') // Добавлено
+    localStorage.removeItem("user")
+    localStorage.removeItem('access_token') // Рекомендуется также очистить токен
     setUser(null)
     setIsAuthenticated(false)
-    localStorage.removeItem("user")
-    localStorage.removeItem('isAuthenticated')
   }
 
   const socialLogin = async (provider: "google" | "yandex" | "github") => {
@@ -211,9 +209,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const newUser = { email, name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} User` }
     setUser(newUser)
     setIsAuthenticated(true)
+    const lastSavedChat = localStorage.getItem("lastSavedChat")
     localStorage.setItem("user", JSON.stringify(newUser))
     localStorage.setItem('isAuthenticated', 'true')
-    return { success: true, lastChatId: "chat1" }
+    return { success: true, lastChatId: lastSavedChat || "" }
   }
 
   return (
