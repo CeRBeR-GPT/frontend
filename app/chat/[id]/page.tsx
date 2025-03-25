@@ -20,7 +20,7 @@ import axios from "axios"
 import { useTheme } from "next-themes"
 import "katex/dist/katex.min.css"
 import { MarkdownWithLatex } from "@/components/markdown-with-latex"
-import { preprocessLatexInText } from "@/utils/latex-utils"
+//import { preprocessLatexInText } from "@/utils/latex-utils"
 import { throttle } from "lodash-es"
 
 interface Message {
@@ -39,12 +39,7 @@ interface ChatHistory {
 }
 
 // Отдельный компонент для сообщения
-const MessageItem = React.memo(({ 
-  message,
-  theme,
-  onCopy,
-  copiedCode
-}: {
+const MessageItem = React.memo(({  message, theme, onCopy, copiedCode}: {
   message: Message
   theme: string | undefined
   onCopy: (code: string) => void
@@ -90,7 +85,6 @@ const MessageItem = React.memo(({
 
 MessageItem.displayName = "MessageItem"
 
-// Отдельный компонент для ввода сообщений
 const MessageInput = React.memo(({ 
   value, 
   onChange, 
@@ -151,7 +145,6 @@ const MessageInput = React.memo(({
 
 MessageInput.displayName = "MessageInput"
 
-// Редуктор для управления состоянием сообщений
 function messagesReducer(state: Message[], action: { type: string; payload?: any }) {
   switch (action.type) {
     case 'ADD':
@@ -177,7 +170,6 @@ export default function ChatPage() {
   const chatId = params.id as string
   const { isAuthenticated } = useAuth()
   
-  // Состояния
   const [input, setInput] = useState("")
   const [messages, dispatchMessages] = useReducer(messagesReducer, [])
   const [isLoading, setIsLoading] = useState(false)
@@ -192,12 +184,47 @@ export default function ChatPage() {
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const isRequested = useRef(false)
 
-  // Обновление сайдбара
   const updateSidebar = useCallback(() => {
     setSidebarVersion(v => v + 1)
   }, [])
 
-  // Получение токена
+  const updateChatHistory = async () => {
+    try {
+      const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      
+      const updatedChats = response.data.map((chat: any) => {
+        const lastMessageDate = chat.messages.length > 0 
+          ? new Date(chat.messages[chat.messages.length - 1].created_at) 
+          : new Date(chat.created_at)
+        lastMessageDate.setHours(lastMessageDate.getHours() + 3)
+  
+        return {
+          id: chat.id,
+          title: chat.name,
+          preview: chat.messages.length > 0 
+            ? chat.messages[chat.messages.length - 1].content 
+            : "Нет сообщений",
+          date: lastMessageDate,
+          messages: chat.messages.length,
+        }
+      })
+  
+      const sortedChats = updatedChats.sort((a: any, b: any) => 
+        b.date.getTime() - a.date.getTime())
+      
+      setChatHistory(sortedChats)
+      console.log("Чатыыыы",chatHistory)
+      
+      if (sortedChats.length > 0) {
+        localStorage.setItem("lastSavedChat", sortedChats[0].id)
+      }
+    } catch (error) {
+      console.error("Error updating chat history:", error)
+    }
+  }
+
   const getToken = useCallback(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("access_token")
@@ -207,7 +234,6 @@ export default function ChatPage() {
 
   const token = getToken()
 
-  // Загрузка истории чата
   const loadChatHistory = useCallback(async (chatId: string) => {
     setIsLoadingHistory(true)
     if (isRequested.current) return
@@ -219,6 +245,7 @@ export default function ChatPage() {
       })
       
       const history = response.data.messages
+      console.log("Чаттты",history)
       dispatchMessages({ type: 'SET', payload: history })
       setChatTitle(response.data.name)
       setIsTestMessageShown(history.length === 0)
@@ -234,7 +261,6 @@ export default function ChatPage() {
     }
   }, [token])
 
-  // Инициализация WebSocket
   const initializeWebSocket = useCallback((chatId: string) => {
     if (!token) return
 
@@ -260,6 +286,14 @@ export default function ChatPage() {
       })
       setIsLoading(false)
       updateSidebar()
+      updateChatHistory().then(() => updateSidebar())
+
+      setTimeout(() => {
+        messagesContainerRef.current?.scrollTo({
+          top: messagesContainerRef.current.scrollHeight,
+          behavior: "smooth",
+        });
+      }, 50);
     }
 
     ws.current.onerror = (error) => {
@@ -290,10 +324,11 @@ export default function ChatPage() {
     }
   }, [token, updateSidebar])
 
-  // Загрузка списка чатов
+  const isRequest = useRef(false)
   const fetchChats = useCallback(async () => {
     if (!token) return
-    
+    if (isRequest.current) return
+    isRequest.current = true
     try {
       const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -336,7 +371,6 @@ export default function ChatPage() {
     }
   }, [token])
 
-  // Обработчики действий
   const handleChatDeleted = useCallback((nextChatId: string | null) => {
     if (nextChatId) {
       router.push(`/chat/${nextChatId}`)
@@ -412,13 +446,20 @@ export default function ChatPage() {
 
   // Эффекты
   useEffect(() => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTo({
+    if (!messagesContainerRef.current || isLoadingHistory) return;
+  
+    const scrollToBottom = () => {
+      messagesContainerRef.current?.scrollTo({
         top: messagesContainerRef.current.scrollHeight,
         behavior: "smooth",
-      })
-    }
-  }, [messages])
+      });
+    };
+  
+    // Добавляем небольшую задержку для гарантии полного рендеринга
+    const timer = setTimeout(scrollToBottom, 100);
+  
+    return () => clearTimeout(timer);
+  }, [messages, isLoadingHistory]);
 
   useEffect(() => {
     if (!isAuthenticated) {
