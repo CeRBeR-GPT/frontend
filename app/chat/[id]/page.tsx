@@ -512,7 +512,7 @@ export default function ChatPage() {
       <header className="border-b">
         <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
           <div className="flex items-center gap-4">
-            <Link href="/chat/chat1" className="flex items-center gap-2 font-bold">
+            <Link href="/" className="flex items-center gap-2 font-bold">
               <Bot className="w-6 h-6" />
               <span>AI Chat</span>
             </Link>

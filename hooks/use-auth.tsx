@@ -1,263 +1,286 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect } from "react"
+import {createContext, useContext, useState, useEffect} from "react"
 import axios from "axios"
+import {refreshAccess} from "@/utils/tokens-utils";
 
 type User = { email: string; password?: string } | null
 
 type UserData = {
-  id: string,
-  email: string,
-  plan: string,
-  available_message_count: number,
-  message_length_limit: number,
-  message_count_limit: number
+    id: string,
+    email: string,
+    plan: string,
+    available_message_count: number,
+    message_length_limit: number,
+    message_count_limit: number
 } | null
 
 type AuthContextType = {
-  user: User
-  userData: UserData
-  isAuthenticated: boolean
-  login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
-  register: (email: string, password: string) => Promise<void>
-  verifyCode: (email: string, code: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
-  logout: () => void
-  socialLogin: (provider: "google" | "yandex" | "github") => Promise<{ success: boolean; lastChatId?: string }>
-  updatePassword: (newPassword: string) => Promise<{ success: boolean } | undefined>
-  isLoading: boolean
-  Login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
-  getUserData: () => Promise<void>
+    user: User
+    userData: UserData
+    isAuthenticated: boolean
+    login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
+    register: (email: string, password: string) => Promise<void>
+    verifyCode: (email: string, code: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
+    logout: () => void
+    socialLogin: (provider: "google" | "yandex" | "github") => Promise<{ success: boolean; lastChatId?: string }>
+    updatePassword: (newPassword: string) => Promise<{ success: boolean } | undefined>
+    isLoading: boolean
+    Login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
+    getUserData: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
-  user: null,
-  userData: null,
-  isAuthenticated: false,
-  login: async () => ({ success: false }),
-  register: async () => {},
-  verifyCode: async () => ({ success: false }),
-  logout: () => {},
-  socialLogin: async () => ({ success: false }),
-  updatePassword: async () => ({ success: false }),
-  isLoading: false,
-  Login: async () => ({ success: false }),
-  getUserData: async () => {},
+    user: null,
+    userData: null,
+    isAuthenticated: false,
+    login: async () => ({success: false}),
+    register: async () => {
+    },
+    verifyCode: async () => ({success: false}),
+    logout: () => {
+    },
+    socialLogin: async () => ({success: false}),
+    updatePassword: async () => ({success: false}),
+    isLoading: false,
+    Login: async () => ({success: false}),
+    getUserData: async () => {
+    },
 })
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [userData, setUserData] = useState<UserData | null>(null)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+export function AuthProvider({children}: { children: React.ReactNode }) {
+    const [user, setUser] = useState<User | null>(null)
+    const [userData, setUserData] = useState<UserData | null>(null)
+    const [isAuthenticated, setIsAuthenticated] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      if (typeof window !== "undefined") {
-        const storedUser = localStorage.getItem("user")
-        const storedIsAuthenticated = localStorage.getItem('isAuthenticated')
+    useEffect(() => {
+        const checkAuth = async () => {
+            if (typeof window !== "undefined") {
+                const storedUser = localStorage.getItem("user")
+                const storedIsAuthenticated = localStorage.getItem('isAuthenticated')
 
-        if (storedUser) {
-          setUser(JSON.parse(storedUser))
-        }
+                if (storedUser) {
+                    setUser(JSON.parse(storedUser))
+                }
 
-        if (storedIsAuthenticated === 'true') {
-          setIsAuthenticated(true)
-        }
+                if (storedIsAuthenticated === 'true') {
+                    setIsAuthenticated(true)
+                }
 
-        setIsLoading(false)
-      }
-    }
-    checkAuth()
-  }, [])
-
-  const getToken = () => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem('access_token')
-    }
-    return null
-  }
-
-  const token = getToken()
-
-  const getUserData = async () => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem('access_token')
-      const refresh_token = localStorage.getItem('refresh_token')
-      if (token || refresh_token) {
-        try {
-          const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          })
-
-          const userData = response.data
-          console.log("User data fetched:", userData)
-          const user = {
-            email: userData.email,
-          }
-
-          setUserData(userData)
-        } catch (error) {
-
-          try {
-            const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/refresh`, {}, {
-              headers: {
-                Authorization: `Bearer ${refresh_token}`,
-              },
-            })
-            const newTokensData = response.data
-            console.log("New tokens data:", newTokensData)
-            localStorage.setItem('access_token', response.data.access_token)
-            localStorage.setItem('isAuthenticated', 'true')
-
-            const responseUser = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
-              headers: {
-                Authorization: `Bearer ${response.data.access_token}`,
-              },
-            })
-
-            const userData = responseUser.data
-            console.log("User data fetched:", userData)
-            const user = {
-              email: userData.email,
+                setIsLoading(false)
             }
-            setUserData(userData)
-          } catch (error) {
-            setIsAuthenticated(false)
-            localStorage.removeItem('isAuthenticated') // Добавлено
-            localStorage.removeItem('access_token')
-            localStorage.removeItem('refresh_token')
-            localStorage.removeItem("user")
-            console.error("Failed to fetch user data:", error)
-          }
+        }
+        checkAuth()
+    }, [])
+
+    const getToken = () => {
+        if (typeof window !== "undefined") {
+            return localStorage.getItem('access_token')
+        }
+        return null
+    }
+
+    const token = getToken()
+
+    const getUserData = async () => {
+        if (typeof window !== "undefined") {
+            const accessToken = localStorage.getItem('access_token')
+            const refreshToken = localStorage.getItem('refresh_token')
+            let userData = null
+
+            if (accessToken || refreshToken) {
+                console.log("ACCESS:", accessToken)
+                try {
+                    const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
+                        headers: {
+                            Authorization: `Bearer ${accessToken}`,
+                        },
+                    })
+                    userData = response.data
+
+                } catch (error) {
+                    const newAccess = await refreshAccess(refreshToken)
+                    try {
+                        const responseUser = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
+                            headers: {
+                                Authorization: `Bearer ${newAccess}`,
+                            },
+                        })
+                        userData = responseUser.data
+
+                    } catch (error) {
+                        console.log("Auth error", error)
+                    }
+                }
+
+                if (userData) {
+                    setUserData(userData)
+                } else {
+                    setIsAuthenticated(false)
+                    localStorage.removeItem('isAuthenticated') // Добавлено
+                    localStorage.removeItem('access_token')
+                    localStorage.removeItem('refresh_token')
+                    localStorage.removeItem("user")
+                }
+            }
 
         }
-      }
     }
-  }
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      getUserData()
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            getUserData()
+        }
+    }, [token])
+
+    const login = async (email: string, password: string) => {
+        try {
+            const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/login`, {email, password})
+
+            if (response.data && response.status === 200) {
+                const user = {
+                    email: email,
+                }
+                localStorage.setItem('access_token', response.data.access_token)
+                localStorage.setItem('refresh_token', response.data.refresh_token)
+                localStorage.setItem('isAuthenticated', 'true') // Добавлено
+                localStorage.setItem('user', JSON.stringify(user)) // Добавлено для согласованности
+
+                setUser(user)
+                setIsAuthenticated(true)
+
+                const lastSavedChat = localStorage.getItem("lastSavedChat")
+                return {success: true, lastChatId: lastSavedChat || "1"}
+            }
+            return {success: false}
+        } catch (error) {
+            throw new Error("Произошла ошибка при входе. Пожалуйста, попробуйте снова.")
+        }
     }
-  }, [token])
 
-  const login = async (email: string, password: string) => {
-    try {
-      const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/login`, {email, password})
+    const updatePassword = async (newPassword: string) => {
+            const accessToken = getToken()
+            const refreshToken = localStorage.getItem('refresh_token')
+            let responseData = null
+            let responseStatus = 400
+            try {
+                const response = await axios.post(
+                    `https://api-gpt.energy-cerber.ru/user/edit_password?new_password=${newPassword}`,
+                    {},
+                    {
+                        headers: {
+                            Authorization: `Bearer ${accessToken}`,
+                        },
+                    }
+                )
+                responseData = response.data
+                responseStatus = response.status
+            } catch (error){
+                const newAccess = await refreshAccess(refreshToken)
+                const response = await axios.post(
+                    `https://api-gpt.energy-cerber.ru/user/edit_password?new_password=${newPassword}`,
+                    {},
+                    {
+                        headers: {
+                            Authorization: `Bearer ${newAccess}`,
+                        },
+                    }
+                )
+                responseData = response.data
+                responseStatus = response.status
+            }
 
-      if (response.data && response.status === 200) {
+
+            if (responseData && responseStatus === 200) {
+                if (user) {
+                    localStorage.setItem('access_token', responseData.access_token)
+                    localStorage.setItem('refresh_token', responseData.refresh_token)
+                    const updatedUser = {...user, password: newPassword}
+                    setUser(updatedUser)
+                    localStorage.setItem("user", JSON.stringify(updatedUser))
+                    setIsAuthenticated(true)
+                    localStorage.setItem('isAuthenticated', 'true')
+                }
+
+                return {success: true}
+            }
+
+            return {success: false}
+
+    }
+
+    const Login = async (email: string, password: string) => {
         const user = {
-          email: email,
+            email: email,
         }
-        localStorage.setItem('access_token', response.data.access_token)
-        localStorage.setItem('refresh_token', response.data.refresh_token)
-        localStorage.setItem('isAuthenticated', 'true') // Добавлено
-        localStorage.setItem('user', JSON.stringify(user)) // Добавлено для согласованности
+        if (user.email) {
+            setUser(user)
+            setIsAuthenticated(true)
+            localStorage.setItem('isAuthenticated', 'true')
+            return {success: true, lastChatId: "1"}
+        }
 
-        setUser(user)
+        return {success: false}
+    }
+
+    const register = async (email: string, password: string) => {
+        localStorage.setItem("pendingRegistration", JSON.stringify({email, password}))
+    }
+
+    const verifyCode = async (email: string, code: string, password: string) => {
+        if (code.length === 5 && /^\d+$/.test(code)) {
+            const newUser = {email, name: email.split("@")[0], password}
+            localStorage.setItem('isAuthenticated', 'true') // Добавлено
+            localStorage.setItem("user", JSON.stringify(newUser))
+            setUser(newUser)
+            setIsAuthenticated(true)
+            return {success: true, lastChatId: "1"}
+        }
+        return {success: false}
+    }
+
+    const logout = () => {
+        localStorage.removeItem('isAuthenticated') // Добавлено
+        localStorage.removeItem("user")
+        localStorage.removeItem('access_token') // Рекомендуется также очистить токен
+        localStorage.removeItem('refresh_token') // Рекомендуется также очистить токен
+        setUser(null)
+        setIsAuthenticated(false)
+    }
+
+    const socialLogin = async (provider: "google" | "yandex" | "github") => {
+        const email = `user@${provider}.com`
+        const newUser = {email, name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} User`}
+        setUser(newUser)
         setIsAuthenticated(true)
-
         const lastSavedChat = localStorage.getItem("lastSavedChat")
-        return { success: true, lastChatId: lastSavedChat || "chat1" }
-      }
-      return { success: false }
-    } catch (error) {
-      throw new Error("Произошла ошибка при входе. Пожалуйста, попробуйте снова.")
-    }
-  }
-
-  const updatePassword = async (newPassword: string) => {
-    try {
-      const token = getToken()
-      const response = await axios.post(
-        `https://api-gpt.energy-cerber.ru/user/edit_password?new_password=${newPassword}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
-
-      if (response.data && response.status === 200) {
-        if (user) {
-          localStorage.setItem('access_token', response.data.access_token)
-          localStorage.setItem('refresh_token', response.data.refresh_token)
-          const updatedUser = { ...user, password: newPassword }
-          setUser(updatedUser)
-          localStorage.setItem("user", JSON.stringify(updatedUser))
-          setIsAuthenticated(true)
-          localStorage.setItem('isAuthenticated', 'true')
-        }
-        return { success: true }
-      }
-
-      return { success: false }
-    } catch (error) {
-      console.error(error)
-      return { success: false }
-    }
-  }
-
-  const Login = async (email: string, password: string) => {
-    const user = {
-      email: email,
-    }
-    if (user.email) {
-      setUser(user)
-      setIsAuthenticated(true)
-      localStorage.setItem('isAuthenticated', 'true')
-      return { success: true, lastChatId: "chat1" }
+        localStorage.setItem("user", JSON.stringify(newUser))
+        localStorage.setItem('isAuthenticated', 'true')
+        return {success: true, lastChatId: lastSavedChat || ""}
     }
 
-    return { success: false }
-  }
-
-  const register = async (email: string, password: string) => {
-    localStorage.setItem("pendingRegistration", JSON.stringify({ email, password }))
-  }
-
-  const verifyCode = async (email: string, code: string, password: string) => {
-    if (code.length === 5 && /^\d+$/.test(code)) {
-      const newUser = { email, name: email.split("@")[0], password }
-      localStorage.setItem('isAuthenticated', 'true') // Добавлено
-      localStorage.setItem("user", JSON.stringify(newUser))
-      setUser(newUser)
-      setIsAuthenticated(true)
-      return { success: true, lastChatId: "chat1" }
-    }
-    return { success: false }
-  }
-
-  const logout = () => {
-    localStorage.removeItem('isAuthenticated') // Добавлено
-    localStorage.removeItem("user")
-    localStorage.removeItem('access_token') // Рекомендуется также очистить токен
-    localStorage.removeItem('refresh_token') // Рекомендуется также очистить токен
-    setUser(null)
-    setIsAuthenticated(false)
-  }
-
-  const socialLogin = async (provider: "google" | "yandex" | "github") => {
-    const email = `user@${provider}.com`
-    const newUser = { email, name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} User` }
-    setUser(newUser)
-    setIsAuthenticated(true)
-    const lastSavedChat = localStorage.getItem("lastSavedChat")
-    localStorage.setItem("user", JSON.stringify(newUser))
-    localStorage.setItem('isAuthenticated', 'true')
-    return { success: true, lastChatId: lastSavedChat || "" }
-  }
-
-  return (
-    <AuthContext.Provider
-      value={{ user, userData, getUserData, isAuthenticated, isLoading, login, register, verifyCode, logout, socialLogin, updatePassword, Login }}
-    >
-      {children}
-    </AuthContext.Provider>
-  )
+    return (
+        <AuthContext.Provider
+            value={{
+                user,
+                userData,
+                getUserData,
+                isAuthenticated,
+                isLoading,
+                login,
+                register,
+                verifyCode,
+                logout,
+                socialLogin,
+                updatePassword,
+                Login
+            }}
+        >
+            {children}
+        </AuthContext.Provider>
+    )
 }
 
 export const useAuth = () => useContext(AuthContext)
