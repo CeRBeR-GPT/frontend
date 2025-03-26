@@ -9,7 +9,7 @@ export const NavLinks = () => {
   const { isAuthenticated } = useAuth()
   const pathname = usePathname()
   const [isAuth, setIsAuth] = useState(false)
-  const [chat, setChat] = useState("chat")
+  const [chat, setChat] = useState(localStorage.getItem("lastSavedChat") || "1")
 
   // Используем useEffect для отслеживания изменений состояния аутентификации
   useEffect(() => {

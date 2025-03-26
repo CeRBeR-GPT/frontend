@@ -23,7 +23,7 @@ export default function ChatRedirect() {
         router.replace(`/chat/${lastSavedChat}`) // Редирект на страницу чата с конкретным ID
       } else {
         // Если последний чат не найден, редиректим на страницу по умолчанию
-        router.replace("/chat")
+        //router.replace("/chat")
       }
     } else {
       // Если пользователь не аутентифицирован, редиректим на главную страницу
