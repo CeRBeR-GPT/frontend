@@ -10,6 +10,29 @@ import remarkMath from "remark-math"
 import remarkGfm from "remark-gfm"
 import "katex/dist/katex.min.css"
 
+// Простой словарь языков программирования
+const PROGRAMMING_LANGUAGES = [
+  'javascript', 'typescript', 'python', 'java', 'csharp', 'cpp', 'c', 'php',
+  'ruby', 'go', 'rust', 'swift', 'kotlin', 'scala', 'r', 'bash', 'sh', 'shell',
+  'powershell', 'sql', 'html', 'css', 'scss', 'less', 'json', 'yaml', 'xml',
+  'markdown', 'dockerfile', 'plaintext', 'text'
+]
+
+// Функция для определения языка
+function detectLanguage(className?: string): string {
+  if (!className) return 'text'
+  
+  // Ищем точное совпадение с одним из языков
+  for (const lang of PROGRAMMING_LANGUAGES) {
+    if (className.includes(lang)) {
+      return lang
+    }
+  }
+  
+  // Пытаемся извлечь язык из класса (старая логика)
+  const match = /language-(\w+)/.exec(className)
+  return match?.[1] || 'text'
+}
 
 interface MarkdownWithLatexProps {
   content: string
@@ -50,9 +73,9 @@ export const MarkdownWithLatex: React.FC<MarkdownWithLatexProps> = ({
         
         // Блоки кода
         code({ node, inline, className, children, ...props }: CodeComponentProps) {
-          const match = /language-(\w+)/.exec(className || '')
           const codeString = String(children).replace(/\n$/, '')
-          //const inline = !className
+          const detectedLanguage = detectLanguage(className)
+          
           if (inline) {
             return (
               <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded" {...props}>
@@ -77,11 +100,11 @@ export const MarkdownWithLatex: React.FC<MarkdownWithLatexProps> = ({
               </div>
               
               <div className="absolute left-2 top-0 text-xs font-mono text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
-                {match?.[1] || 'text'}
+                {detectedLanguage}
               </div>
               
               <SyntaxHighlighter
-                language={match?.[1] || 'text'}
+                language={detectedLanguage}
                 PreTag="div"
                 customStyle={{
                   marginTop: "0",
@@ -128,7 +151,6 @@ export const MarkdownWithLatex: React.FC<MarkdownWithLatexProps> = ({
       }}
     >
       {content.replaceAll("\\[", "$").replaceAll("\\]", "$").replaceAll("\\(", "$").replaceAll("\\)", "$")} 
-      
     </ReactMarkdown>
   )
 }
