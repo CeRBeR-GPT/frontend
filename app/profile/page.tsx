@@ -178,7 +178,7 @@ export default function ProfilePage() {
       ? "Премиум"
       : userData?.plan === "business"
       ? "Бизнес"
-      : "Дефолт"
+      : ""
 
   const handleLogout = () => {
     logout()
