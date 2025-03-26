@@ -24,7 +24,6 @@ export default function Home() {
   useEffect(() => {
     if (isAuth) {
       const lastSavedChat = localStorage.getItem("lastSavedChat")
-      console.log(lastSavedChat)
 
       if (lastSavedChat) {
         //const chat = JSON.parse(lastSavedChat)
@@ -35,7 +34,7 @@ export default function Home() {
         router.replace(`/chat/${lastSavedChat}`) // Редирект на страницу чата с конкретным ID
       } else {
         // Если последний чат не найден, редиректим на страницу по умолчанию
-        router.replace("/chat/new")
+        //router.replace("/chat/new")  ????????????????///???????
       }
     }
   }, [isAuth, router])

@@ -153,8 +153,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         localStorage.setItem('access_token', response.data.access_token)
         localStorage.setItem('refresh_token', response.data.refresh_token)
-        localStorage.setItem('isAuthenticated', 'true') // Добавлено
-        localStorage.setItem('user', JSON.stringify(user)) // Добавлено для согласованности
+        localStorage.setItem('isAuthenticated', 'true')
+        localStorage.setItem('user', JSON.stringify(user))
 
         setUser(user)
         setIsAuthenticated(true)
@@ -222,7 +222,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const verifyCode = async (email: string, code: string, password: string) => {
     if (code.length === 5 && /^\d+$/.test(code)) {
       const newUser = { email, name: email.split("@")[0], password }
-      localStorage.setItem('isAuthenticated', 'true') // Добавлено
+      localStorage.setItem('isAuthenticated', 'true')
       localStorage.setItem("user", JSON.stringify(newUser))
       setUser(newUser)
       setIsAuthenticated(true)
@@ -232,10 +232,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const logout = () => {
-    localStorage.removeItem('isAuthenticated') // Добавлено
+    localStorage.removeItem('isAuthenticated')
     localStorage.removeItem("user")
-    localStorage.removeItem('access_token') // Рекомендуется также очистить токен
-    localStorage.removeItem('refresh_token') // Рекомендуется также очистить токен
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
     setUser(null)
     setIsAuthenticated(false)
   }
