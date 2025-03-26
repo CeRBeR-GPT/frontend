@@ -160,7 +160,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsAuthenticated(true)
 
         const lastSavedChat = localStorage.getItem("lastSavedChat")
-        return { success: true, lastChatId: lastSavedChat || "chat1" }
+        return { success: true, lastChatId: lastSavedChat || "1" }
       }
       return { success: false }
     } catch (error) {
@@ -209,7 +209,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(user)
       setIsAuthenticated(true)
       localStorage.setItem('isAuthenticated', 'true')
-      return { success: true, lastChatId: "chat1" }
+      return { success: true, lastChatId: "1" }
     }
 
     return { success: false }
@@ -226,7 +226,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("user", JSON.stringify(newUser))
       setUser(newUser)
       setIsAuthenticated(true)
-      return { success: true, lastChatId: "chat1" }
+      return { success: true, lastChatId: "1" }
     }
     return { success: false }
   }

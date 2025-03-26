@@ -53,7 +53,7 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
         router.push(`/chat/${lastSavedChat}`);
       } else {
         // Если нет сохраненного чата, создаем новый с ID "new"
-        router.push("/chat/new");
+        router.push("/chat/1");
       }
     }
   }, [pathname, router]);
