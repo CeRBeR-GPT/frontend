@@ -13,6 +13,7 @@ export const NavLinks = () => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem("lastSavedChat") || "1"
     }
+    
     return "1"
   })
 
