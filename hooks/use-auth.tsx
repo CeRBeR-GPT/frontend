@@ -28,24 +28,22 @@ type AuthContextType = {
     isLoading: boolean
     Login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
     getUserData: () => Promise<void>
+    getToken: () => Promise<string | null>
 }
-
 const AuthContext = createContext<AuthContextType>({
     user: null,
     userData: null,
     isAuthenticated: false,
     login: async () => ({success: false}),
-    register: async () => {
-    },
+    register: async () => {},
     verifyCode: async () => ({success: false}),
-    logout: () => {
-    },
+    logout: () => {},
     socialLogin: async () => ({success: false}),
     updatePassword: async () => ({success: false}),
     isLoading: false,
     Login: async () => ({success: false}),
-    getUserData: async () => {
-    },
+    getUserData: async () => {},
+    getToken: async () => null
 })
 
 export function AuthProvider({children}: { children: React.ReactNode }) {
@@ -249,7 +247,8 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                 logout,
                 socialLogin,
                 updatePassword,
-                Login: login
+                Login: login,
+                getToken
             }}
         >
             {children}
