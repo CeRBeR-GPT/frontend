@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowUp, Bot, User, ArrowLeft, Copy, Check } from "lucide-react"
+import { ArrowUp, Bot, User, ArrowLeft } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { UserMenu } from "@/components/user-menu"
 import { ChatSidebar } from "@/components/chat-sidebar"
@@ -20,7 +20,6 @@ import axios from "axios"
 import { useTheme } from "next-themes"
 import "katex/dist/katex.min.css"
 import { MarkdownWithLatex } from "@/components/markdown-with-latex"
-//import { preprocessLatexInText } from "@/utils/latex-utils"
 import { throttle } from "lodash-es"
 
 interface Message {
@@ -38,59 +37,58 @@ interface ChatHistory {
   messages: number
 }
 
-// Отдельный компонент для сообщения
-const MessageItem = React.memo(({  message, theme, onCopy, copiedCode}: {
+const MessageItem = React.memo(({ message, theme, onCopy, copiedCode }: {
   message: Message
   theme: string | undefined
   onCopy: (code: string) => void
   copiedCode: string | null
 }) => {
   return (
-    <div className={`flex ${
-      message.message_belong === "user" ? "justify-end" : "justify-start"
-    } animate-in fade-in-0 slide-in-from-bottom-3 duration-300`}>
-      <div className="flex items-start gap-3 max-w-[98%] sm:gap-3 sm:max-w-[90%] md:max-w-[80%]">
-        {message.message_belong === "assistant" && (
-          <Avatar className="mt-1">
-            <AvatarFallback>
-              <Bot className="w-4 h-4" />
-            </AvatarFallback>
-          </Avatar>
-        )}
-        <Card className={`p-3 ${
-          message.message_belong === "user" 
-            ? "bg-primary text-primary-foreground" 
-            : "bg-muted"
-        }`}>
-          <div className="prose dark:prose-invert max-w-none">
-            <MarkdownWithLatex 
-              content={message.text} 
-              theme={theme} 
-              onCopy={onCopy} 
-              copiedCode={copiedCode} 
-            />
-          </div>
-        </Card>
-        {message.message_belong === "user" && (
-          <Avatar className="mt-1">
-            <AvatarFallback>
-              <User className="w-4 h-4" />
-            </AvatarFallback>
-          </Avatar>
-        )}
+      <div className={`flex ${
+          message.message_belong === "user" ? "justify-end" : "justify-start"
+      } animate-in fade-in-0 slide-in-from-bottom-3 duration-300`}>
+        <div className="flex items-start gap-3 max-w-[98%] sm:gap-3 sm:max-w-[90%] md:max-w-[80%]">
+          {message.message_belong === "assistant" && (
+              <Avatar className="mt-1">
+                <AvatarFallback>
+                  <Bot className="w-4 h-4" />
+                </AvatarFallback>
+              </Avatar>
+          )}
+          <Card className={`p-3 ${
+              message.message_belong === "user"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted"
+          }`}>
+            <div className="prose dark:prose-invert max-w-none">
+              <MarkdownWithLatex
+                  content={message.text}
+                  theme={theme}
+                  onCopy={onCopy}
+                  copiedCode={copiedCode}
+              />
+            </div>
+          </Card>
+          {message.message_belong === "user" && (
+              <Avatar className="mt-1">
+                <AvatarFallback>
+                  <User className="w-4 h-4" />
+                </AvatarFallback>
+              </Avatar>
+          )}
+        </div>
       </div>
-    </div>
   )
 })
 
 MessageItem.displayName = "MessageItem"
 
-const MessageInput = React.memo(({ 
-  value, 
-  onChange, 
-  onSubmit, 
-  isLoading 
-}: {
+const MessageInput = React.memo(({
+                                   value,
+                                   onChange,
+                                   onSubmit,
+                                   isLoading
+                                 }: {
   value: string
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
   onSubmit: (e: React.FormEvent) => void
@@ -112,34 +110,34 @@ const MessageInput = React.memo(({
   }, [value, adjustTextareaHeight])
 
   return (
-    <form onSubmit={onSubmit} className="sticky bottom-0 bg-background pt-2">
-      <div className="relative">
-        <Textarea
-          ref={textareaRef}
-          placeholder="Напишите ваш запрос..."
-          value={value}
-          onChange={onChange}
-          className="min-h-[60px] max-h-[200px] resize-none pr-14 rounded-xl border-gray-300 focus:border-primary"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault()
-              onSubmit(e)
-            }
-          }}
-        />
-        <Button
-          type="submit"
-          className="absolute right-2 bottom-2 rounded-full w-10 h-10 p-0"
-          disabled={!value.trim() || isLoading}
-        >
-          <ArrowUp className="h-4 w-4" />
-          <span className="sr-only">Отправить</span>
-        </Button>
-      </div>
-      <p className="text-xs text-center text-muted-foreground mt-2">
-        AI может допускать ошибки. Проверяйте важную информацию.
-      </p>
-    </form>
+      <form onSubmit={onSubmit} className="sticky bottom-0 bg-background pt-2">
+        <div className="relative">
+          <Textarea
+              ref={textareaRef}
+              placeholder="Напишите ваш запрос..."
+              value={value}
+              onChange={onChange}
+              className="min-h-[60px] max-h-[200px] resize-none pr-14 rounded-xl border-gray-300 focus:border-primary"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault()
+                  onSubmit(e)
+                }
+              }}
+          />
+          <Button
+              type="submit"
+              className="absolute right-2 bottom-2 rounded-full w-10 h-10 p-0"
+              disabled={!value.trim() || isLoading}
+          >
+            <ArrowUp className="h-4 w-4" />
+            <span className="sr-only">Отправить</span>
+          </Button>
+        </div>
+        <p className="text-xs text-center text-muted-foreground mt-2">
+          AI может допускать ошибки. Проверяйте важную информацию.
+        </p>
+      </form>
   )
 })
 
@@ -168,8 +166,13 @@ export default function ChatPage() {
   const params = useParams()
   const router = useRouter()
   const chatId = params.id as string
-  const { isAuthenticated } = useAuth()
-  
+  const {
+    isAuthenticated,
+    isLoading: isAuthLoading,
+    getToken,
+    userData
+  } = useAuth()
+
   const [input, setInput] = useState("")
   const [messages, dispatchMessages] = useReducer(messagesReducer, [])
   const [isLoading, setIsLoading] = useState(false)
@@ -179,7 +182,7 @@ export default function ChatPage() {
   const [isTestMessageShown, setIsTestMessageShown] = useState(true)
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
   const [sidebarVersion, setSidebarVersion] = useState(0)
-  
+
   const ws = useRef<WebSocket | null>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const isRequested = useRef(false)
@@ -188,51 +191,44 @@ export default function ChatPage() {
     setSidebarVersion(v => v + 1)
   }, [])
 
-  const updateChatHistory = async () => {
+  const updateChatHistory = useCallback(async () => {
     try {
+      const token = await getToken()
+      if (!token) return
+
       const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      
+
       const updatedChats = response.data.map((chat: any) => {
-        const lastMessageDate = chat.messages.length > 0 
-          ? new Date(chat.messages[chat.messages.length - 1].created_at) 
-          : new Date(chat.created_at)
+        const lastMessageDate = chat.messages.length > 0
+            ? new Date(chat.messages[chat.messages.length - 1].created_at)
+            : new Date(chat.created_at)
         lastMessageDate.setHours(lastMessageDate.getHours() + 3)
-  
+
         return {
           id: chat.id,
           title: chat.name,
-          preview: chat.messages.length > 0 
-            ? chat.messages[chat.messages.length - 1].content 
-            : "Нет сообщений",
+          preview: chat.messages.length > 0
+              ? chat.messages[chat.messages.length - 1].content
+              : "Нет сообщений",
           date: lastMessageDate,
           messages: chat.messages.length,
         }
       })
-  
-      const sortedChats = updatedChats.sort((a: any, b: any) => 
-        b.date.getTime() - a.date.getTime())
-      
+
+      const sortedChats = updatedChats.sort((a: any, b: any) =>
+          b.date.getTime() - a.date.getTime())
+
       setChatHistory(sortedChats)
-      console.log("Чатыыыы",chatHistory)
-      
+
       if (sortedChats.length > 0) {
         localStorage.setItem("lastSavedChat", sortedChats[0].id)
       }
     } catch (error) {
       console.error("Error updating chat history:", error)
     }
-  }
-
-  const getToken = useCallback(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("access_token")
-    }
-    return null
-  }, [])
-
-  const token = getToken()
+  }, [getToken])
 
   const loadChatHistory = useCallback(async (chatId: string) => {
     setIsLoadingHistory(true)
@@ -240,14 +236,16 @@ export default function ChatPage() {
     isRequested.current = true
 
     if (chatId === "1") return
-    
+
     try {
+      const token = await getToken()
+      if (!token) return
+
       const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/${chatId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      
+
       const history = response.data.messages
-      console.log("Чаттты",history)
       dispatchMessages({ type: 'SET', payload: history })
       setChatTitle(response.data.name)
       setIsTestMessageShown(history.length === 0)
@@ -261,23 +259,23 @@ export default function ChatPage() {
     } finally {
       setIsLoadingHistory(false)
     }
-  }, [token])
+  }, [getToken])
 
-  const initializeWebSocket = useCallback((chatId: string) => {
-    
-    if (!token) return
+  const initializeWebSocket = useCallback(async (chatId: string) => {
+    if (chatId === "1") return
 
-    if (chatId != "1"){
+    try {
+      const token = await getToken()
+      if (!token) return
+
       const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}`
-      console.log("WebSocket URL:", wsUrl)
       ws.current = new WebSocket(wsUrl)
 
       ws.current.onopen = () => {
         console.log("WebSocket connection established")
       }
-  
+
       ws.current.onmessage = (event) => {
-        console.log("WebSocket message received:", event.data)
         dispatchMessages({
           type: 'ADD',
           payload: {
@@ -290,15 +288,15 @@ export default function ChatPage() {
         setIsLoading(false)
         updateSidebar()
         updateChatHistory().then(() => updateSidebar())
-  
+
         setTimeout(() => {
           messagesContainerRef.current?.scrollTo({
             top: messagesContainerRef.current.scrollHeight,
             behavior: "smooth",
-          });
-        }, 50);
+          })
+        }, 50)
       }
-  
+
       ws.current.onerror = (error) => {
         console.error("WebSocket error:", error)
         toast({
@@ -307,7 +305,7 @@ export default function ChatPage() {
           variant: "destructive",
         })
       }
-  
+
       ws.current.onclose = (event) => {
         console.log("WebSocket connection closed:", event)
         if (event.code !== 1000) {
@@ -319,47 +317,42 @@ export default function ChatPage() {
           setTimeout(() => initializeWebSocket(chatId), 5000)
         }
       }
+    } catch (error) {
+      console.error("WebSocket initialization error:", error)
     }
+  }, [getToken, updateSidebar, updateChatHistory])
 
-    return () => {
-      if (ws.current) {
-        ws.current.close()
-      }
-    }
-  }, [token, updateSidebar])
-
-  const isRequest = useRef(false)
   const fetchChats = useCallback(async () => {
-    if (!token) return
-    if (isRequest.current) return
-    isRequest.current = true
     try {
+      const token = await getToken()
+      if (!token) return
+
       const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      
+
       const formattedChats = response.data.map((chat: any) => {
-        const lastMessageDate = chat.messages.length > 0 
-          ? new Date(chat.messages[chat.messages.length - 1].created_at) 
-          : new Date(chat.created_at)
+        const lastMessageDate = chat.messages.length > 0
+            ? new Date(chat.messages[chat.messages.length - 1].created_at)
+            : new Date(chat.created_at)
         lastMessageDate.setHours(lastMessageDate.getHours() + 3)
 
         return {
           id: chat.id,
           title: chat.name,
-          preview: chat.messages.length > 0 
-            ? chat.messages[chat.messages.length - 1].content 
-            : "Нет сообщений",
+          preview: chat.messages.length > 0
+              ? chat.messages[chat.messages.length - 1].content
+              : "Нет сообщений",
           date: lastMessageDate,
           messages: chat.messages.length,
         }
       })
 
-      const sortedChats = formattedChats.sort((a: any, b: any) => 
-        b.date.getTime() - a.date.getTime())
-      
+      const sortedChats = formattedChats.sort((a: any, b: any) =>
+          b.date.getTime() - a.date.getTime())
+
       setChatHistory(sortedChats)
-      
+
       if (sortedChats.length > 0) {
         localStorage.setItem("lastSavedChat", sortedChats[0].id)
       } else {
@@ -373,7 +366,7 @@ export default function ChatPage() {
         variant: "destructive",
       })
     }
-  }, [token])
+  }, [getToken])
 
   const handleChatDeleted = useCallback((nextChatId: string | null) => {
     if (nextChatId) {
@@ -396,25 +389,25 @@ export default function ChatPage() {
   }, [])
 
   const throttledSubmit = useMemo(
-    () => throttle((input: string) => {
-      if (!input.trim() || isLoading) return
+      () => throttle((input: string) => {
+        if (!input.trim() || isLoading) return
 
-      const userMessage: Message = {
-        id: Date.now(),
-        text: input,
-        message_belong: "user",
-        timestamp: new Date(),
-      }
+        const userMessage: Message = {
+          id: Date.now(),
+          text: input,
+          message_belong: "user",
+          timestamp: new Date(),
+        }
 
-      dispatchMessages({ type: 'ADD', payload: userMessage })
-      setIsLoading(true)
-      setInput("")
+        dispatchMessages({ type: 'ADD', payload: userMessage })
+        setIsLoading(true)
+        setInput("")
 
-      if (ws.current) {
-        ws.current.send(input)
-      }
-    }, 500),
-    [isLoading]
+        if (ws.current) {
+          ws.current.send(input)
+        }
+      }, 500),
+      [isLoading]
   )
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
@@ -448,24 +441,23 @@ export default function ChatPage() {
     setTimeout(() => setCopiedCode(null), 2000)
   }, [])
 
-  // Эффекты
   useEffect(() => {
-    if (!messagesContainerRef.current || isLoadingHistory) return;
-  
+    if (!messagesContainerRef.current || isLoadingHistory) return
+
     const scrollToBottom = () => {
       messagesContainerRef.current?.scrollTo({
         top: messagesContainerRef.current.scrollHeight,
         behavior: "smooth",
-      });
-    };
-  
-    // Добавляем небольшую задержку для гарантии полного рендеринга
-    const timer = setTimeout(scrollToBottom, 100);
-  
-    return () => clearTimeout(timer);
-  }, [messages, isLoadingHistory]);
+      })
+    }
+
+    const timer = setTimeout(scrollToBottom, 100)
+    return () => clearTimeout(timer)
+  }, [messages, isLoadingHistory])
 
   useEffect(() => {
+    if (isAuthLoading) return
+
     if (!isAuthenticated) {
       router.push("/auth/login")
       return
@@ -476,7 +468,7 @@ export default function ChatPage() {
 
     const fetchData = async () => {
       await loadChatHistory(chatId)
-      initializeWebSocket(chatId)
+      await initializeWebSocket(chatId)
       await fetchChats()
     }
 
@@ -487,149 +479,135 @@ export default function ChatPage() {
         ws.current.close()
       }
     }
-  }, [chatId, isAuthenticated, router, loadChatHistory, initializeWebSocket, fetchChats])
+  }, [chatId, isAuthenticated, isAuthLoading, router, loadChatHistory, initializeWebSocket, fetchChats])
 
-  if (!isAuthenticated) {
+  const renderedMessages = useMemo(() => (
+      messages.map((message) => (
+          <MessageItem
+              key={message.id}
+              message={message}
+              theme={theme}
+              onCopy={handleCopyCode}
+              copiedCode={copiedCode}
+          />
+      ))
+  ), [messages, theme, copiedCode, handleCopyCode])
+
+  if (isAuthLoading || !isAuthenticated) {
     return null
   }
 
-  // Мемоизированные значения
-  const renderedMessages = useMemo(() => (
-    messages.map((message) => (
-      <MessageItem
-        key={message.id}
-        message={message}
-        theme={theme}
-        onCopy={handleCopyCode}
-        copiedCode={copiedCode}
-      />
-    ))
-  ), [messages, theme, copiedCode, handleCopyCode])
-
   return (
-    <div className="flex flex-col min-h-screen">
-      <Toaster />
-      <header className="border-b">
-        <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-2 font-bold">
-              <Bot className="w-6 h-6" />
-              <span>AI Chat</span>
-            </Link>
-            <div className="hidden md:flex items-center gap-1 text-sm text-muted-foreground">
-              <span>/</span>
-              <span className="font-medium text-foreground">{chatTitle === "Новый чат" ? "" : chatTitle}</span>
-            </div>
-          </div>
-          <nav className="flex items-center gap-4">
-            <Button variant="ghost" asChild className="md:hidden">
-              <Link href="/">
-                <ArrowLeft className="h-4 w-4" />
+      <div className="flex flex-col min-h-screen">
+        <Toaster />
+        <header className="border-b">
+          <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
+            <div className="flex items-center gap-4">
+              <Link href="/" className="flex items-center gap-2 font-bold">
+                <Bot className="w-6 h-6" />
+                <span>AI Chat</span>
               </Link>
-            </Button>
-            {chatId !== "new" && (
-              <div className="md:hidden">
-                <ChatOptionsMenu
-                  chatId={chatId}
-                  chatTitle={chatTitle}
-                  onDelete={handleDeleteChat}
-                  onClear={handleClearChat}
-                  onRename={handleRenameChat}
-                />
-              </div>
-            )}
-            <NavLinks />
-            <ThemeToggle />
-            <UserMenu />
-          </nav>
-        </div>
-      </header>
-      <div className="flex flex-1 overflow-hidden">
-        <ChatSidebar
-          key={`sidebar-${sidebarVersion}`}
-          chatHistory={chatHistory}
-          setChatHistory={setChatHistory}
-          onChatDeleted={handleChatDeleted}
-        />
-        {chatHistory.length > 0 ? (
-          <main className="flex-1 overflow-auto">
-            <div className="container mx-auto px-4 py-6 md:px-6 max-w-4xl">
-              <div className="flex flex-col h-[calc(100vh-12rem)]">
-                {isLoadingHistory ? (
-                  <div className="flex justify-center items-center h-full">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                  </div>
-                ) : (
-                  <>
-                    <div ref={messagesContainerRef} className="flex-1 overflow-y-auto mb-4 space-y-4 p-4">
-                      {isTestMessageShown && messages.length === 0 ? (
-                        <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-3 duration-300">
-                          <div className="flex items-start gap-3 max-w-[80%]">
-                            <Avatar className="mt-1">
-                              <AvatarFallback>
-                                <Bot className="w-4 h-4" />
-                              </AvatarFallback>
-                            </Avatar>
-                            <Card className="p-3 bg-muted">
-                              <div className="prose dark:prose-invert max-w-none">
-                                <MarkdownWithLatex 
-                                  content="# Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?"
-                                  theme={theme}
-                                  onCopy={handleCopyCode}
-                                  copiedCode={copiedCode}
-                                />
-                              </div>
-                            </Card>
-                          </div>
-                        </div>
-                      ) : (
-                        renderedMessages
-                      )}
-                      {isLoading && (
-                        <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-3 duration-300">
-                          <div className="flex items-start gap-3 max-w-[80%]">
-                            <Avatar className="mt-1">
-                              <AvatarFallback>
-                                <Bot className="w-4 h-4" />
-                              </AvatarFallback>
-                            </Avatar>
-                            <Card className="p-3 bg-muted">
-                              <div className="flex space-x-2">
-                                <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
-                                <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.2s]" />
-                                <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.4s]" />
-                              </div>
-                            </Card>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <MessageInput
-                      value={input}
-                      onChange={handleInputChange}
-                      onSubmit={handleSubmit}
-                      isLoading={isLoading}
-                    />
-                  </>
-                )}
+              <div className="hidden md:flex items-center gap-1 text-sm text-muted-foreground">
+                <span>/</span>
+                <span className="font-medium text-foreground">{chatTitle === "Новый чат" ? "" : chatTitle}</span>
               </div>
             </div>
-          </main>
-        ) : null}
+            <nav className="flex items-center gap-4">
+              <Button variant="ghost" asChild className="md:hidden">
+                <Link href="/">
+                  <ArrowLeft className="h-4 w-4" />
+                </Link>
+              </Button>
+              {chatId !== "new" && (
+                  <div className="md:hidden">
+                    <ChatOptionsMenu
+                        chatId={chatId}
+                        chatTitle={chatTitle}
+                        onDelete={handleDeleteChat}
+                        onClear={handleClearChat}
+                        onRename={handleRenameChat}
+                    />
+                  </div>
+              )}
+              <NavLinks />
+              <ThemeToggle />
+              <UserMenu />
+            </nav>
+          </div>
+        </header>
+        <div className="flex flex-1 overflow-hidden">
+          <ChatSidebar
+              key={`sidebar-${sidebarVersion}`}
+              chatHistory={chatHistory}
+              setChatHistory={setChatHistory}
+              onChatDeleted={handleChatDeleted}
+          />
+          {chatHistory.length > 0 ? (
+              <main className="flex-1 overflow-auto">
+                <div className="container mx-auto px-4 py-6 md:px-6 max-w-4xl">
+                  <div className="flex flex-col h-[calc(100vh-12rem)]">
+                    {isLoadingHistory ? (
+                        <div className="flex justify-center items-center h-full">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                        </div>
+                    ) : (
+                        <>
+                          <div ref={messagesContainerRef} className="flex-1 overflow-y-auto mb-4 space-y-4 p-4">
+                            {isTestMessageShown && messages.length === 0 ? (
+                                <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-3 duration-300">
+                                  <div className="flex items-start gap-3 max-w-[80%]">
+                                    <Avatar className="mt-1">
+                                      <AvatarFallback>
+                                        <Bot className="w-4 h-4" />
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <Card className="p-3 bg-muted">
+                                      <div className="prose dark:prose-invert max-w-none">
+                                        <MarkdownWithLatex
+                                            content="# Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?"
+                                            theme={theme}
+                                            onCopy={handleCopyCode}
+                                            copiedCode={copiedCode}
+                                        />
+                                      </div>
+                                    </Card>
+                                  </div>
+                                </div>
+                            ) : (
+                                renderedMessages
+                            )}
+                            {isLoading && (
+                                <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-3 duration-300">
+                                  <div className="flex items-start gap-3 max-w-[80%]">
+                                    <Avatar className="mt-1">
+                                      <AvatarFallback>
+                                        <Bot className="w-4 h-4" />
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <Card className="p-3 bg-muted">
+                                      <div className="flex space-x-2">
+                                        <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
+                                        <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.2s]" />
+                                        <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.4s]" />
+                                      </div>
+                                    </Card>
+                                  </div>
+                                </div>
+                            )}
+                          </div>
+                          <MessageInput
+                              value={input}
+                              onChange={handleInputChange}
+                              onSubmit={handleSubmit}
+                              isLoading={isLoading}
+                          />
+                        </>
+                    )}
+                  </div>
+                </div>
+              </main>
+          ) : null}
+        </div>
       </div>
-    </div>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
