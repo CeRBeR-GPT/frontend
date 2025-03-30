@@ -24,7 +24,6 @@ export default function Home() {
   useEffect(() => {
     if (isAuth) {
       const lastSavedChat = localStorage.getItem("lastSavedChat")
-      console.log(lastSavedChat)
 
       // if (lastSavedChat) {
       //   //const chat = JSON.parse(lastSavedChat)

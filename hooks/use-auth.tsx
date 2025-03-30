@@ -221,7 +221,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
             localStorage.setItem('isAuthenticated', 'true')
             return {success: true, lastChatId: "1"}
         }
-
+      
         return {success: false}
     }
 

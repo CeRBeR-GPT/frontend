@@ -427,7 +427,7 @@ export default function ChatPage() {
       title: "Чат удален",
       description: "Чат был успешно удален",
     })
-    //router.push("/chat/new")
+    router.push("/chat/new")
   }, [router])
 
   const handleRenameChat = useCallback((id: string, newTitle: string) => {
