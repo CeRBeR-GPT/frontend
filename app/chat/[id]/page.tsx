@@ -268,7 +268,9 @@ export default function ChatPage() {
       const token = await getToken()
       if (!token) return
 
-      const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}`
+      const provider = "deepseek"
+      const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}&provider=${provider}`
+      
       ws.current = new WebSocket(wsUrl)
 
       ws.current.onopen = () => {
