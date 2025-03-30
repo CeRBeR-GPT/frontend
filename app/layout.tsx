@@ -9,6 +9,9 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
   title: "AI Chat",
+  icons: {
+    icon: '../public/favicon.ico',
+  },
   description: "Advanced AI chat assistant",
     generator: 'v0.dev'
 }

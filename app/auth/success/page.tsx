@@ -8,7 +8,7 @@ import axios from "axios";
 
 const AuthSuccess = () => {
   const router = useRouter();
-  const { Login } = useAuth();
+  const { login } = useAuth();
 
   useEffect(() => {
     const handleAuthSuccess = async () => {
@@ -34,14 +34,18 @@ const AuthSuccess = () => {
           const userData = response.data;
           const email = userData.email;
           const password = userData.password;
+          console.log(userData)
 
-          const result = await Login(email, password);
+          //const result = await login(email, password);
+          const lastSavedChat = localStorage.getItem("lastSavedChat");
+          const lastChatId = lastSavedChat || "1"
+          router.push(`/chat/${lastChatId}`);
+          // if (result.success) {
+          //   router.push(`/chat/${result.lastChatId}`);
+          // } else {
+          //   router.push("/");
+          // }
 
-          if (result.success) {
-            router.push(`/chat/${result.lastChatId}`);
-          } else {
-            router.push("/");
-          }
         } catch (error) {
           router.push("/");
         }
@@ -51,7 +55,7 @@ const AuthSuccess = () => {
     };
 
     handleAuthSuccess();
-  }, [router, Login]);
+  }, [router, login]);
 
   return <div>Перенаправление...</div>;
 };

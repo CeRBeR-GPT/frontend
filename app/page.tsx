@@ -9,11 +9,12 @@ import { UserMenu } from "@/components/user-menu"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
 import { NavLinks } from "@/components/nav-links"
-
+import Head from 'next/head';
 export default function Home() {
   const { isAuthenticated } = useAuth()
   const router = useRouter()
   const [isAuth, setIsAuth] = useState(false)
+
 
   // Отслеживаем изменения состояния аутентификации
   useEffect(() => {
@@ -41,6 +42,9 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <Head>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <header className="border-b">
         <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
           <Link href="/" className="flex items-center gap-2 font-bold">
