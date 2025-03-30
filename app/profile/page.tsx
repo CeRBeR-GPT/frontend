@@ -3,7 +3,7 @@ import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Bot, Check, User, Zap, LogIn, LogOut, Lock } from "lucide-react"
+import { Bot, Check, User, Zap, LogIn, LogOut, Lock, Cpu, Sparkles, Star } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@/hooks/use-auth"
 import { UserMenu } from "@/components/user-menu"
@@ -44,45 +44,69 @@ interface Chat {
   }[]
 }
 
+// Define the provider tiers based on subscription plans
+const providersByPlan = {
+  default: ["default", "deepseek"],
+  premium: ["default", "deepseek", "gpt_4o_mini"],
+  business: ["default", "deepseek", "gpt_4o_mini", "gpt_4o", "gpt_4"],
+}
+
 export default function ProfilePage() {
   const { isAuthenticated, logout, userData } = useAuth()
   const router = useRouter()
-  //const [userData, setUserData] = useState<UserData | null>(null)
   const [usageHistory, setUsageHistory] = useState<UsageHistory[]>([])
+  const [selectedProvider, setSelectedProvider] = useState<string>("default")
+  const [availableProviders, setAvailableProviders] = useState<string[]>([])
 
   const isRequested = useRef(false)
 
   useEffect(() => {
-    const getToken = () => localStorage.getItem('access_token')
+    const getToken = () => localStorage.getItem("access_token")
     const token = getToken()
 
     const getUserData = async () => {
+      // Обновляем историю использования сообщений
+      const today = format(new Date(), "yyyy-MM-dd")
+      const existingHistory = JSON.parse(localStorage.getItem("usageHistory") || "[]")
+      const todayUsage = existingHistory.find((entry: UsageHistory) => entry.date === today)
 
-        // Обновляем историю использования сообщений
-        const today = format(new Date(), 'yyyy-MM-dd')
-        const existingHistory = JSON.parse(localStorage.getItem("usageHistory") || "[]")
-        const todayUsage = existingHistory.find((entry: UsageHistory) => entry.date === today)
-        
-        if (!todayUsage && userData) {
-          const newEntry = {
-            date: today,
-            usedMessages: userData.message_count_limit - userData.available_message_count,
-          }
-          const updatedHistory = [newEntry, ...existingHistory]
-          localStorage.setItem("usageHistory", JSON.stringify(updatedHistory))
-          setUsageHistory(updatedHistory)
-        } else {
-          setUsageHistory(existingHistory)
+      if (!todayUsage && userData) {
+        const newEntry = {
+          date: today,
+          usedMessages: userData.message_count_limit - userData.available_message_count,
         }
+        const updatedHistory = [newEntry, ...existingHistory]
+        localStorage.setItem("usageHistory", JSON.stringify(updatedHistory))
+        setUsageHistory(updatedHistory)
+      } else {
+        setUsageHistory(existingHistory)
+      }
 
-        // Загружаем чаты и обновляем статистику
-        await fetchChats(token)
+      // Загружаем чаты и обновляем статистику
+      await fetchChats(token)
     }
 
     if (token) {
       getUserData()
     }
   }, [])
+
+  // Set available providers based on user's plan
+  useEffect(() => {
+    if (userData) {
+      const providers = providersByPlan[userData.plan as keyof typeof providersByPlan] || providersByPlan.default
+      setAvailableProviders(providers)
+
+      // Get saved provider from localStorage or use default
+      const savedProvider = localStorage.getItem("selectedProvider")
+      if (savedProvider && providers.includes(savedProvider)) {
+        setSelectedProvider(savedProvider)
+      } else {
+        setSelectedProvider(providers[0])
+        localStorage.setItem("selectedProvider", providers[0])
+      }
+    }
+  }, [userData])
 
   const isRequest = useRef(false)
   const fetchChats = async (token: string | null) => {
@@ -93,42 +117,42 @@ export default function ProfilePage() {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      });
-      const chats: Chat[] = response.data;
-  
+      })
+      const chats: Chat[] = response.data
+
       // Создаем объект для группировки сообщений по дате
-      const messagesByDate: { [key: string]: number } = {};
-  
+      const messagesByDate: { [key: string]: number } = {}
+
       // Проходим по всем чатам и их сообщениям
       chats.forEach((chat) => {
         chat.messages.forEach((message) => {
           // Преобразуем дату из UTC в московское время (MSK, UTC+3)
-          const utcDate = new Date(message.created_at);
-          const mskTime = new Date(utcDate.getTime() + 3 * 60 * 60 * 1000); // Добавляем 3 часа
-          console.log("time", mskTime);
-          const messageDate = format(mskTime, 'yyyy-MM-dd');
-  
+          const utcDate = new Date(message.created_at)
+          const mskTime = new Date(utcDate.getTime() + 3 * 60 * 60 * 1000) // Добавляем 3 часа
+          console.log("time", mskTime)
+          const messageDate = format(mskTime, "yyyy-MM-dd")
+
           if (messagesByDate[messageDate]) {
-            messagesByDate[messageDate] += 1;
+            messagesByDate[messageDate] += 1
           } else {
-            messagesByDate[messageDate] = 1;
+            messagesByDate[messageDate] = 1
           }
-        });
-      });
-  
+        })
+      })
+
       // Преобразуем объект в массив для использования в `usageHistory`
       const updatedHistory = Object.keys(messagesByDate).map((date) => ({
         date,
         usedMessages: messagesByDate[date],
-      }));
-  
+      }))
+
       // Обновляем состояние и локальное хранилище
-      localStorage.setItem("usageHistory", JSON.stringify(updatedHistory));
-      setUsageHistory(updatedHistory);
+      localStorage.setItem("usageHistory", JSON.stringify(updatedHistory))
+      setUsageHistory(updatedHistory)
     } catch (error) {
-      console.error("Error fetching chats:", error);
+      console.error("Error fetching chats:", error)
     }
-  };
+  }
 
   const generateActivityData = () => {
     const data = []
@@ -136,7 +160,7 @@ export default function ProfilePage() {
 
     for (let i = 0; i < 365; i++) {
       const date = subDays(today, i)
-      const formattedDate = format(date, 'yyyy-MM-dd')
+      const formattedDate = format(date, "yyyy-MM-dd")
       const usageEntry = usageHistory.find((entry) => entry.date === formattedDate)
 
       data.push({
@@ -151,7 +175,7 @@ export default function ProfilePage() {
   const activityData = generateActivityData()
 
   const payForPremium = async (plan: string) => {
-    const getToken = () => localStorage.getItem('access_token')
+    const getToken = () => localStorage.getItem("access_token")
     const token = getToken()
     try {
       const response = await axios.post(
@@ -161,7 +185,7 @@ export default function ProfilePage() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       )
 
       console.log(response.data.url)
@@ -175,14 +199,92 @@ export default function ProfilePage() {
     userData?.plan === "default"
       ? "Базовый"
       : userData?.plan === "premium"
-      ? "Премиум"
-      : userData?.plan === "business"
-      ? "Бизнес"
-      : ""
+        ? "Премиум"
+        : userData?.plan === "business"
+          ? "Бизнес"
+          : ""
 
   const handleLogout = () => {
     logout()
     router.push("/")
+  }
+
+  const handleProviderChange = (provider: string) => {
+    setSelectedProvider(provider)
+    localStorage.setItem("selectedProvider", provider)
+
+    // Здесь можно добавить вызов API для сохранения выбранного провайдера на сервере
+    // например:
+    // const token = localStorage.getItem('access_token');
+    // axios.post('https://api-gpt.energy-cerber.ru/user/settings',
+    //   { provider },
+    //   { headers: { Authorization: `Bearer ${token}` } }
+    // );
+  }
+
+  // Helper function to get provider icon
+  const getProviderIcon = (provider: string) => {
+    switch (provider) {
+      case "default":
+        return <Bot className="w-5 h-5" />
+      case "deepseek":
+        return <Cpu className="w-5 h-5" />
+      case "gpt_4o_mini":
+        return <Sparkles className="w-5 h-5" />
+      case "gpt_4o":
+        return <Zap className="w-5 h-5" />
+      case "gpt_4":
+        return <Star className="w-5 h-5" />
+      default:
+        return <Bot className="w-5 h-5" />
+    }
+  }
+
+  // Helper function to get provider name
+  const getProviderName = (provider: string) => {
+    switch (provider) {
+      case "default":
+        return "Стандартный"
+      case "deepseek":
+        return "DeepSeek"
+      case "gpt_4o_mini":
+        return "GPT-4o Mini"
+      case "gpt_4o":
+        return "GPT-4o"
+      case "gpt_4":
+        return "GPT-4"
+      default:
+        return provider
+    }
+  }
+
+  // Helper function to get provider description
+  const getProviderDescription = (provider: string) => {
+    switch (provider) {
+      case "default":
+        return "Базовая модель для повседневных задач"
+      case "deepseek":
+        return "Мощная модель с открытым исходным кодом"
+      case "gpt_4o_mini":
+        return "Компактная версия GPT-4o с хорошим балансом скорости и качества"
+      case "gpt_4o":
+        return "Мультимодальная модель от OpenAI с расширенными возможностями"
+      case "gpt_4":
+        return "Продвинутая модель от OpenAI для сложных задач"
+      default:
+        return ""
+    }
+  }
+
+  // Helper function to determine if a provider requires a specific plan
+  const getRequiredPlan = (provider: string) => {
+    if (providersByPlan.default.includes(provider)) {
+      return "default"
+    } else if (providersByPlan.premium.includes(provider) && !providersByPlan.default.includes(provider)) {
+      return "premium"
+    } else {
+      return "business"
+    }
   }
 
   if (!isAuthenticated) {
@@ -317,9 +419,10 @@ export default function ProfilePage() {
                         style={{
                           width: `${
                             userData
-                              ? ((userData.message_count_limit - userData.available_message_count) /
-                                  userData.message_count_limit) *
-                                100
+                              ? (
+                                  (userData.message_count_limit - userData.available_message_count) /
+                                    userData.message_count_limit
+                                ) * 100
                               : 0
                           }%`,
                         }}
@@ -336,6 +439,56 @@ export default function ProfilePage() {
                       Управление тарифом
                     </Button>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* AI Provider Selection Card */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>AI Провайдер</CardTitle>
+                <CardDescription>Выберите предпочитаемую модель AI для общения</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid gap-3">
+                    {/* Only show providers available for the current plan */}
+                    {availableProviders.map((provider) => {
+                      const isSelected = selectedProvider === provider
+
+                      return (
+                        <div
+                          key={provider}
+                          className={`flex items-center justify-between p-3 rounded-lg transition-colors cursor-pointer ${
+                            isSelected ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80"
+                          }`}
+                          onClick={() => handleProviderChange(provider)}
+                        >
+                          <div className="flex items-center gap-3">
+                            {getProviderIcon(provider)}
+                            <div>
+                              <p className="font-medium">{getProviderName(provider)}</p>
+                              <p className="text-xs opacity-80">{getProviderDescription(provider)}</p>
+                            </div>
+                          </div>
+                          {isSelected && <Check className="w-5 h-5" />}
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {0 && (
+                    <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-200 rounded-lg text-sm">
+                      <p className="flex items-center gap-2">
+                        <Lock className="w-4 h-4 flex-shrink-0" />
+                        <span>
+                          {1
+                            ? "Обновите до Premium для доступа к GPT-4o Mini или до Бизнес для всех моделей"
+                            : "Обновите до Бизнес тарифа для доступа ко всем моделям"}
+                        </span>
+                      </p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -359,6 +512,10 @@ export default function ProfilePage() {
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-green-500" />
                       <span>Ограничение: 2000 символов</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-green-500" />
+                      <span>Доступ к 2 AI моделям</span>
                     </li>
                   </ul>
                 </CardContent>
@@ -388,6 +545,10 @@ export default function ProfilePage() {
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-green-500" />
                       <span>Ограничение: 10000 символов</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-green-500" />
+                      <span>Доступ к 3 AI моделям</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-green-500" />
@@ -432,6 +593,10 @@ export default function ProfilePage() {
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-green-500" />
+                      <span>Доступ ко всем AI моделям</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-green-500" />
                       <span>Удочка в подарок</span>
                     </li>
                   </ul>
@@ -459,3 +624,4 @@ export default function ProfilePage() {
     </div>
   )
 }
+
