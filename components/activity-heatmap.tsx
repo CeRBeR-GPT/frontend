@@ -76,7 +76,7 @@ export function ActivityHeatmap({ data = [], startDate: propStartDate, endDate =
   // Функция для получения данных активности для конкретного дня
   const getActivityForDay = (day: Date) => {
     const activity = activityData.find((item) => isSameDay(parseISO(item.date), day))
-    return activity ? activity.count : 0
+    return activity ? activity.count / 2 : 0
   }
 
   // Создаем массив месяцев для отображения над сеткой
@@ -208,7 +208,7 @@ export function ActivityHeatmap({ data = [], startDate: propStartDate, endDate =
       {hoveredDay && (
         <div className="text-sm text-muted-foreground mt-2 hidden md:block">
           <p>
-            {format(parseISO(hoveredDay.date), "PPP", { locale: ru })}: {hoveredDay.count} сообщений
+            {format(parseISO(hoveredDay.date), "PPP", { locale: ru })}: {hoveredDay.count / 2} сообщений
           </p>
         </div>
       )}

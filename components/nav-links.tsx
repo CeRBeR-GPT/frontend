@@ -13,7 +13,8 @@ export const NavLinks = () => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem("lastSavedChat") || "1"
     }
-    return "1" // значение по умолчанию для SSR
+    
+    return "1"
   })
 
   // Используем useEffect для отслеживания изменений состояния аутентификации
