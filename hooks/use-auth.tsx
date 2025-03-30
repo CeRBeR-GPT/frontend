@@ -1,8 +1,8 @@
 "use client"
 
-import {createContext, useContext, useState, useEffect} from "react"
+import {createContext, useContext, useState, useEffect, useCallback} from "react"
 import axios from "axios"
-import {refreshAccess} from "@/utils/tokens-utils";
+import {getAccess} from "@/utils/tokens-utils";
 
 type User = { email: string; password?: string } | null
 
@@ -28,24 +28,22 @@ type AuthContextType = {
     isLoading: boolean
     Login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
     getUserData: () => Promise<void>
+    getToken: () => Promise<string | null>
 }
-
 const AuthContext = createContext<AuthContextType>({
     user: null,
     userData: null,
     isAuthenticated: false,
     login: async () => ({success: false}),
-    register: async () => {
-    },
+    register: async () => {},
     verifyCode: async () => ({success: false}),
-    logout: () => {
-    },
+    logout: () => {},
     socialLogin: async () => ({success: false}),
     updatePassword: async () => ({success: false}),
     isLoading: false,
     Login: async () => ({success: false}),
-    getUserData: async () => {
-    },
+    getUserData: async () => {},
+    getToken: async () => null
 })
 
 export function AuthProvider({children}: { children: React.ReactNode }) {
@@ -53,6 +51,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     const [userData, setUserData] = useState<UserData | null>(null)
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
+    const [authChecked, setAuthChecked] = useState(false);
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -74,142 +73,113 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
         checkAuth()
     }, [])
 
-    const getToken = () => {
-        if (typeof window !== "undefined") {
-            return localStorage.getItem('access_token')
-        }
-        return null
-    }
 
-    const token = getToken()
+    const getToken = useCallback(async (): Promise<string | null> => {
+        if (typeof window === "undefined") return null;
 
-    const getUserData = async () => {
-        if (typeof window !== "undefined") {
-            const accessToken = localStorage.getItem('access_token')
-            const refreshToken = localStorage.getItem('refresh_token')
-            let userData = null
+        const accessToken = localStorage.getItem('access_token');
+        const refreshToken = localStorage.getItem('refresh_token');
 
-            if (accessToken || refreshToken) {
-                console.log("ACCESS:", accessToken)
-                try {
-                    const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
-                        headers: {
-                            Authorization: `Bearer ${accessToken}`,
-                        },
-                    })
-                    userData = response.data
+        if (!accessToken || !refreshToken) return null;
 
-                } catch (error) {
-                    const newAccess = await refreshAccess(refreshToken)
-                    try {
-                        const responseUser = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
-                            headers: {
-                                Authorization: `Bearer ${newAccess}`,
-                            },
-                        })
-                        userData = responseUser.data
+        return await getAccess(accessToken, refreshToken);
+    }, []);
 
-                    } catch (error) {
-                        console.log("Auth error", error)
-                    }
-                }
+    const getUserData = useCallback(async (): Promise<void> => {
+        if (typeof window === "undefined") return;
 
-                if (userData) {
-                    setUserData(userData)
-                } else {
-                    setIsAuthenticated(false)
-                    localStorage.removeItem('isAuthenticated') // Добавлено
-                    localStorage.removeItem('access_token')
-                    localStorage.removeItem('refresh_token')
-                    localStorage.removeItem("user")
-                }
+        try {
+            const token = await getToken();
+            if (!token) {
+                throw new Error("No valid token");
             }
 
+            const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
+                headers: {Authorization: `Bearer ${token}`},
+            });
+
+            setUserData(response.data);
+            setIsAuthenticated(true);
+            setAuthChecked(true);
+
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+            setIsAuthenticated(false);
+            setAuthChecked(true);
+            localStorage.removeItem('isAuthenticated');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem("user");
         }
-    }
+
+    }, [getToken]);
 
 
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            getUserData()
+        if (isAuthenticated && !authChecked) {
+            getUserData();
         }
-    }, [token])
+    }, [isAuthenticated, authChecked, getUserData]);
 
     const login = async (email: string, password: string) => {
         try {
-            const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/login`, {email, password})
+            const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/login`, {
+                email,
+                password
+            });
 
-            if (response.data && response.status === 200) {
-                const user = {
-                    email: email,
-                }
-                localStorage.setItem('access_token', response.data.access_token)
-                localStorage.setItem('refresh_token', response.data.refresh_token)
-                localStorage.setItem('isAuthenticated', 'true') // Добавлено
-                localStorage.setItem('user', JSON.stringify(user)) // Добавлено для согласованности
+            if (response.data?.access_token) {
+                const user = {email};
+                localStorage.setItem('access_token', response.data.access_token);
+                localStorage.setItem('refresh_token', response.data.refresh_token);
+                localStorage.setItem('isAuthenticated', 'true');
+                localStorage.setItem('user', JSON.stringify(user));
 
-                setUser(user)
-                setIsAuthenticated(true)
+                setUser(user);
+                setIsAuthenticated(true);
+                await getUserData();
 
-                const lastSavedChat = localStorage.getItem("lastSavedChat")
-                return {success: true, lastChatId: lastSavedChat || "1"}
+                const lastSavedChat = localStorage.getItem("lastSavedChat");
+                return {success: true, lastChatId: lastSavedChat || "1"};
             }
-            return {success: false}
+            return {success: false};
         } catch (error) {
-            throw new Error("Произошла ошибка при входе. Пожалуйста, попробуйте снова.")
+            console.error("Login error:", error);
+            throw new Error("Произошла ошибка при входе. Пожалуйста, попробуйте снова.");
         }
-    }
+    };
 
     const updatePassword = async (newPassword: string) => {
-            const accessToken = getToken()
-            const refreshToken = localStorage.getItem('refresh_token')
-            let responseData = null
-            let responseStatus = 400
-            try {
-                const response = await axios.post(
-                    `https://api-gpt.energy-cerber.ru/user/edit_password?new_password=${newPassword}`,
-                    {},
-                    {
-                        headers: {
-                            Authorization: `Bearer ${accessToken}`,
-                        },
-                    }
-                )
-                responseData = response.data
-                responseStatus = response.status
-            } catch (error){
-                const newAccess = await refreshAccess(refreshToken)
-                const response = await axios.post(
-                    `https://api-gpt.energy-cerber.ru/user/edit_password?new_password=${newPassword}`,
-                    {},
-                    {
-                        headers: {
-                            Authorization: `Bearer ${newAccess}`,
-                        },
-                    }
-                )
-                responseData = response.data
-                responseStatus = response.status
-            }
+        try {
+            const token = await getToken();
+            if (!token) throw new Error("No valid token");
 
+            const response = await axios.post(
+                `https://api-gpt.energy-cerber.ru/user/edit_password?new_password=${newPassword}`,
+                {},
+                {headers: {Authorization: `Bearer ${token}`}}
+            );
 
-            if (responseData && responseStatus === 200) {
+            if (response.data?.access_token) {
+                localStorage.setItem('access_token', response.data.access_token);
+                localStorage.setItem('refresh_token', response.data.refresh_token);
+
                 if (user) {
-                    localStorage.setItem('access_token', responseData.access_token)
-                    localStorage.setItem('refresh_token', responseData.refresh_token)
-                    const updatedUser = {...user, password: newPassword}
-                    setUser(updatedUser)
-                    localStorage.setItem("user", JSON.stringify(updatedUser))
-                    setIsAuthenticated(true)
-                    localStorage.setItem('isAuthenticated', 'true')
+                    const updatedUser = {...user};
+                    setUser(updatedUser);
+                    localStorage.setItem("user", JSON.stringify(updatedUser));
                 }
 
-                return {success: true}
+                setIsAuthenticated(true);
+                localStorage.setItem('isAuthenticated', 'true');
+                return {success: true};
             }
-
-            return {success: false}
-
-    }
+            return {success: false};
+        } catch (error) {
+            console.error("Password update error:", error);
+            return {success: false};
+        }
+    };
 
     const Login = async (email: string, password: string) => {
         const user = {
@@ -242,13 +212,15 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     }
 
     const logout = () => {
-        localStorage.removeItem('isAuthenticated') // Добавлено
-        localStorage.removeItem("user")
-        localStorage.removeItem('access_token') // Рекомендуется также очистить токен
-        localStorage.removeItem('refresh_token') // Рекомендуется также очистить токен
-        setUser(null)
-        setIsAuthenticated(false)
-    }
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem("user");
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        setUser(null);
+        setUserData(null);
+        setIsAuthenticated(false);
+        setAuthChecked(false);
+    };
 
     const socialLogin = async (provider: "google" | "yandex" | "github") => {
         const email = `user@${provider}.com`
@@ -268,19 +240,20 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                 userData,
                 getUserData,
                 isAuthenticated,
-                isLoading,
+                isLoading: isLoading || !authChecked,
                 login,
                 register,
                 verifyCode,
                 logout,
                 socialLogin,
                 updatePassword,
-                Login
+                Login: login,
+                getToken
             }}
         >
             {children}
         </AuthContext.Provider>
-    )
+    );
 }
 
 export const useAuth = () => useContext(AuthContext)

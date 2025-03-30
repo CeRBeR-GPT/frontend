@@ -60,7 +60,7 @@ export default function LoginPage() {
         const chat = JSON.parse(lastSavedChat)
       }
       if (result.success) {
-        router.push(`/chat`);
+        router.push(`/chat/1`);
         await getUserData()
       } else {
         setError("Неверный email или пароль. Пожалуйста, попробуйте снова.");

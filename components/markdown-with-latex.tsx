@@ -10,7 +10,6 @@ import remarkMath from "remark-math"
 import remarkGfm from "remark-gfm"
 import "katex/dist/katex.min.css"
 
-// Простой словарь языков программирования
 const PROGRAMMING_LANGUAGES = [
   'javascript', 'typescript', 'python', 'java', 'csharp', 'cpp', 'c', 'php',
   'ruby', 'go', 'rust', 'swift', 'kotlin', 'scala', 'r', 'bash', 'sh', 'shell',

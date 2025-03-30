@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ActivityHeatmap } from "@/components/activity-heatmap"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from "recharts"
 import { subDays, format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from "date-fns"
 import { ru } from "date-fns/locale"
 import { useMediaQuery } from "@/hooks/use-media-query"
@@ -35,7 +35,7 @@ export function ActivityStats({ data = [] }: ActivityStatsProps) {
     const dayActivity = activityData.find((item) => isSameDay(new Date(item.date), day))
     return {
       name: format(day, isMobile ? "E" : "EEE", { locale: ru }),
-      value: dayActivity ? dayActivity.count : 0,
+      value: dayActivity ? dayActivity.count / 2 : 0,
       fullDate: format(day, "PPP", { locale: ru }),
     }
   })
@@ -49,7 +49,7 @@ export function ActivityStats({ data = [] }: ActivityStatsProps) {
       const dayActivity = activityData.find((item) => isSameDay(new Date(item.date), day))
       return {
         name: format(day, isMobile ? "d" : "dd.MM"),
-        value: dayActivity ? dayActivity.count : 0,
+        value: dayActivity ? dayActivity.count / 2 : 0,
         fullDate: format(day, "PPP", { locale: ru }),
       }
     })
@@ -71,7 +71,7 @@ export function ActivityStats({ data = [] }: ActivityStatsProps) {
       return (
         <div className="bg-background border rounded-md p-2 shadow-md text-xs">
           <p className="font-medium">{payload[0].payload.fullDate}</p>
-          <p>{`${payload[0].value} сообщений`}</p>
+          <p>{`${payload[0].value / 2} сообщений`}</p>
         </div>
       )
     }
@@ -88,7 +88,7 @@ export function ActivityStats({ data = [] }: ActivityStatsProps) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           <Card>
             <CardContent className="pt-6">
-              <div className="text-2xl font-bold">{totalMessages}</div>
+              <div className="text-2xl font-bold">{totalMessages / 2}</div>
               <p className="text-xs text-muted-foreground">Всего сообщений</p>
             </CardContent>
           </Card>
@@ -100,13 +100,13 @@ export function ActivityStats({ data = [] }: ActivityStatsProps) {
           </Card>
           <Card>
             <CardContent className="pt-6">
-              <div className="text-2xl font-bold">{averagePerDay}</div>
+              <div className="text-2xl font-bold">{Math.floor(averagePerDay / 2)}</div>
               <p className="text-xs text-muted-foreground">Среднее в день</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
-              <div className="text-2xl font-bold">{maxActivityDay ? maxActivityDay.count : 0}</div>
+              <div className="text-2xl font-bold">{maxActivityDay ? maxActivityDay.count / 2 : 0}</div>
               <p className="text-xs text-muted-foreground">
                 Максимум за день
                 {maxActivityDay && <span> ({format(new Date(maxActivityDay.date), "dd.MM")})</span>}

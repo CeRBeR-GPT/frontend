@@ -19,6 +19,7 @@ const AuthSuccess = () => {
       if (accessToken && refreshToken) {
         localStorage.setItem("access_token", accessToken);
         localStorage.setItem("refresh_token", refreshToken);
+        localStorage.setItem('isAuthenticated', 'true');
 
         Cookies.remove("access_token");
         Cookies.remove("refresh_token");
