@@ -21,6 +21,7 @@ import { useTheme } from "next-themes"
 import "katex/dist/katex.min.css"
 import { MarkdownWithLatex } from "@/components/markdown-with-latex"
 import { throttle } from "lodash-es"
+import ProviderSelectorDropdown from "@/components/provider-selector-dropdown"
 
 interface Message {
   id: number
@@ -35,6 +36,12 @@ interface ChatHistory {
   preview: string
   date: Date
   messages: number
+}
+
+const providersByPlan = {
+  default: ["default", "deepseek"],
+  premium: ["default", "deepseek", "gpt_4o_mini"],
+  business: ["default", "deepseek", "gpt_4o_mini", "gpt_4o", "gpt_4"],
 }
 
 const MessageItem = React.memo(({ message, theme, onCopy, copiedCode }: {
@@ -83,36 +90,50 @@ const MessageItem = React.memo(({ message, theme, onCopy, copiedCode }: {
 
 MessageItem.displayName = "MessageItem"
 
-const MessageInput = React.memo(({
-                                   value,
-                                   onChange,
-                                   onSubmit,
-                                   isLoading
-                                 }: {
-  value: string
-  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
-  onSubmit: (e: React.FormEvent) => void
-  isLoading: boolean
-}) => {
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+const MessageInput = React.memo(
+  ({
+    value,
+    onChange,
+    onSubmit,
+    isLoading,
+    selectedProvider,
+    availableProviders,
+    onProviderChange,
+  }: {
+    value: string
+    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
+    onSubmit: (e: React.FormEvent) => void
+    isLoading: boolean
+    selectedProvider: string
+    availableProviders: string[]
+    onProviderChange: (provider: string) => void
+  }) => {
+    const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const adjustTextareaHeight = useCallback(() => {
-    const textarea = textareaRef.current
-    if (!textarea) return
+    const adjustTextareaHeight = useCallback(() => {
+      const textarea = textareaRef.current
+      if (!textarea) return
 
-    textarea.style.height = "auto"
-    const newHeight = Math.max(60, Math.min(textarea.scrollHeight, 200))
-    textarea.style.height = `${newHeight}px`
-  }, [])
+      textarea.style.height = "auto"
+      const newHeight = Math.max(60, Math.min(textarea.scrollHeight, 200))
+      textarea.style.height = `${newHeight}px`
+    }, [])
 
-  useEffect(() => {
-    adjustTextareaHeight()
-  }, [value, adjustTextareaHeight])
-
-  return (
+    useEffect(() => {
+      adjustTextareaHeight()
+    }, [value, adjustTextareaHeight])
+    return (
       <form onSubmit={onSubmit} className="sticky bottom-0 bg-background pt-2">
-        <div className="relative">
-          <Textarea
+        <div className="relative flex items-end gap-2">
+          <div className="flex-shrink-0">
+            <ProviderSelectorDropdown
+              selectedProvider={selectedProvider}
+              availableProviders={availableProviders}
+              onProviderChange={onProviderChange}
+            />
+          </div>
+          <div className="relative flex-grow">
+            <Textarea
               ref={textareaRef}
               placeholder="Напишите ваш запрос..."
               value={value}
@@ -124,22 +145,25 @@ const MessageInput = React.memo(({
                   onSubmit(e)
                 }
               }}
-          />
-          <Button
+            />
+            <Button
               type="submit"
               className="absolute right-2 bottom-2 rounded-full w-10 h-10 p-0"
               disabled={!value.trim() || isLoading}
-          >
-            <ArrowUp className="h-4 w-4" />
-            <span className="sr-only">Отправить</span>
-          </Button>
+            >
+              <ArrowUp className="h-4 w-4" />
+              <span className="sr-only">Отправить</span>
+            </Button>
+          </div>
         </div>
         <p className="text-xs text-center text-muted-foreground mt-2">
           AI может допускать ошибки. Проверяйте важную информацию.
         </p>
       </form>
-  )
-})
+    )
+  },
+)
+
 
 MessageInput.displayName = "MessageInput"
 
@@ -182,6 +206,23 @@ export default function ChatPage() {
   const [isTestMessageShown, setIsTestMessageShown] = useState(true)
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
   const [sidebarVersion, setSidebarVersion] = useState(0)
+  const [selectedProvider, setSelectedProvider] = useState<string>("default")
+  const [availableProviders, setAvailableProviders] = useState<string[]>([])
+
+  useEffect(() => {
+    if (userData) {
+      const providers = providersByPlan[userData.plan as keyof typeof providersByPlan] || providersByPlan.default
+      setAvailableProviders(providers)
+
+      const savedProvider = localStorage.getItem("selectedProvider")
+      if (savedProvider && providers.includes(savedProvider)) {
+        setSelectedProvider(savedProvider)
+      } else {
+        setSelectedProvider(providers[0])
+        localStorage.setItem("selectedProvider", providers[0])
+      }
+    }
+  }, [userData])
 
   const ws = useRef<WebSocket | null>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -495,6 +536,19 @@ export default function ChatPage() {
       ))
   ), [messages, theme, copiedCode, handleCopyCode])
 
+  const handleProviderChange = useCallback(
+    (provider: string) => {
+      setSelectedProvider(provider)
+      localStorage.setItem("selectedProvider", provider)
+
+      toast({
+        title: "Провайдер изменен",
+        description: `Провайдер изменен на ${provider}`,
+      })
+    },
+    [chatId, initializeWebSocket],
+  )
+
   if (isAuthLoading || !isAuthenticated) {
     return null
   }
@@ -544,6 +598,7 @@ export default function ChatPage() {
               setChatHistory={setChatHistory}
               onChatDeleted={handleChatDeleted}
           />
+          
           {chatHistory.length > 0 ? (
               <main className="flex-1 overflow-auto">
                 <div className="container mx-auto px-4 py-6 md:px-6 max-w-4xl">
@@ -602,6 +657,9 @@ export default function ChatPage() {
                               onChange={handleInputChange}
                               onSubmit={handleSubmit}
                               isLoading={isLoading}
+                              selectedProvider={selectedProvider}
+                              availableProviders={availableProviders}
+                              onProviderChange={handleProviderChange}
                           />
                         </>
                     )}
