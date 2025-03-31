@@ -26,7 +26,8 @@ export default function Home() {
     if (isAuth) {
       const lastSavedChat = localStorage.getItem("lastSavedChat")
 
-      // if (lastSavedChat) {
+      //if (lastSavedChat) {
+      //  router.replace(`/chat/${lastSavedChat}`)
       //   //const chat = JSON.parse(lastSavedChat)
       //   //console.log("Последний сохраненный чат:", chat)
       //
@@ -36,7 +37,7 @@ export default function Home() {
       // } else {
       //   // Если последний чат нgе найден, редиректим на страницу по умолчанию
       //   router.replace("/chat/1")
-      // }
+      //}
     }
   }, [isAuth, router])
 
