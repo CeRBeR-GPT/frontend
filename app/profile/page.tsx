@@ -3,7 +3,7 @@ import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Bot, Check, User, Zap, LogIn, LogOut, Lock } from "lucide-react"
+import { Bot, Check, User, Zap, LogIn, LogOut, Lock, Cpu, Sparkles, Star } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@/hooks/use-auth"
 import { UserMenu } from "@/components/user-menu"
@@ -44,11 +44,19 @@ interface Chat {
   }[]
 }
 
+const providersByPlan = {
+  default: ["default", "deepseek"],
+  premium: ["default", "deepseek", "gpt_4o_mini"],
+  business: ["default", "deepseek", "gpt_4o_mini", "gpt_4o", "gpt_4"],
+}
+
 export default function ProfilePage() {
   const { isAuthenticated, logout, userData } = useAuth()
   const router = useRouter()
   //const [userData, setUserData] = useState<UserData | null>(null)
   const [usageHistory, setUsageHistory] = useState<UsageHistory[]>([])
+  const [selectedProvider, setSelectedProvider] = useState<string>("default")
+  const [availableProviders, setAvailableProviders] = useState<string[]>([])
 
   const isRequested = useRef(false)
 
@@ -83,6 +91,22 @@ export default function ProfilePage() {
       getUserData()
     }
   }, [])
+
+  useEffect(() => {
+    if (userData) {
+      const providers = providersByPlan[userData.plan as keyof typeof providersByPlan] || providersByPlan.default
+      setAvailableProviders(providers)
+
+      // Get saved provider from localStorage or use default
+      const savedProvider = localStorage.getItem("selectedProvider")
+      if (savedProvider && providers.includes(savedProvider)) {
+        setSelectedProvider(savedProvider)
+      } else {
+        setSelectedProvider(providers[0])
+        localStorage.setItem("selectedProvider", providers[0])
+      }
+    }
+  }, [userData])
 
   const isRequest = useRef(false)
   const fetchChats = async (token: string | null) => {
@@ -183,6 +207,83 @@ export default function ProfilePage() {
   const handleLogout = () => {
     logout()
     router.push("/")
+  }
+
+  const handleProviderChange = (provider: string) => {
+    setSelectedProvider(provider)
+    localStorage.setItem("selectedProvider", provider)
+
+    // Здесь можно добавить вызов API для сохранения выбранного провайдера на сервере
+    // например:
+    // const token = localStorage.getItem('access_token');
+    // axios.post('https://api-gpt.energy-cerber.ru/user/settings',
+    //   { provider },
+    //   { headers: { Authorization: `Bearer ${token}` } }
+    // );
+  }
+
+  // Helper function to get provider icon
+  const getProviderIcon = (provider: string) => {
+    switch (provider) {
+      case "default":
+        return <Bot className="w-5 h-5" />
+      case "deepseek":
+        return <Cpu className="w-5 h-5" />
+      case "gpt_4o_mini":
+        return <Sparkles className="w-5 h-5" />
+      case "gpt_4o":
+        return <Zap className="w-5 h-5" />
+      case "gpt_4":
+        return <Star className="w-5 h-5" />
+      default:
+        return <Bot className="w-5 h-5" />
+    }
+  }
+
+  // Helper function to get provider name
+  const getProviderName = (provider: string) => {
+    switch (provider) {
+      case "default":
+        return "Стандартный"
+      case "deepseek":
+        return "DeepSeek"
+      case "gpt_4o_mini":
+        return "GPT-4o Mini"
+      case "gpt_4o":
+        return "GPT-4o"
+      case "gpt_4":
+        return "GPT-4"
+      default:
+        return provider
+    }
+  }
+
+  const getProviderDescription = (provider: string) => {
+    switch (provider) {
+      case "default":
+        return "Базовая модель для повседневных задач"
+      case "deepseek":
+        return "Мощная модель с открытым исходным кодом"
+      case "gpt_4o_mini":
+        return "Компактная версия GPT-4o с хорошим балансом скорости и качества"
+      case "gpt_4o":
+        return "Мультимодальная модель от OpenAI с расширенными возможностями"
+      case "gpt_4":
+        return "Продвинутая модель от OpenAI для сложных задач"
+      default:
+        return ""
+    }
+  }
+
+  // Helper function to determine if a provider requires a specific plan
+  const getRequiredPlan = (provider: string) => {
+    if (providersByPlan.default.includes(provider)) {
+      return "default"
+    } else if (providersByPlan.premium.includes(provider) && !providersByPlan.default.includes(provider)) {
+      return "premium"
+    } else {
+      return "business"
+    }
   }
 
   if (!isAuthenticated) {
@@ -336,6 +437,55 @@ export default function ProfilePage() {
                       Управление тарифом
                     </Button>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>AI Провайдер</CardTitle>
+                <CardDescription>Выберите предпочитаемую модель AI для общения</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid gap-3">
+                    {/* Only show providers available for the current plan */}
+                    {availableProviders.map((provider) => {
+                      const isSelected = selectedProvider === provider
+
+                      return (
+                        <div
+                          key={provider}
+                          className={`flex items-center justify-between p-3 rounded-lg transition-colors cursor-pointer ${
+                            isSelected ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80"
+                          }`}
+                          onClick={() => handleProviderChange(provider)}
+                        >
+                          <div className="flex items-center gap-3">
+                            {getProviderIcon(provider)}
+                            <div>
+                              <p className="font-medium">{getProviderName(provider)}</p>
+                              <p className="text-xs opacity-80">{getProviderDescription(provider)}</p>
+                            </div>
+                          </div>
+                          {isSelected && <Check className="w-5 h-5" />}
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {userData?.plan !== "business" && (
+                    <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-200 rounded-lg text-sm">
+                      <p className="flex items-center gap-2">
+                        <Lock className="w-4 h-4 flex-shrink-0" />
+                        <span>
+                          {userData?.plan === "default"
+                            ? "Обновите до Premium для доступа к GPT-4o Mini или до Бизнес для всех моделей"
+                            : "Обновите до Бизнес тарифа для доступа ко всем моделям"}
+                        </span>
+                      </p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
