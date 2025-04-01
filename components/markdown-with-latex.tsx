@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism"
 import rehypeKatex from "rehype-katex"
-import remarkMath from "remark-math"
+import remarkMath from "../lib/remarkMath"
 import remarkGfm from "remark-gfm"
 import "katex/dist/katex.min.css"
 
@@ -54,6 +54,7 @@ export const MarkdownWithLatex: React.FC<MarkdownWithLatexProps> = ({
   onCopy, 
   copiedCode 
 }) => {
+  console.log(content)
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm, remarkMath]}
@@ -149,7 +150,7 @@ export const MarkdownWithLatex: React.FC<MarkdownWithLatexProps> = ({
         },
       }}
     >
-      {content.replaceAll("\\[", "$").replaceAll("\\]", "$").replaceAll("\\(", "$").replaceAll("\\)", "$")} 
+      {content} 
     </ReactMarkdown>
   )
 }

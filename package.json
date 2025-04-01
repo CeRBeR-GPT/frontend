@@ -53,6 +53,7 @@
     "katex": "^0.16.21",
     "lodash-es": "^4.17.21",
     "lucide-react": "^0.454.0",
+    "micromark-extension-math-2": "^2.1.2",
     "next": "15.1.0",
     "next-themes": "latest",
     "nookies": "^2.5.2",
