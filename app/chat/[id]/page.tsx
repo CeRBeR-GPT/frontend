@@ -201,8 +201,6 @@ export default function ChatPage() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
 
   const [chatTitle, setChatTitle] = useState("")
-
-
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [isTestMessageShown, setIsTestMessageShown] = useState(true)
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
@@ -255,7 +253,6 @@ export default function ChatPage() {
         title: "Название обновлено",
         description: "Название чата было успешно изменено",
       });
-      //window.location.href = `/chat/${id}`
     } catch (error) {
       console.error("Ошибка при переименовании чата:", error);
       toast({
@@ -311,9 +308,10 @@ export default function ChatPage() {
     }
   }, [getToken])
 
+
   const loadChatHistory = useCallback(
     async (chatId: string) => {
-      setIsLoadingHistory(true)
+      //setIsLoadingHistory(true)
       if (isRequested.current) return
       isRequested.current = true
 
@@ -331,6 +329,7 @@ export default function ChatPage() {
         dispatchMessages({ type: "SET", payload: history })
         setChatTitle(response.data.name)
         setIsTestMessageShown(history.length === 0)
+        setIsLoadingHistory(false)
       } catch (error) {
         console.error("Failed to load chat history:", error)
         toast({
@@ -344,6 +343,46 @@ export default function ChatPage() {
     },
     [getToken],
   )
+
+  const clearChatMessages = useCallback(async (id: string) => {
+    const token = await getToken();
+    try {
+      await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}/clear`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      // Обновляем историю чатов
+      setChatHistory((prev: ChatHistory[]) =>
+        prev.map((chat) =>
+          chat.id === id ? {...chat, messages: 0, preview: "Нет сообщений", date: new Date()} : chat
+        )
+      );
+  
+      // Если очищаем текущий чат - сбрасываем сообщения
+      if (id === chatId) {
+        dispatchMessages({ type: "CLEAR" });
+        setIsTestMessageShown(true);
+      }
+  
+      toast({
+        title: "Сообщения очищены",
+        description: "Все сообщения в чате были удалены",
+      });
+  
+      // Принудительно перезагружаем историю чата
+      await loadChatHistory(chatId);
+      
+    } catch (error) {
+      console.error("Error clearing chat messages:", error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось очистить сообщения",
+        variant: "destructive",
+      });
+    }
+  }, [chatId, getToken, loadChatHistory]);
 
   const initializeWebSocket = useCallback(
     async (chatId: string) => {
@@ -493,6 +532,7 @@ export default function ChatPage() {
         dispatchMessages({ type: "ADD", payload: userMessage })
         setIsLoading(true)
         setInput("")
+        
 
         if (ws.current) {
           ws.current.send(input)
@@ -648,6 +688,7 @@ export default function ChatPage() {
           setChatHistory={setChatHistory}
           onChatDeleted={handleChatDeleted}
           renameChatTitle={renameChatTitle}
+          clearChatMessages={clearChatMessages}
         />
 
         {chatHistory.length > 0 ? (

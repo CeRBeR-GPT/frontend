@@ -31,9 +31,10 @@ interface ChatSidebarProps {
   onChatDeleted?: (nextChatId: string | null) => void;
   onClearChat?: (id: string) => void;
   renameChatTitle: (id: string, newTitle: string) => void;
+  clearChatMessages: (id: string) => void
 }
 
-export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClearChat, renameChatTitle }: ChatSidebarProps) {
+export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClearChat, renameChatTitle, clearChatMessages }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
   const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false)
@@ -113,72 +114,41 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
     }
   };
   
-  const clearChatMessages = async (id: string) => {
-    try {
-      await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}/clear`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setChatHistory((prev: ChatHistory[]) =>
-        prev.map((chat) =>
-          chat.id === id
-            ? {
-                ...chat,
-                messages: 0,
-                preview: "Нет сообщений",
-                date: new Date(),
-              }
-            : chat
-        )
-      );
-      window.location.href = `/chat/${id}`
-      
-      if (onClearChat) {
-        onClearChat(id);
-      }
-      
-      toast({
-        title: "Сообщения очищены",
-        description: "Все сообщения в чате были удалены",
-      });
-    } catch (error) {
-      console.error("Error clearing chat messages:", error);
-      toast({
-        title: "Ошибка",
-        description: "Не удалось очистить сообщения",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // const renameChatTitle = async (id: string, newTitle: string) => {
+  // const clearChatMessages = async (id: string) => {
   //   try {
-  //     await axios.put(
-  //       `https://api-gpt.energy-cerber.ru/chat/${id}?new_name=${newTitle}`,
-  //       {},
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       }
-  //     );
+  //     await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}/clear`, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
 
   //     setChatHistory((prev: ChatHistory[]) =>
-  //       prev.map((chat) => (chat.id === id ? { ...chat, title: newTitle } : chat))
+  //       prev.map((chat) =>
+  //         chat.id === id
+  //           ? {
+  //               ...chat,
+  //               messages: 0,
+  //               preview: "Нет сообщений",
+  //               date: new Date(),
+  //             }
+  //           : chat
+  //       )
   //     );
-
+  //     //window.location.href = `/chat/${id}`
+      
+  //     if (onClearChat) {
+  //       onClearChat(id);
+  //     }
+      
   //     toast({
-  //       title: "Название обновлено",
-  //       description: "Название чата было успешно изменено",
+  //       title: "Сообщения очищены",
+  //       description: "Все сообщения в чате были удалены",
   //     });
-  //     window.location.href = `/chat/${id}`
   //   } catch (error) {
-  //     console.error("Ошибка при переименовании чата:", error);
+  //     console.error("Error clearing chat messages:", error);
   //     toast({
   //       title: "Ошибка",
-  //       description: "Не удалось обновить название чата",
+  //       description: "Не удалось очистить сообщения",
   //       variant: "destructive",
   //     });
   //   }
