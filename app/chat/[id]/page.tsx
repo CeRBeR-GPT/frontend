@@ -463,7 +463,8 @@ export default function ChatPage() {
       title: "Чат удален",
       description: "Чат был успешно удален",
     })
-    router.push("/chat/new")
+    const lastSavedChat = localStorage.getItem("lastSavedChat") || "1"
+    router.push(`/chat/${lastSavedChat}`)
   }, [router])
 
   const handleRenameChat = useCallback((id: string, newTitle: string) => {
