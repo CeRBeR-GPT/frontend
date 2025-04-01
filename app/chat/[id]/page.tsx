@@ -465,7 +465,6 @@ export default function ChatPage() {
     [input, throttledSubmit],
   )
 
-<<<<<<< HEAD
   const handleDeleteChat = useCallback(
     (id: string) => {
       toast({
@@ -476,16 +475,6 @@ export default function ChatPage() {
     },
     [router],
   )
-=======
-  const handleDeleteChat = useCallback((id: string) => {
-    toast({
-      title: "Чат удален",
-      description: "Чат был успешно удален",
-    })
-    const lastSavedChat = localStorage.getItem("lastSavedChat") || "1"
-    router.push(`/chat/${lastSavedChat}`)
-  }, [router])
->>>>>>> 1755ef06be7c0c174f187b54f7ec089dfa226282
 
   const handleRenameChat = useCallback((id: string, newTitle: string) => {
     setChatTitle(newTitle)
@@ -688,4 +677,3 @@ export default function ChatPage() {
     </div>
   )
 }
-
