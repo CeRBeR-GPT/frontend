@@ -396,7 +396,7 @@ export default function ProfilePage() {
             </Card>
           </div>
           <div>
-            <ActivityStats data={activityData} />
+
             <Card className="mb-6">
               <CardHeader>
                 <CardTitle>Ваша подписка</CardTitle>
