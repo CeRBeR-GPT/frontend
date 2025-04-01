@@ -72,7 +72,7 @@ export default function Home() {
                 </p>
               </div>
               <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                <Link href={isAuth ? "/chat/new" : "/auth/login"}>
+                <Link href={isAuth ? `/chat/${localStorage.getItem("lastSavedChat") || "1"}` : "/auth/login"}>
                   <Button size="lg" className="gap-1">
                     Start Chatting <ArrowRight className="w-4 h-4" />
                   </Button>
