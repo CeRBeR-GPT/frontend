@@ -60,8 +60,8 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
 
   const filteredChats = (chatHistory || []).filter(
     (chat) =>
-      chat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      chat.preview.toLowerCase().includes(searchQuery.toLowerCase()),
+      (chat.title?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (chat.preview?.toLowerCase() || '').includes(searchQuery.toLowerCase()),
   );
 
   const deleteChat = async (id: string) => {
