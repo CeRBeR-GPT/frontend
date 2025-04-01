@@ -14,7 +14,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { NewChatDialog } from "@/components/new-chat-dialog"
 import { ChatOptionsMenu } from "@/components/chat-options-menu"
 import { toast } from "@/components/ui/use-toast"
-import { Toaster } from "./ui/toaster"
 import axios from "axios"
 import { Loader2 } from "lucide-react"
 
@@ -31,9 +30,10 @@ interface ChatSidebarProps {
   setChatHistory: (value: ChatHistory[] | ((prev: ChatHistory[]) => ChatHistory[])) => void;
   onChatDeleted?: (nextChatId: string | null) => void;
   onClearChat?: (id: string) => void;
+  renameChatTitle: (id: string, newTitle: string) => void;
 }
 
-export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClearChat }: ChatSidebarProps) {
+export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClearChat, renameChatTitle }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
   const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false)
@@ -43,16 +43,13 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
   const currentChatId = pathname.split("/").pop() || ""
   const getToken = () => localStorage.getItem('access_token')
   const token = getToken()
-  const isRequested = useRef(false)
 
-  // Перенаправление на последний сохраненный чат или создание нового
   useEffect(() => {
     if (pathname === "/chat") {
       const lastSavedChat = localStorage.getItem("lastSavedChat");
       if (lastSavedChat) {
         router.push(`/chat/${lastSavedChat}`);
       } else {
-        // Если нет сохраненного чата, создаем новый с ID "new"
         router.push("/chat/1");
       }
     }
@@ -75,7 +72,6 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
       const remainingChats = chatHistory.filter(chat => chat.id !== id);
       setChatHistory(remainingChats);
 
-      // Обновляем localStorage, если удаленный чат был последним сохраненным
       const lastSavedChat = localStorage.getItem("lastSavedChat");
       if (lastSavedChat === id) {
         if (remainingChats.length > 0) {
@@ -117,7 +113,6 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
     }
   };
   
-
   const clearChatMessages = async (id: string) => {
     try {
       await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}/clear`, {
@@ -158,36 +153,36 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
     }
   };
 
-  const renameChatTitle = async (id: string, newTitle: string) => {
-    try {
-      await axios.put(
-        `https://api-gpt.energy-cerber.ru/chat/${id}?new_name=${newTitle}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  // const renameChatTitle = async (id: string, newTitle: string) => {
+  //   try {
+  //     await axios.put(
+  //       `https://api-gpt.energy-cerber.ru/chat/${id}?new_name=${newTitle}`,
+  //       {},
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
 
-      setChatHistory((prev: ChatHistory[]) =>
-        prev.map((chat) => (chat.id === id ? { ...chat, title: newTitle } : chat))
-      );
+  //     setChatHistory((prev: ChatHistory[]) =>
+  //       prev.map((chat) => (chat.id === id ? { ...chat, title: newTitle } : chat))
+  //     );
 
-      toast({
-        title: "Название обновлено",
-        description: "Название чата было успешно изменено",
-      });
-      window.location.href = `/chat/${id}`
-    } catch (error) {
-      console.error("Ошибка при переименовании чата:", error);
-      toast({
-        title: "Ошибка",
-        description: "Не удалось обновить название чата",
-        variant: "destructive",
-      });
-    }
-  };
+  //     toast({
+  //       title: "Название обновлено",
+  //       description: "Название чата было успешно изменено",
+  //     });
+  //     window.location.href = `/chat/${id}`
+  //   } catch (error) {
+  //     console.error("Ошибка при переименовании чата:", error);
+  //     toast({
+  //       title: "Ошибка",
+  //       description: "Не удалось обновить название чата",
+  //       variant: "destructive",
+  //     });
+  //   }
+  // };
 
   const handleNewChatClick = (e: React.MouseEvent) => {
     e.preventDefault();

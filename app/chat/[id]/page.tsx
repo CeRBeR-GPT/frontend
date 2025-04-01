@@ -199,7 +199,10 @@ export default function ChatPage() {
   const [messages, dispatchMessages] = useReducer(messagesReducer, [])
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+
   const [chatTitle, setChatTitle] = useState("")
+
+
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [isTestMessageShown, setIsTestMessageShown] = useState(true)
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
@@ -228,6 +231,40 @@ export default function ChatPage() {
       }
     }
   }, [userData])
+
+
+  const renameChatTitle = async (id: string, newTitle: string) => {
+    const token = await getToken()
+    try {
+      await axios.put(
+        `https://api-gpt.energy-cerber.ru/chat/${id}?new_name=${newTitle}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setChatHistory((prev: ChatHistory[]) =>
+        prev.map((chat) => (chat.id === id ? { ...chat, title: newTitle } : chat))
+      );
+      setChatTitle(newTitle)
+
+      toast({
+        title: "Название обновлено",
+        description: "Название чата было успешно изменено",
+      });
+      //window.location.href = `/chat/${id}`
+    } catch (error) {
+      console.error("Ошибка при переименовании чата:", error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить название чата",
+        variant: "destructive",
+      });
+    }
+  };
 
   const ws = useRef<WebSocket | null>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -610,6 +647,7 @@ export default function ChatPage() {
           chatHistory={chatHistory}
           setChatHistory={setChatHistory}
           onChatDeleted={handleChatDeleted}
+          renameChatTitle={renameChatTitle}
         />
 
         {chatHistory.length > 0 ? (
