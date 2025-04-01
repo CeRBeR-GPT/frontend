@@ -62,7 +62,7 @@ const MessageItem = React.memo(
           message.message_belong === "user" ? "justify-end" : "justify-start"
         } animate-in fade-in-0 slide-in-from-bottom-3 duration-300`}
       >
-        <div className="flex items-start gap-3 max-w-[98%] sm:gap-3 sm:max-w-[95%] md:max-w-[90%] lg:max-w-[85%]">
+        <div className="flex items-start gap-3 max-w-[98%] sm:gap-3 sm:max-w-[95%] md:max-w-[90%] lg:max-w-[85%] w-full">
           {message.message_belong === "assistant" && (
             <Avatar className="mt-1">
               <AvatarFallback>
@@ -71,9 +71,9 @@ const MessageItem = React.memo(
             </Avatar>
           )}
           <Card
-            className={`p-3 ${message.message_belong === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+            className={`p-3 w-full overflow-hidden ${message.message_belong === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}
           >
-            <div className="prose dark:prose-invert max-w-none">
+            <div className="prose dark:prose-invert max-w-none overflow-x-auto [&_table]:w-full [&_table]:table-auto [&_pre]:overflow-x-auto [&_img]:max-w-full">
               <MarkdownWithLatex content={message.text} theme={theme} onCopy={onCopy} copiedCode={copiedCode} />
             </div>
           </Card>
@@ -208,11 +208,11 @@ export default function ChatPage() {
   const [availableProviders, setAvailableProviders] = useState<string[]>([])
 
   useEffect(() => {
-    document.documentElement.classList.add("overflow-hidden");
+    document.documentElement.classList.add("overflow-hidden")
     return () => {
-      document.documentElement.classList.remove("overflow-hidden");
-    };
-  }, []);
+      document.documentElement.classList.remove("overflow-hidden")
+    }
+  }, [])
 
   useEffect(() => {
     if (userData) {
