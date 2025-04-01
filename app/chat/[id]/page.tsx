@@ -208,6 +208,13 @@ export default function ChatPage() {
   const [availableProviders, setAvailableProviders] = useState<string[]>([])
 
   useEffect(() => {
+    document.documentElement.classList.add("overflow-hidden");
+    return () => {
+      document.documentElement.classList.remove("overflow-hidden");
+    };
+  }, []);
+
+  useEffect(() => {
     if (userData) {
       const providers = providersByPlan[userData.plan as keyof typeof providersByPlan] || providersByPlan.default
       setAvailableProviders(providers)

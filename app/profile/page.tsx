@@ -337,7 +337,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen overflow-auto">
       <header className="border-b">
         <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
           <Link href="/" className="flex items-center gap-2 font-bold">
@@ -351,7 +351,7 @@ export default function ProfilePage() {
           </nav>
         </div>
       </header>
-      <main className="flex-1 container mx-auto px-4 py-6 md:px-6 max-w-5xl">
+      <main className="flex-1 container mx-auto px-4 py-6 md:px-6 max-w-5xl overflow-auto">
         <div className="grid gap-6 md:grid-cols-[250px_1fr] lg:grid-cols-[300px_1fr]">
           <div className="flex flex-col gap-6">
             <Card>
