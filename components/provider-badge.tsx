@@ -8,7 +8,7 @@ interface ProviderBadgeProps {
   className?: string
 }
 
-export default function ProviderBadge({ provider, size = "md", showLabel = false, className }: ProviderBadgeProps) {
+export function ProviderBadge({ provider, size = "md", showLabel = false, className }: ProviderBadgeProps) {
   const getLabel = () => {
     switch (provider) {
       case "default":

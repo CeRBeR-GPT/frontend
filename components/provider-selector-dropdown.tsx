@@ -18,7 +18,6 @@ export default function ProviderSelectorDropdown({
 }: ProviderSelectorDropdownProps) {
   const [open, setOpen] = useState(false)
 
-  // Helper function to get provider icon
   const getProviderIcon = (provider: string) => {
     switch (provider) {
       case "default":
@@ -36,7 +35,6 @@ export default function ProviderSelectorDropdown({
     }
   }
 
-  // Helper function to get provider name
   const getProviderName = (provider: string) => {
     switch (provider) {
       case "default":
