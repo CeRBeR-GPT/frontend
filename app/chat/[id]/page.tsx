@@ -208,6 +208,8 @@ export default function ChatPage() {
   const [selectedProvider, setSelectedProvider] = useState<string>("default")
   const [availableProviders, setAvailableProviders] = useState<string[]>([])
 
+  
+
   useEffect(() => {
     document.documentElement.classList.add("overflow-hidden")
     return () => {
@@ -321,6 +323,11 @@ export default function ChatPage() {
         const token = await getToken()
         if (!token) return
 
+        const idChat = localStorage.getItem("lastDeletedChat");
+        if (chatId === idChat){
+          return
+        }
+
         const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/${chatId}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
@@ -395,6 +402,12 @@ export default function ChatPage() {
         const provider = localStorage.getItem("selectedProvider")
         const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}&provider=${provider}`
 
+        console.log("ChatId", chatId)
+        const idChat = localStorage.getItem("lastDeletedChat");
+        if (chatId === idChat){
+          return
+        }
+
         ws.current = new WebSocket(wsUrl)
 
         ws.current.onopen = () => {
@@ -452,44 +465,39 @@ export default function ChatPage() {
 
   const deleteChat = useCallback(async (id: string) => {
     const token = await getToken();
+    router.push(`/chat/${id}`);
     try {
       setIsLoading(true);
       
-      // 1. Закрываем WebSocket соединение перед удалением чата
-      if (ws.current) {
-        ws.current.close();
-        ws.current = null;
-      }
-  
-      // 2. Удаляем чат на сервере
+      // 1. Удаляем чат на сервере
       await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-  
-      // 3. Обновляем локальное состояние
+      
+      localStorage.setItem("lastDeletedChat", id || "");
+      // 2. Обновляем локальное состояние
       const remainingChats = chatHistory.filter(chat => chat.id !== id);
       setChatHistory(remainingChats);
   
-      // 4. Обновляем localStorage
+      // 3. Обновляем localStorage
       const lastSavedChat = localStorage.getItem("lastSavedChat");
       if (lastSavedChat === id) {
         localStorage.setItem("lastSavedChat", remainingChats.length > 0 ? remainingChats[0].id : "1");
       }
   
-      // 5. Определяем следующий чат для перехода
-      const nextChatId = remainingChats.length > 0 ? remainingChats[0].id : "1";
-      
-      // 6. Если удаляется текущий чат - перенаправляем
+      // 4. Если удаляется текущий открытый чат - перенаправляем и закрываем WebSocket
       if (id === chatId) {
-        // Сначала загружаем историю нового чата
-        await loadChatHistory(nextChatId);
+        const nextChatId = remainingChats.length > 0 ? remainingChats[0].id : "1";
         
-        // Затем инициализируем новое соединение WebSocket
-        await initializeWebSocket(nextChatId);
+        // Закрываем WebSocket перед перенаправлением
+        if (ws.current) {
+          ws.current.close(1000, "Chat deleted");
+          ws.current = null;
+        }
         
-        // И только потом перенаправляем
+        // Перенаправляем на новый чат
         router.push(`/chat/${nextChatId}`);
       }
   
@@ -497,6 +505,9 @@ export default function ChatPage() {
         title: "Чат удален",
         description: "Чат был успешно удален",
       });
+  
+      // 5. Обновляем sidebar
+      updateSidebar();
     } catch (error) {
       console.error("Error deleting chat:", error);
       toast({
@@ -507,8 +518,8 @@ export default function ChatPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [chatId, chatHistory, getToken, router, loadChatHistory, initializeWebSocket]);
-
+  }, [chatId, chatHistory, getToken, router, updateSidebar]);
+  
   const fetchChats = useCallback(async () => {
     try {
       const token = await getToken()

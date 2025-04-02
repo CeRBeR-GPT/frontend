@@ -32,9 +32,10 @@ interface ChatSidebarProps {
   onClearChat?: (id: string) => void;
   renameChatTitle: (id: string, newTitle: string) => void;
   clearChatMessages: (id: string) => void
+  deleteChat: (id: string) => void;
 }
 
-export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClearChat, renameChatTitle, clearChatMessages }: ChatSidebarProps) {
+export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClearChat, renameChatTitle, clearChatMessages, deleteChat }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
   const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false)
@@ -62,57 +63,55 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
       (chat.preview?.toLowerCase() || '').includes(searchQuery.toLowerCase()),
   );
 
-  const deleteChat = async (id: string) => {
-    try {
-      await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  // const deleteChat = async (id: string) => {
+  //   try {
+  //     await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}`, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
 
-      const remainingChats = chatHistory.filter(chat => chat.id !== id);
-      setChatHistory(remainingChats);
+  //     const remainingChats = chatHistory.filter(chat => chat.id !== id);
+  //     setChatHistory(remainingChats);
 
-      const lastSavedChat = localStorage.getItem("lastSavedChat");
-      if (lastSavedChat === id) {
-        if (remainingChats.length > 0) {
-          localStorage.setItem("lastSavedChat", remainingChats[0].id);
-        } else {
-          //localStorage.removeItem("lastSavedChat");
-        }
-      }
+  //     const lastSavedChat = localStorage.getItem("lastSavedChat");
+  //     if (lastSavedChat === id) {
+  //       if (remainingChats.length > 0) {
+  //         localStorage.setItem("lastSavedChat", remainingChats[0].id);
+  //       } else {
+  //         //localStorage.removeItem("lastSavedChat");
+  //       }
+  //     }
 
-      let nextChatId: string | null = null;
-      if (remainingChats.length > 0) {
-        nextChatId = remainingChats[0].id;
-      }
+  //     let nextChatId: string | null = null;
+  //     if (remainingChats.length > 0) {
+  //       nextChatId = remainingChats[0].id;
+  //     }
 
-      if (onChatDeleted) {
-        onChatDeleted(nextChatId);
-      }
+  //     if (onChatDeleted) {
+  //       onChatDeleted(nextChatId);
+  //     }
 
-      //window.location.href = `${nextChatId || 1}`
+  //     //window.location.href = `${nextChatId || 1}`
 
-      if (chatHistory.length === 1) {
-        localStorage.setItem("lastSavedChat", "1");
-        console.log("РУУУУУУ")
-         router.push("/chat/1");
-      }
+  //     if (chatHistory.length === 1) {
+  //       localStorage.setItem("lastSavedChat", "1");
+  //        router.push("/chat/1");
+  //     }
 
-      toast({
-        title: "Чат удален",
-        description: "Чат был успешно удален",
-      });
-      console.log("chat")
-    } catch (error) {
-      console.error("Error deleting chat:", error);
-      toast({
-        title: "Ошибка",
-        description: "Не удалось удалить чат",
-        variant: "destructive",
-      });
-    }
-  };
+  //     toast({
+  //       title: "Чат удален",
+  //       description: "Чат был успешно удален",
+  //     });
+  //   } catch (error) {
+  //     console.error("Error deleting chat:", error);
+  //     toast({
+  //       title: "Ошибка",
+  //       description: "Не удалось удалить чат",
+  //       variant: "destructive",
+  //     });
+  //   }
+  // };
   
   const handleNewChatClick = (e: React.MouseEvent) => {
     e.preventDefault();
