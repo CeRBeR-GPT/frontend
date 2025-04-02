@@ -8,7 +8,7 @@ import axios from "axios";
 
 const AuthSuccess = () => {
   const router = useRouter();
-  const { login1} = useAuth();
+  const { login, success} = useAuth();
 
   useEffect(() => {
     const handleAuthSuccess = async () => {
@@ -24,9 +24,6 @@ const AuthSuccess = () => {
         Cookies.remove("access_token");
         Cookies.remove("refresh_token");
 
-        // setIsAuthenticated(true)
-        // localStorage.setItem('isAuthenticated', 'true')
-
         try {
           const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
             headers: {
@@ -39,11 +36,13 @@ const AuthSuccess = () => {
           const password = userData.password;
           console.log(userData)
 
-          const result = await login1(email, password);
+          //const result = await login(email, password);
           const lastSavedChat = localStorage.getItem("lastSavedChat");
           const lastChatId = lastSavedChat || "1"
-          router.push(`/chat/${lastChatId}`);
-          if (result.success === true) {
+          //router.push(`/chat/${lastChatId}`);
+
+          const result = success()
+          if (result.success) {
             router.push(`/chat/${lastChatId}`);
           } else {
             router.push("/");
@@ -58,7 +57,7 @@ const AuthSuccess = () => {
     };
 
     handleAuthSuccess();
-  }, [router, login1]);
+  }, [router, login]);
 
   return <div>Перенаправление...</div>;
 };

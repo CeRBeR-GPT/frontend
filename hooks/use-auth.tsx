@@ -28,7 +28,7 @@ type AuthContextType = {
     isLoading: boolean
     Login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
     getUserData: () => Promise<void>
-    getToken: () => Promise<string | null>
+    getToken: () => Promise<string | null>,
 }
 const AuthContext = createContext<AuthContextType>({
     user: null,
@@ -43,7 +43,7 @@ const AuthContext = createContext<AuthContextType>({
     isLoading: false,
     Login: async () => ({success: false}),
     getUserData: async () => {},
-    getToken: async () => null
+    getToken: async () => null,
 })
 
 export function AuthProvider({children}: { children: React.ReactNode }) {
@@ -184,19 +184,13 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
         }
     };
 
-    const Login = async (email: string, password: string) => {
-        const user = {
-            email: email,
-        }
-        if (user.email) {
-            setUser(user)
-            setIsAuthenticated(true)
-            localStorage.setItem('isAuthenticated', 'true')
-            return {success: true, lastChatId: "1"}
-        }
+    // const Login = async (email: string, password: string) => {
 
-        return {success: false}
-    }
+    //     setIsAuthenticated(true)
+    //     localStorage.setItem('isAuthenticated', 'true')
+    //     return {success: true, lastChatId: "1"}
+
+    // }
 
     const register = async (email: string, password: string) => {
         localStorage.setItem("pendingRegistration", JSON.stringify({email, password}))
@@ -251,7 +245,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                 socialLogin,
                 updatePassword,
                 Login: login,
-                getToken
+                getToken,
             }}
         >
             {children}
