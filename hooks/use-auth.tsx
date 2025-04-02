@@ -19,7 +19,7 @@ type AuthContextType = {
     user: User
     userData: UserData
     isAuthenticated: boolean
-    login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
+    login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string, error?: string; }>
     register: (email: string, password: string) => Promise<void>
     verifyCode: (email: string, code: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
     logout: () => void
@@ -29,6 +29,7 @@ type AuthContextType = {
     Login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
     getUserData: () => Promise<void>
     getToken: () => Promise<string | null>,
+    success: () => { success: boolean }
 }
 const AuthContext = createContext<AuthContextType>({
     user: null,
@@ -44,6 +45,7 @@ const AuthContext = createContext<AuthContextType>({
     Login: async () => ({success: false}),
     getUserData: async () => {},
     getToken: async () => null,
+    success: () => ({success: false})
 })
 
 export function AuthProvider({children}: { children: React.ReactNode }) {
@@ -184,16 +186,22 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
         }
     };
 
-    // const Login = async (email: string, password: string) => {
+    const Login = async (email: string, password: string) => {
 
-    //     setIsAuthenticated(true)
-    //     localStorage.setItem('isAuthenticated', 'true')
-    //     return {success: true, lastChatId: "1"}
+        setIsAuthenticated(true)
+        localStorage.setItem('isAuthenticated', 'true')
+        return {success: true, lastChatId: "1"}
 
-    // }
+    }
 
     const register = async (email: string, password: string) => {
         localStorage.setItem("pendingRegistration", JSON.stringify({email, password}))
+    }
+
+    const success = () => {
+        setIsAuthenticated(true)
+        localStorage.setItem('isAuthenticated', 'true')
+        return {success: true, lastChatId: "1"}
     }
 
     const verifyCode = async (email: string, code: string, password: string) => {
@@ -246,6 +254,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                 updatePassword,
                 Login: login,
                 getToken,
+                success
             }}
         >
             {children}
