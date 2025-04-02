@@ -204,6 +204,7 @@ export default function ChatPage() {
   const [chatTitle, setChatTitle] = useState("")
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [isTestMessageShown, setIsTestMessageShown] = useState(true)
+  const [isTestMessag, setIsTestMessag] = useState(true)
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
   const [sidebarVersion, setSidebarVersion] = useState(0)
   const [selectedProvider, setSelectedProvider] = useState<string>("default")
@@ -641,6 +642,11 @@ export default function ChatPage() {
     })
   }, [])
 
+  const shouldShowInput = useMemo(() => {
+    return !(messages.length === 1 && 
+            messages[0].text === "# Привет! Я ваш AI ассистент.");
+  }, [messages]);
+
   const handleCopyCode = useCallback((code: string) => {
     navigator.clipboard.writeText(code)
     setCopiedCode(code)
@@ -818,6 +824,7 @@ export default function ChatPage() {
                         </div>
                       )}
                     </div>
+                    {shouldShowInput && (
                     <MessageInput
                       value={input}
                       onChange={handleInputChange}
@@ -827,6 +834,7 @@ export default function ChatPage() {
                       availableProviders={availableProviders}
                       onProviderChange={handleProviderChange}
                     />
+                  )}
                   </>
                 )}
               </div>
