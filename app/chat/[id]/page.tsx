@@ -519,12 +519,15 @@ export default function ChatPage() {
       setIsLoading(false);
     }
   }, [chatId, chatHistory, getToken, router, updateSidebar]);
+
+  const isRequested1 = useRef(false)
   
   const fetchChats = useCallback(async () => {
     try {
       const token = await getToken()
       if (!token) return
-
+      if (isRequested1.current) return
+      isRequested1.current = true
       const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
         headers: { Authorization: `Bearer ${token}` },
       })
