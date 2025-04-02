@@ -24,20 +24,16 @@ export default function Home() {
   // Обновим редирект для авторизованных пользователей
   useEffect(() => {
     if (isAuth) {
-      const lastSavedChat = localStorage.getItem("lastSavedChat")
+      const lastSavedChat = localStorage.getItem("lastSavedChat") || "1"
 
-      //if (lastSavedChat) {
-      //  router.replace(`/chat/${lastSavedChat}`)
-      //   //const chat = JSON.parse(lastSavedChat)
-      //   //console.log("Последний сохраненный чат:", chat)
-      //
-      //   // Формируем путь для редиректа
-      //    // Предполагаем, что у чата есть поле `id`
-      //   router.replace(`/chat/${lastSavedChat}`) // Редирект на страницу чата с конкретным ID
-      // } else {
-      //   // Если последний чат нgе найден, редиректим на страницу по умолчанию
-      //   router.replace("/chat/1")
-      //}
+      if (lastSavedChat) {
+        router.replace(`/chat/${lastSavedChat}`)
+        //const chat = JSON.parse(lastSavedChat)
+        //console.log("Последний сохраненный чат:", chat)
+        // Формируем путь для редиректа
+        // Предполагаем, что у чата есть поле `id`
+        //router.replace(`/chat/${lastSavedChat}`) // Редирект на страницу чата с конкретным ID
+      }
     }
   }, [isAuth, router])
 
