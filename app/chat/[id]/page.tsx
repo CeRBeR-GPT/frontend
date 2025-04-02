@@ -767,7 +767,7 @@ export default function ChatPage() {
         {chatHistory.length > 0 ? (
           <main className="flex-1 overflow-auto">
             <div className="container mx-auto px-4 py-6 md:px-6 max-w-5xl lg:max-w-6xl">
-              <div className="flex flex-col h-[calc(100vh-6rem)] w-full">
+              <div className="flex flex-col h-[calc(100vh-7rem)] w-full">
                 {isLoadingHistory ? (
                   <div className="flex justify-center items-center h-full">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>

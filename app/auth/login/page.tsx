@@ -33,12 +33,13 @@ export default function LoginPage() {
   useEffect(() => {
     const token = getToken()
     console.log(token)
-    const lastSavedChat = localStorage.getItem("lastSavedChat") || 1
-      if (!isAuthenticated || !token) {
-        router.push("/auth/login")
+    const lastSavedChat = localStorage.getItem("lastSavedChat") || "1"
+    console.log("Info", !isAuthenticated, !token)
+      if (isAuthenticated || token) {
+        router.push(`/chat/${lastSavedChat}`)
       }
       else{
-        router.push(`/chat/${lastSavedChat}`)
+        router.push("/auth/login")
       }
     }, [isAuthenticated, router])
 

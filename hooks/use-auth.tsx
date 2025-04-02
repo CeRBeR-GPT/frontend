@@ -1,6 +1,6 @@
 "use client"
 
-import {createContext, useContext, useState, useEffect, useCallback} from "react"
+import {createContext, useContext, useState, useEffect, useCallback, useRef} from "react"
 import axios from "axios"
 import {getAccess} from "@/utils/tokens-utils";
 
@@ -84,9 +84,12 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
 
         return await getAccess(accessToken, refreshToken);
     }, []);
+    const isRequested = useRef(false)
 
     const getUserData = useCallback(async (): Promise<void> => {
         if (typeof window === "undefined") return;
+        // if (isRequested.current) return
+        // isRequested.current = true
 
         try {
             const token = await getToken();
