@@ -124,6 +124,7 @@ const MessageInput = React.memo(
     useEffect(() => {
       adjustTextareaHeight()
     }, [value, adjustTextareaHeight])
+
     return (
       <form onSubmit={onSubmit} className="sticky bottom-0 bg-background pt-2 w-full max-w-full">
         <div className="relative flex items-end gap-2 w-full">
