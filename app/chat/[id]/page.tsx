@@ -124,6 +124,7 @@ const MessageInput = React.memo(
     useEffect(() => {
       adjustTextareaHeight()
     }, [value, adjustTextareaHeight])
+
     return (
       <form onSubmit={onSubmit} className="sticky bottom-0 bg-background pt-2 w-full max-w-full">
         <div className="relative flex items-end gap-2 w-full">
@@ -203,10 +204,13 @@ export default function ChatPage() {
   const [chatTitle, setChatTitle] = useState("")
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [isTestMessageShown, setIsTestMessageShown] = useState(true)
+  const [isTestMessag, setIsTestMessag] = useState(true)
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
   const [sidebarVersion, setSidebarVersion] = useState(0)
   const [selectedProvider, setSelectedProvider] = useState<string>("default")
   const [availableProviders, setAvailableProviders] = useState<string[]>([])
+
+  
 
   useEffect(() => {
     document.documentElement.classList.add("overflow-hidden")
@@ -321,6 +325,11 @@ export default function ChatPage() {
         const token = await getToken()
         if (!token) return
 
+        const idChat = localStorage.getItem("lastDeletedChat");
+        if (chatId === idChat){
+          return
+        }
+
         const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/${chatId}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
@@ -395,6 +404,12 @@ export default function ChatPage() {
         const provider = localStorage.getItem("selectedProvider")
         const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}&provider=${provider}`
 
+        console.log("ChatId", chatId)
+        const idChat = localStorage.getItem("lastDeletedChat");
+        if (chatId === idChat){
+          return
+        }
+
         ws.current = new WebSocket(wsUrl)
 
         ws.current.onopen = () => {
@@ -452,44 +467,39 @@ export default function ChatPage() {
 
   const deleteChat = useCallback(async (id: string) => {
     const token = await getToken();
+    router.push(`/chat/${id}`);
     try {
       setIsLoading(true);
       
-      // 1. Закрываем WebSocket соединение перед удалением чата
-      if (ws.current) {
-        ws.current.close();
-        ws.current = null;
-      }
-  
-      // 2. Удаляем чат на сервере
+      // 1. Удаляем чат на сервере
       await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-  
-      // 3. Обновляем локальное состояние
+      
+      localStorage.setItem("lastDeletedChat", id || "");
+      // 2. Обновляем локальное состояние
       const remainingChats = chatHistory.filter(chat => chat.id !== id);
       setChatHistory(remainingChats);
   
-      // 4. Обновляем localStorage
+      // 3. Обновляем localStorage
       const lastSavedChat = localStorage.getItem("lastSavedChat");
       if (lastSavedChat === id) {
         localStorage.setItem("lastSavedChat", remainingChats.length > 0 ? remainingChats[0].id : "1");
       }
   
-      // 5. Определяем следующий чат для перехода
-      const nextChatId = remainingChats.length > 0 ? remainingChats[0].id : "1";
-      
-      // 6. Если удаляется текущий чат - перенаправляем
+      // 4. Если удаляется текущий открытый чат - перенаправляем и закрываем WebSocket
       if (id === chatId) {
-        // Сначала загружаем историю нового чата
-        await loadChatHistory(nextChatId);
+        const nextChatId = remainingChats.length > 0 ? remainingChats[0].id : "1";
         
-        // Затем инициализируем новое соединение WebSocket
-        await initializeWebSocket(nextChatId);
+        // Закрываем WebSocket перед перенаправлением
+        if (ws.current) {
+          ws.current.close(1000, "Chat deleted");
+          ws.current = null;
+        }
         
-        // И только потом перенаправляем
+        // Перенаправляем на новый чат
         router.push(`/chat/${nextChatId}`);
       }
   
@@ -497,6 +507,9 @@ export default function ChatPage() {
         title: "Чат удален",
         description: "Чат был успешно удален",
       });
+  
+      // 5. Обновляем sidebar
+      updateSidebar();
     } catch (error) {
       console.error("Error deleting chat:", error);
       toast({
@@ -507,13 +520,16 @@ export default function ChatPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [chatId, chatHistory, getToken, router, loadChatHistory, initializeWebSocket]);
+  }, [chatId, chatHistory, getToken, router, updateSidebar]);
 
+  const isRequested1 = useRef(false)
+  
   const fetchChats = useCallback(async () => {
     try {
       const token = await getToken()
       if (!token) return
-
+      if (isRequested1.current) return
+      isRequested1.current = true
       const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -625,6 +641,11 @@ export default function ChatPage() {
       description: "Название чата было успешно изменено",
     })
   }, [])
+
+  const shouldShowInput = useMemo(() => {
+    return !(messages.length === 1 && 
+            messages[0].text === "# Привет! Я ваш AI ассистент.");
+  }, [messages]);
 
   const handleCopyCode = useCallback((code: string) => {
     navigator.clipboard.writeText(code)
@@ -753,7 +774,7 @@ export default function ChatPage() {
         {chatHistory.length > 0 ? (
           <main className="flex-1 overflow-auto">
             <div className="container mx-auto px-4 py-6 md:px-6 max-w-5xl lg:max-w-6xl">
-              <div className="flex flex-col h-[calc(100vh-6rem)] w-full">
+              <div className="flex flex-col h-[calc(100vh-7rem)] w-full">
                 {isLoadingHistory ? (
                   <div className="flex justify-center items-center h-full">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -803,6 +824,7 @@ export default function ChatPage() {
                         </div>
                       )}
                     </div>
+                    {shouldShowInput && (
                     <MessageInput
                       value={input}
                       onChange={handleInputChange}
@@ -812,6 +834,7 @@ export default function ChatPage() {
                       availableProviders={availableProviders}
                       onProviderChange={handleProviderChange}
                     />
+                  )}
                   </>
                 )}
               </div>

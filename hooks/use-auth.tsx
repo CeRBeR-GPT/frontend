@@ -1,6 +1,6 @@
 "use client"
 
-import {createContext, useContext, useState, useEffect, useCallback} from "react"
+import {createContext, useContext, useState, useEffect, useCallback, useRef} from "react"
 import axios from "axios"
 import {getAccess} from "@/utils/tokens-utils";
 
@@ -19,7 +19,7 @@ type AuthContextType = {
     user: User
     userData: UserData
     isAuthenticated: boolean
-    login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
+    login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string, error?: string; }>
     register: (email: string, password: string) => Promise<void>
     verifyCode: (email: string, code: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
     logout: () => void
@@ -28,7 +28,8 @@ type AuthContextType = {
     isLoading: boolean
     Login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
     getUserData: () => Promise<void>
-    getToken: () => Promise<string | null>
+    getToken: () => Promise<string | null>,
+    success: () => { success: boolean }
 }
 const AuthContext = createContext<AuthContextType>({
     user: null,
@@ -43,7 +44,8 @@ const AuthContext = createContext<AuthContextType>({
     isLoading: false,
     Login: async () => ({success: false}),
     getUserData: async () => {},
-    getToken: async () => null
+    getToken: async () => null,
+    success: () => ({success: false})
 })
 
 export function AuthProvider({children}: { children: React.ReactNode }) {
@@ -84,9 +86,12 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
 
         return await getAccess(accessToken, refreshToken);
     }, []);
+    const isRequested = useRef(false)
 
     const getUserData = useCallback(async (): Promise<void> => {
         if (typeof window === "undefined") return;
+        // if (isRequested.current) return
+        // isRequested.current = true
 
         try {
             const token = await getToken();
@@ -182,21 +187,21 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     };
 
     const Login = async (email: string, password: string) => {
-        const user = {
-            email: email,
-        }
-        if (user.email) {
-            setUser(user)
-            setIsAuthenticated(true)
-            localStorage.setItem('isAuthenticated', 'true')
-            return {success: true, lastChatId: "1"}
-        }
 
-        return {success: false}
+        setIsAuthenticated(true)
+        localStorage.setItem('isAuthenticated', 'true')
+        return {success: true, lastChatId: "1"}
+
     }
 
     const register = async (email: string, password: string) => {
         localStorage.setItem("pendingRegistration", JSON.stringify({email, password}))
+    }
+
+    const success = () => {
+        setIsAuthenticated(true)
+        localStorage.setItem('isAuthenticated', 'true')
+        return {success: true, lastChatId: "1"}
     }
 
     const verifyCode = async (email: string, code: string, password: string) => {
@@ -248,7 +253,8 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                 socialLogin,
                 updatePassword,
                 Login: login,
-                getToken
+                getToken,
+                success
             }}
         >
             {children}

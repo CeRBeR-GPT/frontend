@@ -8,7 +8,7 @@ import axios from "axios";
 
 const AuthSuccess = () => {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, success} = useAuth();
 
   useEffect(() => {
     const handleAuthSuccess = async () => {
@@ -39,12 +39,14 @@ const AuthSuccess = () => {
           //const result = await login(email, password);
           const lastSavedChat = localStorage.getItem("lastSavedChat");
           const lastChatId = lastSavedChat || "1"
-          router.push(`/chat/${lastChatId}`);
-          // if (result.success) {
-          //   router.push(`/chat/${result.lastChatId}`);
-          // } else {
-          //   router.push("/");
-          // }
+          //router.push(`/chat/${lastChatId}`);
+
+          const result = success()
+          if (result.success) {
+            router.push(`/chat/${lastChatId}`);
+          } else {
+            router.push("/");
+          }
 
         } catch (error) {
           router.push("/");

@@ -54,7 +54,6 @@ export const MarkdownWithLatex: React.FC<MarkdownWithLatexProps> = ({
   onCopy, 
   copiedCode 
 }) => {
-  console.log(content)
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm, remarkMath]}
