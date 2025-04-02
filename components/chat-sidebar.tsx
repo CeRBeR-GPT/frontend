@@ -91,7 +91,7 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
         onChatDeleted(nextChatId);
       }
 
-      window.location.href = `${nextChatId || 1}`
+      //window.location.href = `${nextChatId || 1}`
 
       if (chatHistory.length === 1) {
         localStorage.setItem("lastSavedChat", "1");
@@ -114,46 +114,6 @@ export function ChatSidebar({ chatHistory, setChatHistory, onChatDeleted, onClea
     }
   };
   
-  // const clearChatMessages = async (id: string) => {
-  //   try {
-  //     await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}/clear`, {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     });
-
-  //     setChatHistory((prev: ChatHistory[]) =>
-  //       prev.map((chat) =>
-  //         chat.id === id
-  //           ? {
-  //               ...chat,
-  //               messages: 0,
-  //               preview: "Нет сообщений",
-  //               date: new Date(),
-  //             }
-  //           : chat
-  //       )
-  //     );
-  //     //window.location.href = `/chat/${id}`
-      
-  //     if (onClearChat) {
-  //       onClearChat(id);
-  //     }
-      
-  //     toast({
-  //       title: "Сообщения очищены",
-  //       description: "Все сообщения в чате были удалены",
-  //     });
-  //   } catch (error) {
-  //     console.error("Error clearing chat messages:", error);
-  //     toast({
-  //       title: "Ошибка",
-  //       description: "Не удалось очистить сообщения",
-  //       variant: "destructive",
-  //     });
-  //   }
-  // };
-
   const handleNewChatClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsNewChatDialogOpen(true);

@@ -450,6 +450,65 @@ export default function ChatPage() {
     [getToken, updateSidebar, updateChatHistory],
   )
 
+  const deleteChat = useCallback(async (id: string) => {
+    const token = await getToken();
+    try {
+      setIsLoading(true);
+      
+      // 1. Закрываем WebSocket соединение перед удалением чата
+      if (ws.current) {
+        ws.current.close();
+        ws.current = null;
+      }
+  
+      // 2. Удаляем чат на сервере
+      await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      // 3. Обновляем локальное состояние
+      const remainingChats = chatHistory.filter(chat => chat.id !== id);
+      setChatHistory(remainingChats);
+  
+      // 4. Обновляем localStorage
+      const lastSavedChat = localStorage.getItem("lastSavedChat");
+      if (lastSavedChat === id) {
+        localStorage.setItem("lastSavedChat", remainingChats.length > 0 ? remainingChats[0].id : "1");
+      }
+  
+      // 5. Определяем следующий чат для перехода
+      const nextChatId = remainingChats.length > 0 ? remainingChats[0].id : "1";
+      
+      // 6. Если удаляется текущий чат - перенаправляем
+      if (id === chatId) {
+        // Сначала загружаем историю нового чата
+        await loadChatHistory(nextChatId);
+        
+        // Затем инициализируем новое соединение WebSocket
+        await initializeWebSocket(nextChatId);
+        
+        // И только потом перенаправляем
+        router.push(`/chat/${nextChatId}`);
+      }
+  
+      toast({
+        title: "Чат удален",
+        description: "Чат был успешно удален",
+      });
+    } catch (error) {
+      console.error("Error deleting chat:", error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить чат",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [chatId, chatHistory, getToken, router, loadChatHistory, initializeWebSocket]);
+
   const fetchChats = useCallback(async () => {
     try {
       const token = await getToken()
@@ -533,7 +592,6 @@ export default function ChatPage() {
         setIsLoading(true)
         setInput("")
         
-
         if (ws.current) {
           ws.current.send(input)
         }
@@ -689,6 +747,7 @@ export default function ChatPage() {
           onChatDeleted={handleChatDeleted}
           renameChatTitle={renameChatTitle}
           clearChatMessages={clearChatMessages}
+          deleteChat={deleteChat}
         />
 
         {chatHistory.length > 0 ? (
