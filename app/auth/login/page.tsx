@@ -26,7 +26,7 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(true) // Добавляем состояние начальной загрузки
+  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
   const { login, isAuthenticated } = useAuth()
 
@@ -39,7 +39,7 @@ export default function LoginPage() {
           router.push(`/chat/${lastSavedChat}`)
         }
       } finally {
-        setIsLoading(false) // Завершаем начальную загрузку в любом случае
+        setIsLoading(false)
       }
     }
     
@@ -57,7 +57,7 @@ export default function LoginPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
     setError("")
-    form.clearErrors() // Очищаем ошибки формы перед отправкой
+    form.clearErrors()
     
     try {
       const result = await login(values.email, values.password)
@@ -81,10 +81,8 @@ export default function LoginPage() {
     return (
       <div className="flex flex-col min-h-screen">
         <Header />
-        <main className="flex-1 container flex items-center justify-center px-4 py-12">
-          <div className="w-full max-w-md flex justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          </div>
+        <main className="flex-1 flex items-center justify-center p-4">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </main>
       </div>
     )
@@ -94,8 +92,8 @@ export default function LoginPage() {
     <div className="flex flex-col min-h-screen">
       <Header />
 
-      <main className="flex-1 container flex items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md">
+      <main className="flex-1 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md mx-auto">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold">Вход в систему</CardTitle>
             <CardDescription>Введите ваши данные для входа в аккаунт</CardDescription>

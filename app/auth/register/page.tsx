@@ -79,7 +79,7 @@ export default function RegisterPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header/>
-      <main className="flex-1 container flex items-center justify-center px-4 py-12">
+      <main className="flex-1 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold">Регистрация</CardTitle>
