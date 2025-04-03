@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, KeyboardEvent } from "react"
 import {
   Dialog,
   DialogContent,
@@ -24,7 +24,6 @@ export function EditChatDialog({ open, onOpenChange, chatTitle, onSave }: EditCh
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [title, setTitle] = useState(chatTitle)
 
-  // Обновляем локальное состояние при изменении chatTitle или открытии диалога
   useEffect(() => {
     if (open) {
       setTitle(chatTitle)
@@ -32,17 +31,24 @@ export function EditChatDialog({ open, onOpenChange, chatTitle, onSave }: EditCh
   }, [chatTitle, open])
 
   async function handleSave() {
+    if (!title.trim() || isSubmitting) return
+    
     setIsSubmitting(true)
     try {
-      // Имитация задержки запроса
       await new Promise((resolve) => setTimeout(resolve, 300))
-
-      // Вызываем функцию сохранения с новым названием
       onSave(title)
+      onOpenChange(false)
     } catch (error) {
       console.error("Error updating chat title:", error)
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleSave()
     }
   }
 
@@ -65,6 +71,7 @@ export function EditChatDialog({ open, onOpenChange, chatTitle, onSave }: EditCh
               id="chatTitle"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              onKeyDown={handleKeyDown}
               autoFocus
             />
           </div>
@@ -72,7 +79,7 @@ export function EditChatDialog({ open, onOpenChange, chatTitle, onSave }: EditCh
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Отмена
             </Button>
-            <Button type="button" onClick={handleSave} disabled={isSubmitting}>
+            <Button type="button" onClick={handleSave} disabled={isSubmitting || !title.trim()}>
               {isSubmitting ? (
                 <div className="flex items-center gap-2">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
