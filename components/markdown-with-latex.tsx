@@ -51,6 +51,8 @@ export const MarkdownWithLatex: React.FC<MarkdownWithLatexProps> = ({
   onCopy, 
   copiedCode 
 }) => {
+
+
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm, remarkMath]}
@@ -179,7 +181,7 @@ export const MarkdownWithLatex: React.FC<MarkdownWithLatexProps> = ({
         },
       }}
     >
-      {content} 
+      {content.replaceAll("```", "^^^").replaceAll("`", "***").replaceAll("^^^", "```")}
     </ReactMarkdown>
   )
 }
