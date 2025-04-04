@@ -27,7 +27,8 @@ interface NewChatDialogProps {
 
 export const NewChatDialog = ({ open, onOpenChange }: NewChatDialogProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [chatName, setChatName] = useState("") // Локальное состояние для названия чата
+  const [chatName, setChatName] = useState("")
+  const [error, setError] = useState<null | string>(null)
   const router = useRouter()
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -51,13 +52,13 @@ export const NewChatDialog = ({ open, onOpenChange }: NewChatDialogProps) => {
           },
         }
       )
-
-      console.log(response.data)
-
-      // Закрываем диалог и перенаправляем на страницу нового чата
+      console.log(response)
       onOpenChange(false)
       router.push(`/chat/${response.data.id}`)
     } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 400){
+        setError("Превышен лимит чатов по вашему тарифу")
+      }
       console.error("Error creating chat:", error)
     } finally {
       setIsSubmitting(false)
@@ -88,8 +89,8 @@ export const NewChatDialog = ({ open, onOpenChange }: NewChatDialogProps) => {
                       {...field}
                       autoFocus
                       onChange={(e) => {
-                        field.onChange(e) // Обновляем значение формы
-                        setChatName(e.target.value) // Обновляем локальное состояние
+                        field.onChange(e)
+                        setChatName(e.target.value)
                       }}
                     />
                   </FormControl>
@@ -97,8 +98,17 @@ export const NewChatDialog = ({ open, onOpenChange }: NewChatDialogProps) => {
                 </FormItem>
               )}
             />
+            {error && (
+              <div className="text-sm font-medium text-destructive ">
+                {error}
+              </div>
+            )}
+
             <DialogFooter className="mt-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button type="button" variant="outline" onClick={() => {
+                onOpenChange(false)
+                setError(null)
+              }}>
                 Отмена
               </Button>
               <Button type="submit" disabled={isSubmitting}>
