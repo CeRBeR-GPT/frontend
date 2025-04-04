@@ -770,7 +770,7 @@ export default function ChatPage() {
                 <ArrowLeft className="h-4 w-4" />
               </Link>
             </Button>
-            {chatId !== "new" && (
+            {/* {chatId !== "new" && (
               <div className="md:hidden">
                 <ChatOptionsMenu
                   chatId={chatId}
@@ -780,7 +780,7 @@ export default function ChatPage() {
                   onRename={handleRenameChat}
                 />
               </div>
-            )}
+            )} */}
             <NavLinks />
             <ThemeToggle />
             <UserMenu />
