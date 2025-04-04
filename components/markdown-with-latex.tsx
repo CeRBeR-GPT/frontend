@@ -17,18 +17,15 @@ const PROGRAMMING_LANGUAGES = [
   'markdown', 'dockerfile', 'plaintext', 'text'
 ]
 
-// Функция для определения языка
 function detectLanguage(className?: string): string {
   if (!className) return 'text'
   
-  // Ищем точное совпадение с одним из языков
   for (const lang of PROGRAMMING_LANGUAGES) {
     if (className.includes(lang)) {
       return lang
     }
   }
   
-  // Пытаемся извлечь язык из класса (старая логика)
   const match = /language-(\w+)/.exec(className)
   return match?.[1] || 'text'
 }
@@ -59,18 +56,14 @@ export const MarkdownWithLatex: React.FC<MarkdownWithLatexProps> = ({
       remarkPlugins={[remarkGfm, remarkMath]}
       rehypePlugins={[rehypeKatex]}
       components={{
-        // Заголовки
         h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mt-4 mb-2" {...props} />,
         h2: ({ node, ...props }) => <h2 className="text-xl font-bold mt-3 mb-1.5" {...props} />,
         h3: ({ node, ...props }) => <h3 className="text-lg font-bold mt-2 mb-1" {...props} />,
         
-        // Жирный текст
         strong: ({ node, ...props }) => <strong className="font-bold" {...props} />,
         
-        // Параграфы
         p: ({ node, ...props }) => <p className="mb-2" {...props} />,
         
-        // Блоки кода
         code({ node, inline, className, children, ...props }: CodeComponentProps) {
           const codeString = String(children).replace(/\n$/, '')
           const detectedLanguage = detectLanguage(className)
@@ -120,16 +113,54 @@ export const MarkdownWithLatex: React.FC<MarkdownWithLatexProps> = ({
           )
         },
         
-        // Таблицы (поддержка через remark-gfm)
         table({ node, ...props }) {
           return (
-            <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse" {...props} />
+            <div className="overflow-x-auto my-2">
+              <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">
+                {props.children}
+              </table>
             </div>
           )
         },
         
-        // Списки
+        thead({ node, ...props }) {
+          return (
+            <thead className="bg-gray-50 dark:bg-gray-800">
+              {props.children}
+            </thead>
+          )
+        },
+        
+        tbody({ node, ...props }) {
+          return (
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              {props.children}
+            </tbody>
+          )
+        },
+        
+        tr({ node, ...props }) {
+          return <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50" {...props} />
+        },
+        
+        th({ node, ...props }) {
+          return (
+            <th 
+              className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700" 
+              {...props} 
+            />
+          )
+        },
+        
+        td({ node, ...props }) {
+          return (
+            <td 
+              className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700" 
+              {...props} 
+            />
+          )
+        },
+        
         ul({ node, ...props }) {
           return <ul className="list-disc pl-5 mb-2" {...props} />
         },
@@ -138,7 +169,6 @@ export const MarkdownWithLatex: React.FC<MarkdownWithLatexProps> = ({
           return <ol className="list-decimal pl-5 mb-2" {...props} />
         },
         
-        // Блоки цитирования
         blockquote({ node, ...props }) {
           return (
             <blockquote 
