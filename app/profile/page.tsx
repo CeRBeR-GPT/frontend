@@ -433,9 +433,9 @@ export default function ProfilePage() {
                       У вас активирован {plan} тариф с ограничением в {userData?.message_count_limit || 0} сообщений в
                       день.
                     </p>
-                    <Button variant="outline" size="sm">
-                      Управление тарифом
-                    </Button>
+                    {/*<Button variant="outline" size="sm">*/}
+                    {/*  Управление тарифом*/}
+                    {/*</Button>*/}
                   </div>
                 </div>
               </CardContent>
@@ -502,13 +502,21 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent>
                   <ul className="grid gap-2">
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-500" />
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
                       <span>10 сообщений в день</span>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-500" />
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
                       <span>Ограничение: 2000 символов</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span>Возможность создать до 5 чатов</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span>Доступ к стандартному gpt-3.5 и DeepSeek</span>
                     </li>
                   </ul>
                 </CardContent>
@@ -531,17 +539,21 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent>
                   <ul className="grid gap-2">
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-500" />
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
                       <span>50 сообщений в день</span>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-500" />
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
                       <span>Ограничение: 10000 символов</span>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-500" />
-                      <span>Фотокарточка Кирилла</span>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span>Возможность создать до 20 чатов</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span>Провайдеры предыдущего тарифа + gpt-4o-mini</span>
                     </li>
                   </ul>
                 </CardContent>
@@ -572,17 +584,21 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent>
                   <ul className="grid gap-2">
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-500" />
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
                       <span>100 сообщений в день</span>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-500" />
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
                       <span>Ограничение: 20000 символов</span>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-500" />
-                      <span>Удочка в подарок</span>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span>Возможность создать до 50 чатов</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span>Провайдеры предыдущего тарифа + gpt-4o и gpt-4</span>
                     </li>
                   </ul>
                 </CardContent>
