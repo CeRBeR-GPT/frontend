@@ -84,6 +84,11 @@ body {
   }
 }
 
+[class*="overflow-y-auto"] {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+}
+
 @layer base {
   * {
     @apply border-border;

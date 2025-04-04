@@ -204,13 +204,40 @@ export default function ChatPage() {
   const [chatTitle, setChatTitle] = useState("")
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [isTestMessageShown, setIsTestMessageShown] = useState(true)
-  const [isTestMessag, setIsTestMessag] = useState(true)
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
   const [sidebarVersion, setSidebarVersion] = useState(0)
   const [selectedProvider, setSelectedProvider] = useState<string>("default")
   const [availableProviders, setAvailableProviders] = useState<string[]>([])
 
-  
+
+  useEffect(() => {
+    if (!messagesContainerRef.current || isLoadingHistory) return;
+
+    const scrollToBottom = () => {
+      messagesContainerRef.current?.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    };
+
+    const timer = setTimeout(scrollToBottom, 100);
+    return () => clearTimeout(timer);
+  }, [messages, isLoadingHistory]);
+
+  useEffect(() => {
+    if (!isLoadingHistory && messages.length > 0) {
+      const timer = setTimeout(() => {
+        if (messagesContainerRef.current) {
+          messagesContainerRef.current.scrollTo({
+            top: messagesContainerRef.current.scrollHeight,
+            behavior: 'smooth'
+          });
+        }
+      }, 150);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isLoadingHistory, messages.length, chatId]);
 
   useEffect(() => {
     document.documentElement.classList.add("overflow-hidden")
