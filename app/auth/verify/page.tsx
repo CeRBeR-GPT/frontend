@@ -97,6 +97,8 @@ export default function VerifyPage() {
   const registartionApi = async (userData: IUserDataRegistration) => {
     try {
       const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/register`, userData);
+      localStorage.setItem('access_token', response.data.access_token);
+      localStorage.setItem('refresh_token', response.data.refresh_token);
       return response;
     } catch (error) {
       throw error;
