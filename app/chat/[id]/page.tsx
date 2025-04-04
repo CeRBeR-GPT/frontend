@@ -765,22 +765,11 @@ export default function ChatPage() {
             </div>
           </div>
           <nav className="flex items-center gap-4">
-            <Button variant="ghost" asChild className="md:hidden">
+            {/* <Button variant="ghost" asChild className="md:hidden">
               <Link href="/">
                 <ArrowLeft className="h-4 w-4" />
               </Link>
-            </Button>
-            {/* {chatId !== "new" && (
-              <div className="md:hidden">
-                <ChatOptionsMenu
-                  chatId={chatId}
-                  chatTitle={chatTitle}
-                  onDelete={handleDeleteChat}
-                  onClear={handleClearChat}
-                  onRename={handleRenameChat}
-                />
-              </div>
-            )} */}
+            </Button> */}
             <NavLinks />
             <ThemeToggle />
             <UserMenu />
