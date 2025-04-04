@@ -31,15 +31,8 @@ const AuthSuccess = () => {
             },
           });
 
-          const userData = response.data;
-          const email = userData.email;
-          const password = userData.password;
-          console.log(userData)
-
-          //const result = await login(email, password);
           const lastSavedChat = localStorage.getItem("lastSavedChat");
           const lastChatId = lastSavedChat || "1"
-          //router.push(`/chat/${lastChatId}`);
 
           const result = success()
           if (result.success) {

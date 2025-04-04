@@ -7,13 +7,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowUp, Bot, User, ArrowLeft } from "lucide-react"
+import { ArrowUp, Bot, User, ArrowDown } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { UserMenu } from "@/components/user-menu"
 import { ChatSidebar } from "@/components/chat-sidebar"
 import { useAuth } from "@/hooks/use-auth"
 import { NavLinks } from "@/components/nav-links"
-import { ChatOptionsMenu } from "@/components/chat-options-menu"
 import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import axios from "axios"
@@ -208,21 +207,76 @@ export default function ChatPage() {
   const [sidebarVersion, setSidebarVersion] = useState(0)
   const [selectedProvider, setSelectedProvider] = useState<string>("default")
   const [availableProviders, setAvailableProviders] = useState<string[]>([])
+  const [scrollUpdateTrigger, setScrollUpdateTrigger] = useState(0);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false)
 
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
+
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const [rootKey, setRootKey] = useState(0);
 
   useEffect(() => {
-    if (!messagesContainerRef.current || isLoadingHistory) return;
+    const loadData = async () => {
+      await fetchChats(); 
+      setRootKey(prev => prev + 1); 
+    };
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    console.log("Setting up scroll listener")
+    
+    const container = messagesContainerRef.current
+    if (!container) return
+  
+    let lastScrollTop = container.scrollTop
+  
+    const handleScrollEvent = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container
+      const isAtBottom = scrollHeight - (scrollTop + clientHeight) < 50
+      
+      const isScrollingDown = scrollTop > lastScrollTop
+      lastScrollTop = scrollTop
+
+      const hasMoreContentBelow = scrollHeight > clientHeight + scrollTop
+      
+      setShowScrollToBottom(isScrollingDown && hasMoreContentBelow && !isAtBottom)
+    }
+  
+    container.addEventListener("scroll", handleScrollEvent)
+    return () => {
+      console.log("Cleaning up scroll listener")
+      container.removeEventListener("scroll", handleScrollEvent)
+    }
+  }, [messagesContainerRef.current, messages.length])
+
+  const scrollToBottom = useCallback(() => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      })
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!messagesContainerRef.current || isLoadingHistory) return
 
     const scrollToBottom = () => {
       messagesContainerRef.current?.scrollTo({
         top: messagesContainerRef.current.scrollHeight,
         behavior: "smooth",
-      });
-    };
+      })
+    }
 
-    const timer = setTimeout(scrollToBottom, 100);
-    return () => clearTimeout(timer);
-  }, [messages, isLoadingHistory]);
+    const timer = setTimeout(scrollToBottom, 100)
+    return () => clearTimeout(timer)
+  }, [messages, isLoadingHistory])
+
+  useEffect( () => {
+    setScrollUpdateTrigger(1);
+    console.log(scrollUpdateTrigger)
+  }, [scrollUpdateTrigger])
 
   useEffect(() => {
     if (!isLoadingHistory && messages.length > 0) {
@@ -230,14 +284,14 @@ export default function ChatPage() {
         if (messagesContainerRef.current) {
           messagesContainerRef.current.scrollTo({
             top: messagesContainerRef.current.scrollHeight,
-            behavior: 'smooth'
-          });
+            behavior: "smooth",
+          })
         }
-      }, 150);
+      }, 150)
 
-      return () => clearTimeout(timer);
+      return () => clearTimeout(timer)
     }
-  }, [isLoadingHistory, messages.length, chatId]);
+  }, [isLoadingHistory, messages.length, chatId])
 
   useEffect(() => {
     document.documentElement.classList.add("overflow-hidden")
@@ -261,7 +315,6 @@ export default function ChatPage() {
     }
   }, [userData])
 
-
   const renameChatTitle = async (id: string, newTitle: string) => {
     const token = await getToken()
     try {
@@ -272,30 +325,29 @@ export default function ChatPage() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
-      );
+        },
+      )
 
       setChatHistory((prev: ChatHistory[]) =>
-        prev.map((chat) => (chat.id === id ? { ...chat, title: newTitle } : chat))
-      );
+        prev.map((chat) => (chat.id === id ? { ...chat, title: newTitle } : chat)),
+      )
       setChatTitle(newTitle)
 
       toast({
         title: "Название обновлено",
         description: "Название чата было успешно изменено",
-      });
+      })
     } catch (error) {
-      console.error("Ошибка при переименовании чата:", error);
+      console.error("Ошибка при переименовании чата:", error)
       toast({
         title: "Ошибка",
         description: "Не удалось обновить название чата",
         variant: "destructive",
-      });
+      })
     }
-  };
+  }
 
   const ws = useRef<WebSocket | null>(null)
-  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const isRequested = useRef(false)
 
   const updateSidebar = useCallback(() => {
@@ -339,7 +391,6 @@ export default function ChatPage() {
     }
   }, [getToken])
 
-
   const loadChatHistory = useCallback(
     async (chatId: string) => {
       //setIsLoadingHistory(true)
@@ -352,8 +403,8 @@ export default function ChatPage() {
         const token = await getToken()
         if (!token) return
 
-        const idChat = localStorage.getItem("lastDeletedChat");
-        if (chatId === idChat){
+        const idChat = localStorage.getItem("lastDeletedChat")
+        if (chatId === idChat) {
           return
         }
 
@@ -380,45 +431,47 @@ export default function ChatPage() {
     [getToken],
   )
 
-  const clearChatMessages = useCallback(async (id: string) => {
-    const token = await getToken();
-    try {
-      await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}/clear`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
-      // Обновляем историю чатов
-      setChatHistory((prev: ChatHistory[]) =>
-        prev.map((chat) =>
-          chat.id === id ? {...chat, messages: 0, preview: "Нет сообщений", date: new Date()} : chat
+  const clearChatMessages = useCallback(
+    async (id: string) => {
+      const token = await getToken()
+      try {
+        await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}/clear`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        // Обновляем историю чатов
+        setChatHistory((prev: ChatHistory[]) =>
+          prev.map((chat) =>
+            chat.id === id ? { ...chat, messages: 0, preview: "Нет сообщений", date: new Date() } : chat,
+          ),
         )
-      );
-  
-      // Если очищаем текущий чат - сбрасываем сообщения
-      if (id === chatId) {
-        dispatchMessages({ type: "CLEAR" });
-        setIsTestMessageShown(true);
+
+        // Если очищаем текущий чат - сбрасываем сообщения
+        if (id === chatId) {
+          dispatchMessages({ type: "CLEAR" })
+          setIsTestMessageShown(true)
+        }
+
+        toast({
+          title: "Сообщения очищены",
+          description: "Все сообщения в чате были удалены",
+        })
+
+        // Принудительно перезагружаем историю чата
+        await loadChatHistory(chatId)
+      } catch (error) {
+        console.error("Error clearing chat messages:", error)
+        toast({
+          title: "Ошибка",
+          description: "Не удалось очистить сообщения",
+          variant: "destructive",
+        })
       }
-  
-      toast({
-        title: "Сообщения очищены",
-        description: "Все сообщения в чате были удалены",
-      });
-  
-      // Принудительно перезагружаем историю чата
-      await loadChatHistory(chatId);
-      
-    } catch (error) {
-      console.error("Error clearing chat messages:", error);
-      toast({
-        title: "Ошибка",
-        description: "Не удалось очистить сообщения",
-        variant: "destructive",
-      });
-    }
-  }, [chatId, getToken, loadChatHistory]);
+    },
+    [chatId, getToken, loadChatHistory],
+  )
 
   const initializeWebSocket = useCallback(
     async (chatId: string) => {
@@ -432,8 +485,8 @@ export default function ChatPage() {
         const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}&provider=${provider}`
 
         console.log("ChatId", chatId)
-        const idChat = localStorage.getItem("lastDeletedChat");
-        if (chatId === idChat){
+        const idChat = localStorage.getItem("lastDeletedChat")
+        if (chatId === idChat) {
           return
         }
 
@@ -492,65 +545,68 @@ export default function ChatPage() {
     [getToken, updateSidebar, updateChatHistory],
   )
 
-  const deleteChat = useCallback(async (id: string) => {
-    const token = await getToken();
-    router.push(`/chat/${id}`);
-    try {
-      setIsLoading(true);
-      
-      // 1. Удаляем чат на сервере
-      await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      
-      localStorage.setItem("lastDeletedChat", id || "");
-      // 2. Обновляем локальное состояние
-      const remainingChats = chatHistory.filter(chat => chat.id !== id);
-      setChatHistory(remainingChats);
-  
-      // 3. Обновляем localStorage
-      const lastSavedChat = localStorage.getItem("lastSavedChat");
-      if (lastSavedChat === id) {
-        localStorage.setItem("lastSavedChat", remainingChats.length > 0 ? remainingChats[0].id : "1");
-      }
-  
-      // 4. Если удаляется текущий открытый чат - перенаправляем и закрываем WebSocket
-      if (id === chatId) {
-        const nextChatId = remainingChats.length > 0 ? remainingChats[0].id : "1";
-        
-        // Закрываем WebSocket перед перенаправлением
-        if (ws.current) {
-          ws.current.close(1000, "Chat deleted");
-          ws.current = null;
+  const deleteChat = useCallback(
+    async (id: string) => {
+      const token = await getToken()
+      router.push(`/chat/${id}`)
+      try {
+        setIsLoading(true)
+
+        // 1. Удаляем чат на сервере
+        await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        localStorage.setItem("lastDeletedChat", id || "")
+        // 2. Обновляем локальное состояние
+        const remainingChats = chatHistory.filter((chat) => chat.id !== id)
+        setChatHistory(remainingChats)
+
+        // 3. Обновляем localStorage
+        const lastSavedChat = localStorage.getItem("lastSavedChat")
+        if (lastSavedChat === id) {
+          localStorage.setItem("lastSavedChat", remainingChats.length > 0 ? remainingChats[0].id : "1")
         }
-        
-        // Перенаправляем на новый чат
-        router.push(`/chat/${nextChatId}`);
+
+        // 4. Если удаляется текущий открытый чат - перенаправляем и закрываем WebSocket
+        if (id === chatId) {
+          const nextChatId = remainingChats.length > 0 ? remainingChats[0].id : "1"
+
+          // Закрываем WebSocket перед перенаправлением
+          if (ws.current) {
+            ws.current.close(1000, "Chat deleted")
+            ws.current = null
+          }
+
+          // Перенаправляем на новый чат
+          router.push(`/chat/${nextChatId}`)
+        }
+
+        toast({
+          title: "Чат удален",
+          description: "Чат был успешно удален",
+        })
+
+        // 5. Обновляем sidebar
+        updateSidebar()
+      } catch (error) {
+        console.error("Error deleting chat:", error)
+        toast({
+          title: "Ошибка",
+          description: "Не удалось удалить чат",
+          variant: "destructive",
+        })
+      } finally {
+        setIsLoading(false)
       }
-  
-      toast({
-        title: "Чат удален",
-        description: "Чат был успешно удален",
-      });
-  
-      // 5. Обновляем sidebar
-      updateSidebar();
-    } catch (error) {
-      console.error("Error deleting chat:", error);
-      toast({
-        title: "Ошибка",
-        description: "Не удалось удалить чат",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [chatId, chatHistory, getToken, router, updateSidebar]);
+    },
+    [chatId, chatHistory, getToken, router, updateSidebar],
+  )
 
   const isRequested1 = useRef(false)
-  
+
   const fetchChats = useCallback(async () => {
     try {
       const token = await getToken()
@@ -634,7 +690,7 @@ export default function ChatPage() {
         dispatchMessages({ type: "ADD", payload: userMessage })
         setIsLoading(true)
         setInput("")
-        
+
         if (ws.current) {
           ws.current.send(input)
         }
@@ -670,9 +726,8 @@ export default function ChatPage() {
   }, [])
 
   const shouldShowInput = useMemo(() => {
-    return !(messages.length === 1 && 
-            messages[0].text === "# Привет! Я ваш AI ассистент.");
-  }, [messages]);
+    return !(messages.length === 1 && messages[0].text === "# Привет! Я ваш AI ассистент.")
+  }, [messages])
 
   const handleCopyCode = useCallback((code: string) => {
     navigator.clipboard.writeText(code)
@@ -727,9 +782,9 @@ export default function ChatPage() {
   const renderedMessages = useMemo(
     () =>
       messages.map((message) => (
-        <MessageItem key={message.id} message={message} theme={theme} onCopy={handleCopyCode} copiedCode={copiedCode} />
+        <MessageItem key={`${message.id}-${scrollPosition}`} message={message} theme={theme} onCopy={handleCopyCode} copiedCode={copiedCode} />
       )),
-    [messages, theme, copiedCode, handleCopyCode],
+    [messages, theme, copiedCode, handleCopyCode, scrollPosition],
   )
 
   const handleProviderChange = useCallback(
@@ -750,7 +805,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div key={`root-${rootKey}`}  className="flex flex-col min-h-screen">
       <Toaster />
       <header className="border-b">
         <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
@@ -765,11 +820,6 @@ export default function ChatPage() {
             </div>
           </div>
           <nav className="flex items-center gap-4">
-            {/* <Button variant="ghost" asChild className="md:hidden">
-              <Link href="/">
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-            </Button> */}
             <NavLinks />
             <ThemeToggle />
             <UserMenu />
@@ -798,6 +848,15 @@ export default function ChatPage() {
                 ) : (
                   <>
                     <div ref={messagesContainerRef} className="flex-1 overflow-y-auto mb-4 space-y-4 p-4">
+                    {showScrollToBottom && (
+                      <button
+                        onClick={scrollToBottom}
+                        className="fixed right-10 bottom-32 md:right-14 lg:right-24 z-10 p-2 rounded-full bg-background border shadow-lg hover:bg-muted transition-colors"
+                        aria-label="Прокрутить вниз"
+                      >
+                        <ArrowDown className="h-5 w-5" />
+                      </button>
+                    )}
                       {isTestMessageShown && messages.length === 0 ? (
                         <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-3 duration-300">
                           <div className="flex items-start gap-3 max-w-[80%]">
@@ -841,16 +900,17 @@ export default function ChatPage() {
                       )}
                     </div>
                     {shouldShowInput && (
-                    <MessageInput
-                      value={input}
-                      onChange={handleInputChange}
-                      onSubmit={handleSubmit}
-                      isLoading={isLoading}
-                      selectedProvider={selectedProvider}
-                      availableProviders={availableProviders}
-                      onProviderChange={handleProviderChange}
-                    />
-                  )}
+                      <MessageInput
+                        key={`messages-${scrollUpdateTrigger}`}
+                        value={input}
+                        onChange={handleInputChange}
+                        onSubmit={handleSubmit}
+                        isLoading={isLoading}
+                        selectedProvider={selectedProvider}
+                        availableProviders={availableProviders}
+                        onProviderChange={handleProviderChange}
+                      />
+                    )}
                   </>
                 )}
               </div>
@@ -861,3 +921,4 @@ export default function ChatPage() {
     </div>
   )
 }
+
