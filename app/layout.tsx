@@ -12,8 +12,7 @@ export const metadata = {
   icons: {
     icon: '../public/favicon.ico',
   },
-  description: "Advanced AI chat assistant",
-    generator: 'v0.dev'
+  description: "Advanced AI chat assistant"
 }
 
 export default function RootLayout({
