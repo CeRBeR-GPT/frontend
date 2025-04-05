@@ -5,7 +5,7 @@ import { Copy, Check } from "lucide-react"
 import ReactMarkdown from "react-markdown";
 import remarkMath from "../lib/remarkMath";
 import remarkGfm from "remark-gfm";
-import remarkMermaidPlugin from "remark-mermaid-plugin";
+import remarkMermaid from "../lib/remarkMermoid";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import rehypeStringify from "rehype-stringify";
@@ -50,7 +50,7 @@ const Markdown:  React.FC<MarkdownWithLatexProps> = ({ content,  theme,  onCopy,
   return (
     <ReactMarkdown
       remarkPlugins={[
-        [remarkMermaidPlugin as any],
+        [remarkMermaid],
         remarkGfm,
         remarkMath,
       ]}
