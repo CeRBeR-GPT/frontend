@@ -17,7 +17,7 @@ export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
   }, [isAuthenticated, router])
 
   if (!isAuthenticated) {
-    return null // или можно вернуть компонент загрузки
+    return null
   }
 
   return <>{children}</>

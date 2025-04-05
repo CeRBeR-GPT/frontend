@@ -5,7 +5,7 @@ import { GoogleIcon } from "./ui/GoogleIcon";
 import { YandexIcon } from "./ui/YandexIcon";
 import { GitHubIcon } from "./ui/GitHubIcon";
 
-export const AuthIcons = (props: { setError: (arg0: string) => void; }) => {
+export const AuthIcons = (props: { setError: (arg0: string) => void; disabled?: boolean; }) => {
 
     const handleSocialLogin = async (provider: "google" | "yandex" | "github") => {
         try {

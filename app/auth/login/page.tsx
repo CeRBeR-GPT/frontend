@@ -15,7 +15,6 @@ import { useAuth } from "@/hooks/use-auth"
 import { Header } from "@/components/Header"
 import { AuthIcons } from "@/components/AuthIcons"
 import { ChoiceAuth } from "@/components/ChoiceAuth"
-import axios from "axios"
 
 const formSchema = z.object({
   email: z.string().email({ message: "Пожалуйста, введите корректный email" }),
@@ -91,7 +90,6 @@ export default function LoginPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-
       <main className="flex-1 flex items-center justify-center p-4">
         <Card className="w-full max-w-md mx-auto">
           <CardHeader className="space-y-1">

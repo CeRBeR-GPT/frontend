@@ -337,7 +337,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen overflow-auto">
+    <div className="flex flex-col min-h-screen">
       <header className="border-b">
         <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
           <Link href="/" className="flex items-center gap-2 font-bold">
@@ -351,7 +351,7 @@ export default function ProfilePage() {
           </nav>
         </div>
       </header>
-      <main className="flex-1 container mx-auto px-4 py-6 md:px-6 max-w-5xl overflow-auto">
+      <main className="flex-1 container mx-auto px-4 py-6 md:px-6 max-w-5xl">
         <div className="grid gap-6 md:grid-cols-[250px_1fr] lg:grid-cols-[300px_1fr]">
           <div className="flex flex-col gap-6">
             <Card>
@@ -433,9 +433,9 @@ export default function ProfilePage() {
                       У вас активирован {plan} тариф с ограничением в {userData?.message_count_limit || 0} сообщений в
                       день.
                     </p>
-                    {/*<Button variant="outline" size="sm">*/}
-                    {/*  Управление тарифом*/}
-                    {/*</Button>*/}
+                    <Button variant="outline" size="sm">
+                      Управление тарифом
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -502,21 +502,13 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent>
                   <ul className="grid gap-2">
-                    <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-green-500" />
                       <span>10 сообщений в день</span>
                     </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-green-500" />
                       <span>Ограничение: 2000 символов</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span>Возможность создать до 5 чатов</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span>Доступ к стандартному gpt-3.5 и DeepSeek</span>
                     </li>
                   </ul>
                 </CardContent>
@@ -539,21 +531,17 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent>
                   <ul className="grid gap-2">
-                    <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-green-500" />
                       <span>50 сообщений в день</span>
                     </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-green-500" />
                       <span>Ограничение: 10000 символов</span>
                     </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span>Возможность создать до 20 чатов</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span>Провайдеры предыдущего тарифа + gpt-4o-mini</span>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-green-500" />
+                      <span>Фотокарточка Кирилла</span>
                     </li>
                   </ul>
                 </CardContent>
@@ -584,21 +572,17 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent>
                   <ul className="grid gap-2">
-                    <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-green-500" />
                       <span>100 сообщений в день</span>
                     </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-green-500" />
                       <span>Ограничение: 20000 символов</span>
                     </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span>Возможность создать до 50 чатов</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span>Провайдеры предыдущего тарифа + gpt-4o и gpt-4</span>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-green-500" />
+                      <span>Удочка в подарок</span>
                     </li>
                   </ul>
                 </CardContent>
