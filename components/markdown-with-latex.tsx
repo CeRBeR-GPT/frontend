@@ -13,19 +13,10 @@ import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism"
 import { Prism, SyntaxHighlighterProps } from "react-syntax-highlighter";
 import "katex/dist/katex.min.css";
 import "./styles.css";
-import {
-  oneLight,
-  oneDark,
-} from "react-syntax-highlighter/dist/esm/styles/prism";
 import { cn } from "@/lib/utils";
 
 const SyntaxHighlighter =
   Prism as unknown as typeof React.Component<SyntaxHighlighterProps>;
-
-interface MarkdownProps {
-  content: string;
-  className?: string;
-}
 
 const PROGRAMMING_LANGUAGES = [
   'javascript', 'typescript', 'python', 'java', 'csharp', 'cpp', 'c', 'php',
@@ -52,14 +43,6 @@ interface MarkdownWithLatexProps {
   theme?: string
   onCopy: (code: string) => void
   copiedCode: string | null
-}
-
-interface CodeComponentProps {
-  node?: any
-  className?: string
-  children?: React.ReactNode
-  inline?: boolean
-  [key: string]: any
 }
 
 const Markdown:  React.FC<MarkdownWithLatexProps> = ({ content,  theme,  onCopy, copiedCode }) => {
