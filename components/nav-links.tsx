@@ -13,16 +13,13 @@ export const NavLinks = () => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem("lastSavedChat") || "1"
     }
-    
     return "1"
   })
 
-  // Используем useEffect для отслеживания изменений состояния аутентификации
   useEffect(() => {
     setIsAuth(isAuthenticated)
   }, [isAuthenticated])
 
-  // Используем useEffect для работы с localStorage только на клиенте
   useEffect(() => {
     if (typeof window !== "undefined") {
       const lastSavedChat = localStorage.getItem("lastSavedChat")

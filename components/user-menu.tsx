@@ -15,7 +15,6 @@ export function UserMenu() {
   const router = useRouter()
   const [isAuth, setIsAuth] = useState(false)
 
-  // Отслеживаем изменения состояния аутентификации
   useEffect(() => {
     setIsAuth(isAuthenticated)
   }, [isAuthenticated])

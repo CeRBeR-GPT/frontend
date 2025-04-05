@@ -52,7 +52,6 @@ export const NewChatDialog = ({ open, onOpenChange }: NewChatDialogProps) => {
           },
         }
       )
-      console.log(response)
       onOpenChange(false)
       router.push(`/chat/${response.data.id}`)
     } catch (error) {

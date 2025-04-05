@@ -1,14 +1,31 @@
-"use client"
+"use client";
 
+import React from "react";
 import { Copy, Check } from "lucide-react"
-import React from "react"
-import ReactMarkdown from "react-markdown"
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
+import ReactMarkdown from "react-markdown";
+import remarkMath from "../lib/remarkMath";
+import remarkGfm from "remark-gfm";
+import remarkMermaidPlugin from "remark-mermaid-plugin";
+import rehypeKatex from "rehype-katex";
+import rehypeRaw from "rehype-raw";
+import rehypeStringify from "rehype-stringify";
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism"
-import rehypeKatex from "rehype-katex"
-import remarkMath from "../lib/remarkMath"
-import remarkGfm from "remark-gfm"
-import "katex/dist/katex.min.css"
+import { Prism, SyntaxHighlighterProps } from "react-syntax-highlighter";
+import "katex/dist/katex.min.css";
+import "./styles.css";
+import {
+  oneLight,
+  oneDark,
+} from "react-syntax-highlighter/dist/esm/styles/prism";
+import { cn } from "@/lib/utils";
+
+const SyntaxHighlighter =
+  Prism as unknown as typeof React.Component<SyntaxHighlighterProps>;
+
+interface MarkdownProps {
+  content: string;
+  className?: string;
+}
 
 const PROGRAMMING_LANGUAGES = [
   'javascript', 'typescript', 'python', 'java', 'csharp', 'cpp', 'c', 'php',
@@ -45,18 +62,25 @@ interface CodeComponentProps {
   [key: string]: any
 }
 
-export const MarkdownWithLatex: React.FC<MarkdownWithLatexProps> = ({ 
-  content, 
-  theme, 
-  onCopy, 
-  copiedCode 
-}) => {
-
+const Markdown:  React.FC<MarkdownWithLatexProps> = ({ content,  theme,  onCopy, copiedCode }) => {
 
   return (
     <ReactMarkdown
-      remarkPlugins={[remarkGfm, remarkMath]}
-      rehypePlugins={[rehypeKatex]}
+      remarkPlugins={[
+        [remarkMermaidPlugin as any],
+        remarkGfm,
+        remarkMath,
+      ]}
+      rehypePlugins={[
+        [rehypeKatex,{ 
+          output: "html",
+          throwOnError: false,
+          strict: false,
+          trust: true
+        }],
+        rehypeRaw,
+        rehypeStringify,
+      ]}
       components={{
         h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mt-4 mb-2" {...props} />,
         h2: ({ node, ...props }) => <h2 className="text-xl font-bold mt-3 mb-1.5" {...props} />,
@@ -65,20 +89,13 @@ export const MarkdownWithLatex: React.FC<MarkdownWithLatexProps> = ({
         strong: ({ node, ...props }) => <strong className="font-bold" {...props} />,
         
         p: ({ node, ...props }) => <p className="mb-2" {...props} />,
-        
-        code({ node, inline, className, children, ...props }: CodeComponentProps) {
+
+        code: ({ children, className, ...rest }) => {
+          const match = /language-(?!mermaid)(\w+)/.exec(className || "");
           const codeString = String(children).replace(/\n$/, '')
           const detectedLanguage = detectLanguage(className)
-          
-          if (inline) {
-            return (
-              <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded" {...props}>
-                {children}
-              </code>
-            )
-          }
 
-          return (
+          return match ? (
             <div className="relative group">
               <div className="absolute right-2 top-2 z-10">
                 <button
@@ -96,25 +113,27 @@ export const MarkdownWithLatex: React.FC<MarkdownWithLatexProps> = ({
               <div className="absolute left-2 top-0 text-xs font-mono text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
                 {detectedLanguage}
               </div>
-              
               <SyntaxHighlighter
-                language={detectedLanguage}
-                PreTag="div"
+                {...(rest as SyntaxHighlighterProps)}
+                style={theme === "dark" ? vscDarkPlus : vs}
+                language={match[1]}
                 customStyle={{
                   marginTop: "0",
                   marginBottom: "0",
                   paddingTop: "2rem",
                   borderRadius: "0.375rem",
                 }}
-                {...props}
-                style={theme === "dark" ? vscDarkPlus : vs}
+                PreTag="div"
               >
-                {codeString}
+                {String(children).trim()}
               </SyntaxHighlighter>
             </div>
-          )
+          ) : (
+            <code {...rest} className={cn("not-prose", className)}>
+              {children}
+            </code>
+          );
         },
-        
         table({ node, ...props }) {
           return (
             <div className="overflow-x-auto my-2">
@@ -180,8 +199,12 @@ export const MarkdownWithLatex: React.FC<MarkdownWithLatexProps> = ({
           )
         },
       }}
+
     >
       {content.replaceAll("```", "^^^").replaceAll("`", "***").replaceAll("^^^", "```")}
     </ReactMarkdown>
-  )
-}
+
+  );
+};
+
+export default Markdown;

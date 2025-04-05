@@ -18,9 +18,10 @@ import { Toaster } from "@/components/ui/toaster"
 import axios from "axios"
 import { useTheme } from "next-themes"
 import "katex/dist/katex.min.css"
-import { MarkdownWithLatex } from "@/components/markdown-with-latex"
+import  Markdown from "@/components/markdown-with-latex"
 import { throttle } from "lodash-es"
 import ProviderSelectorDropdown from "@/components/provider-selector-dropdown"
+//import Markdown from "react-markdown"
 
 interface Message {
   id: number
@@ -73,7 +74,7 @@ const MessageItem = React.memo(
             className={`p-3 w-full overflow-hidden ${message.message_belong === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}
           >
             <div className="prose dark:prose-invert max-w-none overflow-x-auto [&_table]:w-full [&_table]:table-auto [&_pre]:overflow-x-auto [&_img]:max-w-full">
-              <MarkdownWithLatex content={message.text} theme={theme} onCopy={onCopy} copiedCode={copiedCode} />
+              <Markdown content={message.text} theme={theme} onCopy={onCopy} copiedCode={copiedCode} />
             </div>
           </Card>
           {message.message_belong === "user" && (
@@ -867,7 +868,7 @@ export default function ChatPage() {
                             </Avatar>
                             <Card className="p-3 bg-muted">
                               <div className="prose dark:prose-invert max-w-none">
-                                <MarkdownWithLatex
+                                <Markdown
                                   content="# Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?"
                                   theme={theme}
                                   onCopy={handleCopyCode}
