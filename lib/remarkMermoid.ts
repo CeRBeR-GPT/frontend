@@ -27,14 +27,27 @@ const remarkMermaid: Plugin<[RemarkMermaidOptions?], any> =
 
         try {
           const content = mermaid.render(id, code);
-
           return `<pre>${content}</pre>`;
         } catch (err) {
+          let errorMessage = "Ошибка парсинга данных со схемы, результат будет представлен без обработки: ";
+          let originalError = "Unknown error";
+          let originalCode = code;
+
           if (err instanceof Error) {
-            return `<pre style="color: red">${err.message}</pre>`;
+            originalError = err.message;
+          } else if (typeof err === "string") {
+            originalError = err;
           }
 
-          return '<pre style="color: red">Unknown error</pre>';
+          return `
+            <div style="border: 1px solid #ff6b6b; border-radius: 4px; padding: 12px; margin: 8px 0; background-color: #fff5f5;">
+              <div style="color: #ff6b6b; font-weight: bold; margin-bottom: 8px;">${errorMessage}</div>
+              <div>
+                <span style="font-weight: bold;">Исходный код:</span>
+                <pre style="margin: 4px 0; padding: 8px; background: #f8f9fa; border-radius: 4px; overflow-x: auto;">${originalCode}</pre>
+              </div>
+            </div>
+          `;
         }
       });
 
