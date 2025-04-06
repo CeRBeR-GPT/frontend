@@ -21,7 +21,29 @@ const remarkMermaid: Plugin<[RemarkMermaidOptions?], any> =
       }
 
       const results = instances.map((ins) => {
-        const code = ins[0];
+        let code = ins[0];
+        
+        // Обработка текста внутри квадратных скобок []
+        code = code.replaceAll(/\[([^\]]*?)\[([^\]\[]+)\]([^\[]*?)\]/g, (match, prefix, content, suffix) => {
+          // Удаляем все внутренние квадратные скобки в тексте
+          const cleanedContent = content.replaceAll(/\[|\]/g, '');
+          return `[${prefix}${cleanedContent}${suffix}]`;
+        });
+      
+        // Обрабатываем особые случаи:
+        // 1. {A[j] > A[j+1]} → {Aj > Aj+1}
+        code = code.replaceAll(/{([^{}]*?)\[([^\]\[]+?)\]([^{}]*?)}/g, '{$1$2$3}');
+        
+        // 2. [j + 1]] → j + 1]
+        code = code.replaceAll(/\[([^\]\[]+?)\]\]/g, '$1]');
+        
+        // 3. [text]} → text}
+        code = code.replaceAll(/\[([^\]\[]+?)\]\}/g, '$1}');
+        //code = code.replaceAll("] ", " ") //ломает код
+        code = code.replace(/\[([a-zA-Zа-яА-Я])\] /g, '$1 ');
+
+        
+        
         const id = "mermaid" + Math.random().toString(36).slice(2);
         mermaid.initialize({ theme });
 
