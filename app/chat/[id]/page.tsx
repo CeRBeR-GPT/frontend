@@ -62,23 +62,29 @@ const MessageItem = React.memo(
           message.message_belong === "user" ? "justify-end" : "justify-start"
         } animate-in fade-in-0 slide-in-from-bottom-3 duration-300`}
       >
-        <div className="flex items-start gap-3 max-w-[98%] sm:gap-3 sm:max-w-[95%] md:max-w-[90%] lg:max-w-[85%] w-full">
+        <div className="flex items-start gap-3 w-full max-w-[98%] sm:gap-3 sm:max-w-[95%] md:max-w-[90%] lg:max-w-[85%]">
+          {/* Скрываем аватарки на мобильных устройствах */}
           {message.message_belong === "assistant" && (
-            <Avatar className="mt-1">
+            <Avatar className="mt-1 hidden sm:block">
               <AvatarFallback>
                 <Bot className="w-4 h-4" />
               </AvatarFallback>
             </Avatar>
           )}
           <Card
-            className={`p-3 w-full overflow-hidden ${message.message_belong === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+            className={`p-3 w-full overflow-hidden ${
+              message.message_belong === "user" 
+                ? "bg-primary text-primary-foreground" 
+                : "bg-muted"
+            }`}
           >
             <div className="prose dark:prose-invert max-w-none overflow-x-auto [&_table]:w-full [&_table]:table-auto [&_pre]:overflow-x-auto [&_img]:max-w-full">
               <Markdown content={message.text} theme={theme} onCopy={onCopy} copiedCode={copiedCode} />
             </div>
           </Card>
+          {/* Скрываем аватарки на мобильных устройствах */}
           {message.message_belong === "user" && (
-            <Avatar className="mt-1">
+            <Avatar className="mt-1 hidden sm:block">
               <AvatarFallback>
                 <User className="w-4 h-4" />
               </AvatarFallback>
@@ -126,8 +132,8 @@ const MessageInput = React.memo(
     }, [value, adjustTextareaHeight])
 
     return (
-      <form onSubmit={onSubmit} className="sticky bottom-0 bg-background pt-2 w-full max-w-full">
-        <div className="relative flex items-end gap-2 w-full">
+      <form onSubmit={onSubmit} className="sticky bottom-0 bg-background pt-2 w-full max-w-full pb-safe">
+        <div className="relative flex items-end gap-2 w-full px-2">
           <div className="flex-shrink-0">
             <ProviderSelectorDropdown
               selectedProvider={selectedProvider}
@@ -159,7 +165,7 @@ const MessageInput = React.memo(
             </Button>
           </div>
         </div>
-        <p className="text-xs text-center text-muted-foreground mt-2">
+        <p className="text-xs text-center text-muted-foreground mt-2 px-2">
           AI может допускать ошибки. Проверяйте важную информацию.
         </p>
       </form>
@@ -806,14 +812,14 @@ export default function ChatPage() {
   }
 
   return (
-    <div key={`root-${rootKey}`}  className="flex flex-col min-h-screen">
+    <div key={`root-${rootKey}`} className="flex flex-col min-h-screen">
       <Toaster />
-      <header className="border-b">
+      <header className="border-b sticky top-0 z-10 bg-background">
         <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-2 font-bold">
               <Bot className="w-6 h-6" />
-              <span>AI Chat</span>
+              <span className="hidden sm:inline">AI Chat</span>
             </Link>
             <div className="hidden md:flex items-center gap-1 text-sm text-muted-foreground">
               <span>/</span>
@@ -840,7 +846,7 @@ export default function ChatPage() {
 
         {chatHistory.length > 0 ? (
           <main className="flex-1 overflow-auto">
-            <div className="container mx-auto px-4 py-6 md:px-6 max-w-5xl lg:max-w-6xl">
+            <div className="container mx-auto px-0 py-6 md:px-6 max-w-5xl lg:max-w-6xl">
               <div className="flex flex-col h-[calc(100vh-7rem)] w-full">
                 {isLoadingHistory ? (
                   <div className="flex justify-center items-center h-full">
@@ -848,16 +854,16 @@ export default function ChatPage() {
                   </div>
                 ) : (
                   <>
-                    <div ref={messagesContainerRef} className="flex-1 overflow-y-auto mb-4 space-y-4 p-4">
-                    {showScrollToBottom && (
-                      <button
-                        onClick={scrollToBottom}
-                        className="fixed right-10 bottom-32 md:right-14 lg:right-24 z-10 p-2 rounded-full bg-background border shadow-lg hover:bg-muted transition-colors"
-                        aria-label="Прокрутить вниз"
-                      >
-                        <ArrowDown className="h-5 w-5" />
-                      </button>
-                    )}
+                    <div ref={messagesContainerRef} className="flex-1 overflow-y-auto mb-4 space-y-4 px-2 sm:px-4">
+                      {showScrollToBottom && (
+                        <button
+                          onClick={scrollToBottom}
+                          className="fixed right-4 bottom-24 md:right-14 lg:right-24 z-10 p-2 rounded-full bg-background border shadow-lg hover:bg-muted transition-colors"
+                          aria-label="Прокрутить вниз"
+                        >
+                          <ArrowDown className="h-5 w-5" />
+                        </button>
+                      )}
                       {isTestMessageShown && messages.length === 0 ? (
                         <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-3 duration-300">
                           <div className="flex items-start gap-3 max-w-[80%]">
@@ -901,16 +907,18 @@ export default function ChatPage() {
                       )}
                     </div>
                     {shouldShowInput && (
-                      <MessageInput
-                        key={`messages-${scrollUpdateTrigger}`}
-                        value={input}
-                        onChange={handleInputChange}
-                        onSubmit={handleSubmit}
-                        isLoading={isLoading}
-                        selectedProvider={selectedProvider}
-                        availableProviders={availableProviders}
-                        onProviderChange={handleProviderChange}
-                      />
+                      <div className="sticky bottom-0 bg-background border-t">
+                        <MessageInput
+                          key={`messages-${scrollUpdateTrigger}`}
+                          value={input}
+                          onChange={handleInputChange}
+                          onSubmit={handleSubmit}
+                          isLoading={isLoading}
+                          selectedProvider={selectedProvider}
+                          availableProviders={availableProviders}
+                          onProviderChange={handleProviderChange}
+                        />
+                      </div>
                     )}
                   </>
                 )}

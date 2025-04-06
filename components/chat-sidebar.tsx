@@ -82,8 +82,8 @@ export function ChatSidebar({ chatHistory, renameChatTitle, clearChatMessages, d
         />
       </div>
 
-      <ScrollArea className="flex-1">
-        <div className="pr-3 space-y-2">
+      <ScrollArea className="flex-1 pr--1">
+        <div className="space-y-2  mr--1">
           {isLoading ? (
             <div className="flex justify-center items-center h-20">
               <Loader2 className="h-8 w-8 animate-spin" />
