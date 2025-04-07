@@ -39,10 +39,9 @@ const remarkMermaid: Plugin<[RemarkMermaidOptions?], any> =
         
         // 3. [text]} → text}
         code = code.replaceAll(/\[([^\]\[]+?)\]\}/g, '$1}');
-        //code = code.replaceAll("] ", " ") //ломает код
         code = code.replace(/\[([a-zA-Zа-яА-Я])\] /g, '$1 ');
-
-        
+        code = code.replaceAll(" { ", " ").replaceAll(" } ", " ").replaceAll("()", " ")
+        code = code.replaceAll("{ (", "{").replaceAll(") }", "}")
         
         const id = "mermaid" + Math.random().toString(36).slice(2);
         mermaid.initialize({ theme });
