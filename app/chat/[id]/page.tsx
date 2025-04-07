@@ -138,6 +138,132 @@ const MessageInput = React.memo(
     const [isRecording, setIsRecording] = useState(false)
     const [recordingStatus, setRecordingStatus] = useState<"idle" | "recording" | "processing">("idle")
     const recognitionRef = useRef<any>(null)
+    const fileInputRef = useRef<HTMLInputElement>(null)
+
+    // Function to check if a file is likely a text file
+    const isTextFile = (file: File): boolean => {
+      // Check by MIME type
+      const textMimeTypes = [
+        "text/plain",
+        "text/html",
+        "text/css",
+        "text/javascript",
+        "application/json",
+        "application/xml",
+        "application/javascript",
+        "application/typescript",
+        "text/markdown",
+        "text/csv",
+      ]
+
+      if (textMimeTypes.includes(file.type)) return true
+
+      // Check by extension as fallback
+      const textExtensions = [".txt", ".md", ".js", ".ts", ".jsx", ".tsx", ".json", ".html", ".css", ".csv", ".xml", ".py"]
+      const fileName = file.name.toLowerCase()
+      return textExtensions.some((ext) => fileName.endsWith(ext))
+    }
+
+    const handleFileUpload = useCallback(() => {
+      if (fileInputRef.current) {
+        fileInputRef.current.click()
+      }
+    }, [])
+
+    const handleFileChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files
+        if (!files || files.length === 0) return
+
+        const file = files[0]
+
+        // Reset the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ""
+        }
+
+        // Check if it's a text file
+        if (!isTextFile(file)) {
+          toast({
+            title: "Неподдерживаемый формат",
+            description: "Пожалуйста, загрузите текстовый файл (.txt, .md, .js, .json и т.д.)",
+            variant: "destructive",
+          })
+          return
+        }
+
+        // File size check (limit to 1MB)
+        if (file.size > 1024 * 1024) {
+          toast({
+            title: "Файл слишком большой",
+            description: "Максимальный размер файла - 1MB",
+            variant: "destructive",
+          })
+          return
+        }
+
+        const reader = new FileReader()
+
+        reader.onload = (event) => {
+          try {
+            const content = event.target?.result as string
+
+            // Check if the file appears to be binary
+            // This is a simple heuristic - if more than 10% of the first 1000 characters are null bytes or control characters
+            const sample = content.slice(0, 1000)
+            const nonPrintableCount = sample.split("").filter((char) => {
+              const code = char.charCodeAt(0)
+              return code < 32 || code === 127
+            }).length
+
+            if (nonPrintableCount > sample.length * 0.1) {
+              toast({
+                title: "Бинарный файл",
+                description: "Файл содержит бинарные данные и не может быть обработан",
+                variant: "destructive",
+              })
+              return
+            }
+
+            // Update the textarea with the file content
+            if (textareaRef.current) {
+              const currentValue = textareaRef.current.value
+              const newValue = currentValue ? `${currentValue}\n\n${content}` : content
+
+              // Create a synthetic event to update the state
+              const syntheticEvent = {
+                target: { value: newValue },
+              } as React.ChangeEvent<HTMLTextAreaElement>
+
+              onChange(syntheticEvent)
+
+              toast({
+                title: "Файл загружен",
+                description: `Содержимое файла "${file.name}" добавлено в поле ввода`,
+              })
+            }
+          } catch (error) {
+            console.error("Error reading file:", error)
+            toast({
+              title: "Ошибка чтения файла",
+              description: "Не удалось прочитать содержимое файла",
+              variant: "destructive",
+            })
+          }
+        }
+
+        reader.onerror = () => {
+          toast({
+            title: "Ошибка чтения файла",
+            description: "Не удалось прочитать содержимое файла",
+            variant: "destructive",
+          })
+        }
+
+        reader.readAsText(file)
+      },
+      [onChange],
+    )
 
     const adjustTextareaHeight = useCallback(() => {
       const textarea = textareaRef.current
@@ -247,7 +373,7 @@ const MessageInput = React.memo(
               placeholder="Напишите ваш запрос..."
               value={value}
               onChange={onChange}
-              className="min-h-[60px] max-h-[200px] resize-none pr-28 rounded-xl border-gray-300 focus:border-primary w-full"
+              className="min-h-[60px] max-h-[200px] resize-none pr-40 rounded-xl border-gray-300 focus:border-primary w-full"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault()
@@ -256,6 +382,37 @@ const MessageInput = React.memo(
               }}
             />
             <div className="absolute right-2 bottom-2 flex gap-2">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept=".txt,.md,.js,.ts,.jsx,.tsx,.json,.html,.css,.csv,.xml,text/plain,text/html,text/css,text/javascript,application/json,application/xml"
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={handleFileUpload}
+                className="rounded-full w-10 h-10 p-0 flex items-center justify-center transition-colors bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
+                disabled={isLoading}
+                aria-label="Загрузить текстовый файл"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="12" y1="18" x2="12" y2="12" />
+                  <line x1="9" y1="15" x2="15" y2="15" />
+                </svg>
+              </button>
               <button
                 type="button"
                 onClick={isRecording ? stopRecording : startRecording}
