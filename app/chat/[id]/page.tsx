@@ -23,6 +23,24 @@ import { throttle } from "lodash-es"
 import ProviderSelectorDropdown from "@/components/provider-selector-dropdown"
 //import Markdown from "react-markdown"
 
+interface Window {
+  webkitSpeechRecognition: any
+  SpeechRecognition: any
+}
+
+declare global {
+  interface Window {
+    webkitSpeechRecognition: any
+    SpeechRecognition: any
+  }
+}
+
+interface ChatPageProps {
+  params: {
+    id: string
+  }
+}
+
 interface Message {
   id: number
   text: string
@@ -117,6 +135,9 @@ const MessageInput = React.memo(
     onProviderChange: (provider: string) => void
   }) => {
     const textareaRef = useRef<HTMLTextAreaElement>(null)
+    const [isRecording, setIsRecording] = useState(false)
+    const [recordingStatus, setRecordingStatus] = useState<"idle" | "recording" | "processing">("idle")
+    const recognitionRef = useRef<any>(null)
 
     const adjustTextareaHeight = useCallback(() => {
       const textarea = textareaRef.current
@@ -130,6 +151,85 @@ const MessageInput = React.memo(
     useEffect(() => {
       adjustTextareaHeight()
     }, [value, adjustTextareaHeight])
+
+    const startRecording = useCallback(() => {
+      if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+        toast({
+          title: "Не поддерживается",
+          description: "Ваш браузер не поддерживает распознавание речи",
+          variant: "destructive",
+        })
+        return
+      }
+
+      try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+        recognitionRef.current = new SpeechRecognition()
+
+        const recognition = recognitionRef.current
+        recognition.lang = "ru-RU"
+        recognition.interimResults = false
+        recognition.maxAlternatives = 1
+
+        recognition.onstart = () => {
+          setIsRecording(true)
+          setRecordingStatus("recording")
+        }
+
+        recognition.onresult = (event: any) => {
+          setRecordingStatus("processing")
+          const transcript = event.results[0][0].transcript
+
+          // Update the textarea with the transcribed text
+          if (textareaRef.current) {
+            const currentValue = textareaRef.current.value
+            const newValue = currentValue ? `${currentValue} ${transcript}` : transcript
+
+            // Create a synthetic event to update the state
+            const syntheticEvent = {
+              target: { value: newValue },
+            } as React.ChangeEvent<HTMLTextAreaElement>
+
+            onChange(syntheticEvent)
+          }
+        }
+
+        recognition.onerror = (event: any) => {
+          console.error("Speech recognition error", event.error)
+          setIsRecording(false)
+          setRecordingStatus("idle")
+
+          toast({
+            title: "Ошибка распознавания",
+            description: `Ошибка: ${event.error}`,
+            variant: "destructive",
+          })
+        }
+
+        recognition.onend = () => {
+          setIsRecording(false)
+          setRecordingStatus("idle")
+        }
+
+        recognition.start()
+      } catch (error) {
+        console.error("Speech recognition error:", error)
+        setIsRecording(false)
+        setRecordingStatus("idle")
+
+        toast({
+          title: "Ошибка",
+          description: "Не удалось запустить распознавание речи",
+          variant: "destructive",
+        })
+      }
+    }, [onChange])
+
+    const stopRecording = useCallback(() => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop()
+      }
+    }, [])
 
     return (
       <form onSubmit={onSubmit} className="sticky bottom-0 bg-background pt-2 w-full max-w-full pb-safe">
@@ -147,7 +247,7 @@ const MessageInput = React.memo(
               placeholder="Напишите ваш запрос..."
               value={value}
               onChange={onChange}
-              className="min-h-[60px] max-h-[200px] resize-none pr-14 rounded-xl border-gray-300 focus:border-primary w-full"
+              className="min-h-[60px] max-h-[200px] resize-none pr-28 rounded-xl border-gray-300 focus:border-primary w-full"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault()
@@ -155,14 +255,50 @@ const MessageInput = React.memo(
                 }
               }}
             />
-            <Button
-              type="submit"
-              className="absolute right-2 bottom-2 rounded-full w-10 h-10 p-0"
-              disabled={!value.trim() || isLoading}
-            >
-              <ArrowUp className="h-4 w-4" />
-              <span className="sr-only">Отправить</span>
-            </Button>
+            <div className="absolute right-2 bottom-2 flex gap-2">
+              <button
+                type="button"
+                onClick={isRecording ? stopRecording : startRecording}
+                className={`rounded-full w-10 h-10 p-0 flex items-center justify-center transition-colors ${
+                  recordingStatus === "recording"
+                    ? "bg-red-500 text-white animate-pulse"
+                    : recordingStatus === "processing"
+                      ? "bg-amber-500 text-white"
+                      : "bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
+                }`}
+                disabled={isLoading}
+                aria-label={isRecording ? "Остановить запись" : "Начать запись голоса"}
+              >
+                {recordingStatus === "recording" ? (
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+                  </span>
+                ) : recordingStatus === "processing" ? (
+                  <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                    <line x1="12" x2="12" y1="19" y2="22"></line>
+                  </svg>
+                )}
+              </button>
+              <Button type="submit" className="rounded-full w-10 h-10 p-0" disabled={!value.trim() || isLoading}>
+                <ArrowUp className="h-4 w-4" />
+                <span className="sr-only">Отправить</span>
+              </Button>
+            </div>
           </div>
         </div>
         <p className="text-xs text-center text-muted-foreground mt-2 px-2">
