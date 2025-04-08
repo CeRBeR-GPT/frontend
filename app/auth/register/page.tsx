@@ -83,7 +83,7 @@ export default function RegisterPage() {
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold">Регистрация</CardTitle>
-            <CardDescription>Создайте аккаунт для использования AI Chat</CardDescription>
+            <CardDescription>Создайте аккаунт для использования CeRBeR-AI</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>

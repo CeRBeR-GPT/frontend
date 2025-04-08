@@ -36,15 +36,9 @@ export const NavLinks = () => {
           href={`/chat/${chat}`}
           className={`text-sm font-medium ${pathname.includes("/chat") ? "underline" : "hover:underline"} underline-offset-4`}
         >
-          Chat
+          Чаты
         </Link>
       ) : null}
-      <Link
-        href="/profile"
-        className={`text-sm font-medium ${pathname === "/profile" ? "underline" : "hover:underline"} underline-offset-4`}
-      >
-        Profile
-      </Link>
     </>
   )
 }

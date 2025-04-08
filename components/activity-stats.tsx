@@ -82,7 +82,7 @@ export function ActivityStats({ data = [] }: ActivityStatsProps) {
     <Card>
       <CardHeader>
         <CardTitle>Статистика активности</CardTitle>
-        <CardDescription>Анализ вашего использования AI Chat</CardDescription>
+        <CardDescription>Анализ вашего использования CeRBeR-AI</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">

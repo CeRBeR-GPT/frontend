@@ -8,7 +8,7 @@ import { Toaster } from "@/components/ui/toaster"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "AI Chat",
+  title: "CeRBeR-AI",
   icons: {
     icon: '../public/favicon.ico',
   },
