@@ -113,7 +113,7 @@ export function ActivityHeatmap({ data = [], startDate: propStartDate, endDate =
 
   return (
     <div className="space-y-2">
-      <h3 className="text-lg font-medium">Активность использования AI Chat</h3>
+      <h3 className="text-lg font-medium">Активность использования CeRBeR-AI</h3>
 
       <div className="w-full overflow-hidden">
         <div className="w-full">
