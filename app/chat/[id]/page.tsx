@@ -4,10 +4,8 @@ import { useState, useEffect, useRef, useReducer, useCallback, useMemo } from "r
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
-import { ArrowUp, Bot, User, ArrowDown } from "lucide-react"
+import { Bot, ArrowDown } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { UserMenu } from "@/components/user-menu"
 import { ChatSidebar } from "@/components/chat-sidebar"
@@ -20,7 +18,8 @@ import { useTheme } from "next-themes"
 import "katex/dist/katex.min.css"
 import  Markdown from "@/components/markdown-with-latex"
 import { throttle } from "lodash-es"
-import ProviderSelectorDropdown from "@/components/provider-selector-dropdown"
+import MessageItem from "@/components/MessageItem"
+import MessageInput from "@/components/MessageInput"
 
 declare global {
   interface Window {
@@ -50,401 +49,7 @@ const providersByPlan = {
   business: ["default", "deepseek", "gpt_4o_mini", "gpt_4o", "gpt_4"],
 }
 
-const MessageItem = React.memo( ({ message, theme, onCopy, copiedCode }: {
-    message: Message
-    theme: string | undefined
-    onCopy: (code: string) => void
-    copiedCode: string | null
-  }) => {
-    return (
-      <div
-        className={`flex ${
-          message.message_belong === "user" ? "justify-end" : "justify-start"
-        } animate-in fade-in-0 slide-in-from-bottom-3 duration-300`}
-      >
-        <div className="flex items-start gap-3 w-full max-w-[98%] sm:gap-3 sm:max-w-[95%] md:max-w-[90%] lg:max-w-[85%]">
-          {message.message_belong === "assistant" && (
-            <Avatar className="mt-1 hidden sm:block">
-              <AvatarFallback>
-                <Bot className="w-4 h-4" />
-              </AvatarFallback>
-            </Avatar>
-          )}
-          <Card
-            className={`p-3 w-full overflow-hidden ${
-              message.message_belong === "user" 
-                ? "bg-primary text-primary-foreground" 
-                : "bg-muted"
-            }`}
-          >
-            <div className="prose dark:prose-invert max-w-none overflow-x-auto [&_table]:w-full [&_table]:table-auto [&_pre]:overflow-x-auto [&_img]:max-w-full">
-              <Markdown content={message.text} theme={theme} onCopy={onCopy} copiedCode={copiedCode} />
-            </div>
-          </Card>
-          {message.message_belong === "user" && (
-            <Avatar className="mt-1 hidden sm:block">
-              <AvatarFallback>
-                <User className="w-4 h-4" />
-              </AvatarFallback>
-            </Avatar>
-          )}
-        </div>
-      </div>
-    )
-  },
-)
-
 MessageItem.displayName = "MessageItem"
-
-const MessageInput = React.memo(
-  ({
-    value,
-    onChange,
-    onSubmit,
-    isLoading,
-    selectedProvider,
-    availableProviders,
-    onProviderChange,
-  }: {
-    value: string
-    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
-    onSubmit: (e: React.FormEvent) => void
-    isLoading: boolean
-    selectedProvider: string
-    availableProviders: string[]
-    onProviderChange: (provider: string) => void
-  }) => {
-    const textareaRef = useRef<HTMLTextAreaElement>(null)
-    const [isRecording, setIsRecording] = useState(false)
-    const [recordingStatus, setRecordingStatus] = useState<"idle" | "recording" | "processing">("idle")
-    const recognitionRef = useRef<any>(null)
-    const fileInputRef = useRef<HTMLInputElement>(null)
-    const { toast } = useToast()
-
-    const isTextFile = (file: File): boolean => {
-      const textMimeTypes = [
-        "text/plain",
-        "text/html",
-        "text/css",
-        "text/javascript",
-        "application/json",
-        "application/xml",
-        "application/javascript",
-        "application/typescript",
-        "text/markdown",
-        "text/csv",
-      ]
-
-      if (textMimeTypes.includes(file.type)) return true
-
-      // Check by extension as fallback
-      const textExtensions = [".txt", ".md", ".js", ".ts", ".jsx", ".tsx", ".json", ".html", ".css", ".csv", ".xml", ".py"]
-      const fileName = file.name.toLowerCase()
-      return textExtensions.some((ext) => fileName.endsWith(ext))
-    }
-
-    const handleFileUpload = useCallback(() => {
-      if (fileInputRef.current) {
-        fileInputRef.current.click()
-      }
-    }, [])
-
-    const handleFileChange = useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files
-        if (!files || files.length === 0) return
-
-        const file = files[0]
-
-        // Reset the file input
-        if (fileInputRef.current) {
-          fileInputRef.current.value = ""
-        }
-
-        // Check if it's a text file
-        if (!isTextFile(file)) {
-          toast({
-            title: "Неподдерживаемый формат",
-            description: "Пожалуйста, загрузите текстовый файл (.txt, .md, .js, .json и т.д.)",
-            variant: "destructive",
-          })
-          return
-        }
-
-        // File size check (limit to 1MB)
-        if (file.size > 1024 * 1024) {
-          toast({
-            title: "Файл слишком большой",
-            description: "Максимальный размер файла - 1MB",
-            variant: "destructive",
-          })
-          return
-        }
-
-        const reader = new FileReader()
-
-        reader.onload = (event) => {
-          try {
-            const content = event.target?.result as string
-
-            // Check if the file appears to be binary
-            // This is a simple heuristic - if more than 10% of the first 1000 characters are null bytes or control characters
-            const sample = content.slice(0, 1000)
-            const nonPrintableCount = sample.split("").filter((char) => {
-              const code = char.charCodeAt(0)
-              return code < 32 || code === 127
-            }).length
-
-            if (nonPrintableCount > sample.length * 0.1) {
-              toast({
-                title: "Бинарный файл",
-                description: "Файл содержит бинарные данные и не может быть обработан",
-                variant: "destructive",
-              })
-              return
-            }
-
-            // Update the textarea with the file content
-            if (textareaRef.current) {
-              const currentValue = textareaRef.current.value
-              const newValue = currentValue ? `${currentValue}\n\n${content}` : content
-
-              // Create a synthetic event to update the state
-              const syntheticEvent = {
-                target: { value: newValue },
-              } as React.ChangeEvent<HTMLTextAreaElement>
-
-              onChange(syntheticEvent)
-
-              toast({
-                title: "Файл загружен",
-                description: `Содержимое файла "${file.name}" добавлено в поле ввода`,
-              })
-            }
-          } catch (error) {
-            console.error("Error reading file:", error)
-            toast({
-              title: "Ошибка чтения файла",
-              description: "Не удалось прочитать содержимое файла",
-              variant: "destructive",
-            })
-          }
-        }
-
-        reader.onerror = () => {
-          toast({
-            title: "Ошибка чтения файла",
-            description: "Не удалось прочитать содержимое файла",
-            variant: "destructive",
-          })
-        }
-
-        reader.readAsText(file)
-      },
-      [onChange],
-    )
-
-    const adjustTextareaHeight = useCallback(() => {
-      const textarea = textareaRef.current
-      if (!textarea) return
-
-      textarea.style.height = "auto"
-      const newHeight = Math.max(60, Math.min(textarea.scrollHeight, 200))
-      textarea.style.height = `${newHeight}px`
-    }, [])
-
-    useEffect(() => {
-      adjustTextareaHeight()
-    }, [value, adjustTextareaHeight])
-
-    const startRecording = useCallback(() => {
-      if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
-        toast({
-          title: "Не поддерживается",
-          description: "Ваш браузер не поддерживает распознавание речи",
-          variant: "destructive",
-        })
-        return
-      }
-
-      try {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-        recognitionRef.current = new SpeechRecognition()
-
-        const recognition = recognitionRef.current
-        recognition.lang = "ru-RU"
-        recognition.interimResults = false
-        recognition.maxAlternatives = 1
-
-        recognition.onstart = () => {
-          setIsRecording(true)
-          setRecordingStatus("recording")
-        }
-
-        recognition.onresult = (event: any) => {
-          setRecordingStatus("processing")
-          const transcript = event.results[0][0].transcript
-
-          // Update the textarea with the transcribed text
-          if (textareaRef.current) {
-            const currentValue = textareaRef.current.value
-            const newValue = currentValue ? `${currentValue} ${transcript}` : transcript
-
-            // Create a synthetic event to update the state
-            const syntheticEvent = {
-              target: { value: newValue },
-            } as React.ChangeEvent<HTMLTextAreaElement>
-
-            onChange(syntheticEvent)
-          }
-        }
-
-        recognition.onerror = (event: any) => {
-          console.error("Speech recognition error", event.error)
-          setIsRecording(false)
-          setRecordingStatus("idle")
-
-          toast({
-            title: "Ошибка распознавания",
-            description: `Ошибка: ${event.error}`,
-            variant: "destructive",
-          })
-        }
-
-        recognition.onend = () => {
-          setIsRecording(false)
-          setRecordingStatus("idle")
-        }
-
-        recognition.start()
-      } catch (error) {
-        console.error("Speech recognition error:", error)
-        setIsRecording(false)
-        setRecordingStatus("idle")
-
-        toast({
-          title: "Ошибка",
-          description: "Не удалось запустить распознавание речи",
-          variant: "destructive",
-        })
-      }
-    }, [onChange])
-
-    const stopRecording = useCallback(() => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop()
-      }
-    }, [])
-
-    return (
-      <form onSubmit={onSubmit} className="sticky bottom-0 bg-background pt-2 w-full max-w-full pb-safe">
-        <div className="relative flex items-start gap-2 w-full px-2">
-          <div className="flex-shrink-0">
-            <ProviderSelectorDropdown
-              selectedProvider={selectedProvider}
-              availableProviders={availableProviders}
-              onProviderChange={onProviderChange}
-            />
-          </div>
-          <div className="relative flex-grow w-full">
-            <Textarea
-              ref={textareaRef}
-              placeholder="Напишите ваш запрос..."
-              value={value}
-              onChange={onChange}
-              className="min-h-[60px] max-h-[200px] resize-none pr-40 rounded-xl border-gray-300 focus:border-primary w-full"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault()
-                  onSubmit(e)
-                }
-              }}
-            />
-            <div className="absolute right-2 bottom-2 flex gap-2">
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                accept=".txt,.md,.js,.ts,.jsx,.tsx,.json,.html,.css,.csv,.xml,text/plain,text/html,text/css,text/javascript,application/json,application/xml"
-                className="hidden"
-              />
-              <button
-                type="button"
-                onClick={handleFileUpload}
-                className="rounded-full w-10 h-10 p-0 flex items-center justify-center transition-colors bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
-                disabled={isLoading}
-                aria-label="Загрузить текстовый файл"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <line x1="12" y1="18" x2="12" y2="12" />
-                  <line x1="9" y1="15" x2="15" y2="15" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                onClick={isRecording ? stopRecording : startRecording}
-                className={`rounded-full w-10 h-10 p-0 flex items-center justify-center transition-colors ${
-                  recordingStatus === "recording"
-                    ? "bg-red-500 text-white animate-pulse"
-                    : recordingStatus === "processing"
-                      ? "bg-amber-500 text-white"
-                      : "bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
-                }`}
-                disabled={isLoading}
-                aria-label={isRecording ? "Остановить запись" : "Начать запись голоса"}
-              >
-                {recordingStatus === "recording" ? (
-                  <span className="relative flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
-                  </span>
-                ) : recordingStatus === "processing" ? (
-                  <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
-                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                    <line x1="12" x2="12" y1="19" y2="22"></line>
-                  </svg>
-                )}
-              </button>
-              <Button type="submit" className="rounded-full w-10 h-10 p-0" disabled={!value.trim() || isLoading}>
-                <ArrowUp className="h-4 w-4" />
-                <span className="sr-only">Отправить</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-        <p className="text-xs text-center text-muted-foreground mt-2 px-2">
-          AI может допускать ошибки. Проверяйте важную информацию.
-        </p>
-      </form>
-    )
-  },
-)
-
 MessageInput.displayName = "MessageInput"
 
 function messagesReducer(state: Message[], action: { type: string; payload?: any }) {
@@ -473,20 +78,17 @@ export default function ChatPage() {
   const router = useRouter()
   const chatId = params.id as string
   const { isAuthenticated, isLoading: isAuthLoading, getToken, userData } = useAuth()
-
-  const [input, setInput] = useState("")
+  const [input, setInput] = useState<string>("")
   const [messages, dispatchMessages] = useReducer(messagesReducer, [])
-  const [isLoading, setIsLoading] = useState(false)
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
-
-  const [chatTitle, setChatTitle] = useState("")
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(false)
+  const [chatTitle, setChatTitle] = useState<string>("")
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
-  const [isTestMessageShown, setIsTestMessageShown] = useState(true)
+  const [isTestMessageShown, setIsTestMessageShown] = useState<boolean>(true)
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
-  const [sidebarVersion, setSidebarVersion] = useState(0)
+  const [sidebarVersion, setSidebarVersion] = useState<number>(0)
   const [selectedProvider, setSelectedProvider] = useState<string>("default")
   const [availableProviders, setAvailableProviders] = useState<string[]>([])
-  const [scrollUpdateTrigger, setScrollUpdateTrigger] = useState(0);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false)
   const { toast } = useToast()
 
@@ -504,8 +106,6 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {
-    console.log("Setting up scroll listener")
-    
     const container = messagesContainerRef.current
     if (!container) return
   
@@ -514,12 +114,9 @@ export default function ChatPage() {
     const handleScrollEvent = () => {
       const { scrollTop, scrollHeight, clientHeight } = container
       const isAtBottom = scrollHeight - (scrollTop + clientHeight) < 50
-      
       const isScrollingDown = scrollTop > lastScrollTop
       lastScrollTop = scrollTop
-
       const hasMoreContentBelow = scrollHeight > clientHeight + scrollTop
-      
       setShowScrollToBottom(isScrollingDown && hasMoreContentBelow && !isAtBottom)
     }
   
@@ -541,7 +138,6 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!messagesContainerRef.current || isLoadingHistory) return
-
     const scrollToBottom = () => {
       messagesContainerRef.current?.scrollTo({
         top: messagesContainerRef.current.scrollHeight,
@@ -552,11 +148,6 @@ export default function ChatPage() {
     const timer = setTimeout(scrollToBottom, 100)
     return () => clearTimeout(timer)
   }, [messages, isLoadingHistory])
-
-  useEffect( () => {
-    setScrollUpdateTrigger(1);
-    console.log(scrollUpdateTrigger)
-  }, [scrollUpdateTrigger])
 
   useEffect(() => {
     if (!isLoadingHistory && messages.length > 0) {
@@ -584,7 +175,6 @@ export default function ChatPage() {
     if (userData) {
       const providers = providersByPlan[userData.plan as keyof typeof providersByPlan] || providersByPlan.default
       setAvailableProviders(providers)
-
       const savedProvider = localStorage.getItem("selectedProvider")
       if (savedProvider && providers.includes(savedProvider)) {
         setSelectedProvider(savedProvider)
@@ -599,13 +189,8 @@ export default function ChatPage() {
     const token = await getToken()
     try {
       await axios.put(
-        `https://api-gpt.energy-cerber.ru/chat/${id}?new_name=${newTitle}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+        `https://api-gpt.energy-cerber.ru/chat/${id}?new_name=${newTitle}`, {},
+        {headers: { Authorization: `Bearer ${token}` } },
       )
 
       setChatHistory((prev: ChatHistory[]) =>
@@ -663,7 +248,6 @@ export default function ChatPage() {
 
   const loadChatHistory = useCallback(
     async (chatId: string) => {
-      //setIsLoadingHistory(true)
       if (isRequested.current) return
       isRequested.current = true
 
@@ -706,11 +290,10 @@ export default function ChatPage() {
           },
         })
 
-        // Обновляем историю чатов
         setChatHistory((prev: ChatHistory[]) =>
           prev.map((chat) =>
             chat.id === id ? { ...chat, messages: 0, preview: "Нет сообщений", date: new Date() } : chat,
-          ),
+          )
         )
 
         if (id === chatId) {
@@ -739,15 +322,10 @@ export default function ChatPage() {
 
         console.log("ChatId", chatId)
         const idChat = localStorage.getItem("lastDeletedChat")
-        if (chatId === idChat) {
-          return
-        }
+        if (chatId === idChat) { return }
 
         ws.current = new WebSocket(wsUrl)
-
-        ws.current.onopen = () => {
-          console.log("WebSocket connection established")
-        }
+        ws.current.onopen = () => { console.log("WebSocket connection established") }
 
         ws.current.onmessage = (event) => {
           dispatchMessages({
@@ -795,7 +373,6 @@ export default function ChatPage() {
       try {
         setIsLoading(true)
 
-        // 1. Удаляем чат на сервере
         await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -803,17 +380,13 @@ export default function ChatPage() {
         })
 
         localStorage.setItem("lastDeletedChat", id || "")
-        // 2. Обновляем локальное состояние
         const remainingChats = chatHistory.filter((chat) => chat.id !== id)
         setChatHistory(remainingChats)
-
-        // 3. Обновляем localStorage
         const lastSavedChat = localStorage.getItem("lastSavedChat")
         if (lastSavedChat === id) {
           localStorage.setItem("lastSavedChat", remainingChats.length > 0 ? remainingChats[0].id : "1")
         }
 
-        // 4. Если удаляется текущий открытый чат - перенаправляем и закрываем WebSocket
         if (id === chatId) {
           const nextChatId = remainingChats.length > 0 ? remainingChats[0].id : "1"
           if (ws.current) {
@@ -863,7 +436,6 @@ export default function ChatPage() {
       })
 
       const sortedChats = formattedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
-
       setChatHistory(sortedChats)
 
       if (sortedChats.length > 0) {
@@ -907,9 +479,7 @@ export default function ChatPage() {
         setIsLoading(true)
         setInput("")
 
-        if (ws.current) {
-          ws.current.send(input)
-        }
+        if (ws.current) { ws.current.send(input) }
       }, 500),
     [isLoading],
   )
@@ -952,7 +522,6 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (isAuthLoading) return
-
     if (!isAuthenticated) {
       router.push("/auth/login")
       return
@@ -976,25 +545,21 @@ export default function ChatPage() {
     }
   }, [chatId, isAuthenticated, isAuthLoading, router, loadChatHistory, initializeWebSocket, fetchChats])
 
-  const renderedMessages = useMemo(
-    () =>
+  const renderedMessages = useMemo(() =>
       messages.map((message) => (
-        <MessageItem key={`${message.id}-${scrollPosition}`} message={message} theme={theme} onCopy={handleCopyCode} copiedCode={copiedCode} />
+        <MessageItem key={`${message.id}`} message={message} theme={theme} onCopy={handleCopyCode} copiedCode={copiedCode} />
       )),
     [messages, theme, copiedCode, handleCopyCode, scrollPosition],
   )
 
-  const handleProviderChange = useCallback(
-    (provider: string) => {
+  const handleProviderChange = useCallback( (provider: string) => {
       setSelectedProvider(provider)
       localStorage.setItem("selectedProvider", provider)
     },
     [chatId, initializeWebSocket],
   )
 
-  if (isAuthLoading || !isAuthenticated) {
-    return null
-  }
+  if (isAuthLoading || !isAuthenticated) { return null }
 
   return (
     <div key={`root-${rootKey}`} className="flex flex-col min-h-screen">
@@ -1094,7 +659,6 @@ export default function ChatPage() {
                     {shouldShowInput && (
                       <div className="sticky bottom-0 bg-background border-t">
                         <MessageInput
-                          key={`messages-${scrollUpdateTrigger}`}
                           value={input}
                           onChange={handleInputChange}
                           onSubmit={handleSubmit}
