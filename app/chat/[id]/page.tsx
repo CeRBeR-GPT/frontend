@@ -13,7 +13,7 @@ import { UserMenu } from "@/components/user-menu"
 import { ChatSidebar } from "@/components/chat-sidebar"
 import { useAuth } from "@/hooks/use-auth"
 import { NavLinks } from "@/components/nav-links"
-import { toast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import axios from "axios"
 import { useTheme } from "next-themes"
@@ -21,23 +21,11 @@ import "katex/dist/katex.min.css"
 import  Markdown from "@/components/markdown-with-latex"
 import { throttle } from "lodash-es"
 import ProviderSelectorDropdown from "@/components/provider-selector-dropdown"
-//import Markdown from "react-markdown"
-
-interface Window {
-  webkitSpeechRecognition: any
-  SpeechRecognition: any
-}
 
 declare global {
   interface Window {
     webkitSpeechRecognition: any
     SpeechRecognition: any
-  }
-}
-
-interface ChatPageProps {
-  params: {
-    id: string
   }
 }
 
@@ -62,13 +50,7 @@ const providersByPlan = {
   business: ["default", "deepseek", "gpt_4o_mini", "gpt_4o", "gpt_4"],
 }
 
-const MessageItem = React.memo(
-  ({
-    message,
-    theme,
-    onCopy,
-    copiedCode,
-  }: {
+const MessageItem = React.memo( ({ message, theme, onCopy, copiedCode }: {
     message: Message
     theme: string | undefined
     onCopy: (code: string) => void
@@ -81,7 +63,6 @@ const MessageItem = React.memo(
         } animate-in fade-in-0 slide-in-from-bottom-3 duration-300`}
       >
         <div className="flex items-start gap-3 w-full max-w-[98%] sm:gap-3 sm:max-w-[95%] md:max-w-[90%] lg:max-w-[85%]">
-          {/* Скрываем аватарки на мобильных устройствах */}
           {message.message_belong === "assistant" && (
             <Avatar className="mt-1 hidden sm:block">
               <AvatarFallback>
@@ -100,7 +81,6 @@ const MessageItem = React.memo(
               <Markdown content={message.text} theme={theme} onCopy={onCopy} copiedCode={copiedCode} />
             </div>
           </Card>
-          {/* Скрываем аватарки на мобильных устройствах */}
           {message.message_belong === "user" && (
             <Avatar className="mt-1 hidden sm:block">
               <AvatarFallback>
@@ -139,10 +119,9 @@ const MessageInput = React.memo(
     const [recordingStatus, setRecordingStatus] = useState<"idle" | "recording" | "processing">("idle")
     const recognitionRef = useRef<any>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const { toast } = useToast()
 
-    // Function to check if a file is likely a text file
     const isTextFile = (file: File): boolean => {
-      // Check by MIME type
       const textMimeTypes = [
         "text/plain",
         "text/html",
@@ -359,7 +338,7 @@ const MessageInput = React.memo(
 
     return (
       <form onSubmit={onSubmit} className="sticky bottom-0 bg-background pt-2 w-full max-w-full pb-safe">
-        <div className="relative flex items-end gap-2 w-full px-2">
+        <div className="relative flex items-start gap-2 w-full px-2">
           <div className="flex-shrink-0">
             <ProviderSelectorDropdown
               selectedProvider={selectedProvider}
@@ -509,6 +488,7 @@ export default function ChatPage() {
   const [availableProviders, setAvailableProviders] = useState<string[]>([])
   const [scrollUpdateTrigger, setScrollUpdateTrigger] = useState(0);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false)
+  const { toast } = useToast()
 
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
@@ -632,18 +612,8 @@ export default function ChatPage() {
         prev.map((chat) => (chat.id === id ? { ...chat, title: newTitle } : chat)),
       )
       setChatTitle(newTitle)
-
-      toast({
-        title: "Название обновлено",
-        description: "Название чата было успешно изменено",
-      })
     } catch (error) {
       console.error("Ошибка при переименовании чата:", error)
-      toast({
-        title: "Ошибка",
-        description: "Не удалось обновить название чата",
-        variant: "destructive",
-      })
     }
   }
 
@@ -719,11 +689,6 @@ export default function ChatPage() {
         setIsLoadingHistory(false)
       } catch (error) {
         console.error("Failed to load chat history:", error)
-        toast({
-          title: "Ошибка загрузки истории",
-          description: "Не удалось загрузить историю сообщений.",
-          variant: "destructive",
-        })
       } finally {
         setIsLoadingHistory(false)
       }
@@ -748,26 +713,14 @@ export default function ChatPage() {
           ),
         )
 
-        // Если очищаем текущий чат - сбрасываем сообщения
         if (id === chatId) {
           dispatchMessages({ type: "CLEAR" })
           setIsTestMessageShown(true)
         }
 
-        toast({
-          title: "Сообщения очищены",
-          description: "Все сообщения в чате были удалены",
-        })
-
-        // Принудительно перезагружаем историю чата
         await loadChatHistory(chatId)
       } catch (error) {
         console.error("Error clearing chat messages:", error)
-        toast({
-          title: "Ошибка",
-          description: "Не удалось очистить сообщения",
-          variant: "destructive",
-        })
       }
     },
     [chatId, getToken, loadChatHistory],
@@ -820,21 +773,11 @@ export default function ChatPage() {
 
         ws.current.onerror = (error) => {
           console.error("WebSocket error:", error)
-          toast({
-            title: "Ошибка WebSocket",
-            description: "Не удалось подключиться к серверу.",
-            variant: "destructive",
-          })
         }
 
         ws.current.onclose = (event) => {
           console.log("WebSocket connection closed:", event)
           if (event.code !== 1000) {
-            toast({
-              title: "Соединение закрыто",
-              description: "Попытка переподключения...",
-              variant: "destructive",
-            })
             setTimeout(() => initializeWebSocket(chatId), 5000)
           }
         }
@@ -873,31 +816,17 @@ export default function ChatPage() {
         // 4. Если удаляется текущий открытый чат - перенаправляем и закрываем WebSocket
         if (id === chatId) {
           const nextChatId = remainingChats.length > 0 ? remainingChats[0].id : "1"
-
-          // Закрываем WebSocket перед перенаправлением
           if (ws.current) {
             ws.current.close(1000, "Chat deleted")
             ws.current = null
           }
 
-          // Перенаправляем на новый чат
           router.push(`/chat/${nextChatId}`)
         }
 
-        toast({
-          title: "Чат удален",
-          description: "Чат был успешно удален",
-        })
-
-        // 5. Обновляем sidebar
         updateSidebar()
       } catch (error) {
         console.error("Error deleting chat:", error)
-        toast({
-          title: "Ошибка",
-          description: "Не удалось удалить чат",
-          variant: "destructive",
-        })
       } finally {
         setIsLoading(false)
       }
@@ -944,11 +873,6 @@ export default function ChatPage() {
       }
     } catch (error) {
       console.error("Error fetching chats:", error)
-      toast({
-        title: "Ошибка",
-        description: "Не удалось загрузить чаты",
-        variant: "destructive",
-      })
     }
   }, [getToken])
 
@@ -962,14 +886,6 @@ export default function ChatPage() {
     },
     [router],
   )
-
-  const handleClearChat = useCallback(() => {
-    dispatchMessages({ type: "CLEAR" })
-    toast({
-      title: "Сообщения очищены",
-      description: "Все сообщения в чате были удалены",
-    })
-  }, [])
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value)
@@ -1005,25 +921,6 @@ export default function ChatPage() {
     },
     [input, throttledSubmit],
   )
-
-  const handleDeleteChat = useCallback(
-    (id: string) => {
-      toast({
-        title: "Чат удален",
-        description: "Чат был успешно удален",
-      })
-      //router.push("/chat/new")
-    },
-    [router],
-  )
-
-  const handleRenameChat = useCallback((id: string, newTitle: string) => {
-    setChatTitle(newTitle)
-    toast({
-      title: "Название обновлено",
-      description: "Название чата было успешно изменено",
-    })
-  }, [])
 
   const shouldShowInput = useMemo(() => {
     return !(messages.length === 1 && messages[0].text === "# Привет! Я ваш AI ассистент.")
@@ -1091,11 +988,6 @@ export default function ChatPage() {
     (provider: string) => {
       setSelectedProvider(provider)
       localStorage.setItem("selectedProvider", provider)
-
-      toast({
-        title: "Провайдер изменен",
-        description: `Провайдер изменен на ${provider}`,
-      })
     },
     [chatId, initializeWebSocket],
   )
