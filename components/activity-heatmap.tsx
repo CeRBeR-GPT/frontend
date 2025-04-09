@@ -7,7 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useMediaQuery } from "@/hooks/use-media-query"
 
 interface ActivityData {
-  date: string // ISO format date
+  date: string
   count: number
 }
 
@@ -21,22 +21,17 @@ export function ActivityHeatmap({ data = [], startDate: propStartDate, endDate =
   const [activityData, setActivityData] = useState<ActivityData[]>(data)
   const [hoveredDay, setHoveredDay] = useState<ActivityData | null>(null)
 
-  // Используем медиа-запросы для определения размера экрана
   const isDesktop = useMediaQuery("(min-width: 768px)")
   const isTablet = useMediaQuery("(min-width: 640px)")
 
-  // Адаптируем период отображения в зависимости от размера экрана
   const startDate =
     propStartDate ||
     (isDesktop ? subDays(new Date(), 365) : isTablet ? subDays(new Date(), 180) : subMonths(new Date(), 3))
 
-  // Если данные не предоставлены, генерируем случайные данные для демонстрации
   useEffect(() => {
     if (data.length === 0) {
       const days = eachDayOfInterval({ start: startDate, end: endDate })
       const mockData: ActivityData[] = days.map((day) => {
-        // Генерируем случайное количество активности для каждого дня
-        // С большей вероятностью низкой активности
         const random = Math.random()
         let count = 0
 
@@ -55,16 +50,12 @@ export function ActivityHeatmap({ data = [], startDate: propStartDate, endDate =
     }
   }, [data, startDate, endDate])
 
-  // Создаем сетку дней
   const days = eachDayOfInterval({ start: startDate, end: endDate })
 
-  // Определяем количество недель для отображения
   const weeks = Math.ceil(days.length / 7)
 
-  // Создаем массив дней недели
   const weekdays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
 
-  // Функция для определения цвета ячейки на основе количества активности
   const getCellColor = (count: number) => {
     if (count === 0) return "bg-gray-100 dark:bg-gray-800"
     if (count < 5) return "bg-green-100 dark:bg-green-900"
@@ -73,13 +64,11 @@ export function ActivityHeatmap({ data = [], startDate: propStartDate, endDate =
     return "bg-green-700 dark:bg-green-300"
   }
 
-  // Функция для получения данных активности для конкретного дня
   const getActivityForDay = (day: Date) => {
     const activity = activityData.find((item) => isSameDay(parseISO(item.date), day))
     return activity ? activity.count / 2 : 0
   }
 
-  // Создаем массив месяцев для отображения над сеткой
   const months: { name: string; width: number }[] = []
   let currentMonth = startDate.getMonth()
   let monthStartCol = 0
@@ -107,7 +96,6 @@ export function ActivityHeatmap({ data = [], startDate: propStartDate, endDate =
     }
   })
 
-  // Определяем размер ячейки в зависимости от размера экрана
   const cellSize = isDesktop ? 10 : isTablet ? 8 : 6
   const cellGap = isDesktop ? 3 : 2
 
@@ -117,7 +105,6 @@ export function ActivityHeatmap({ data = [], startDate: propStartDate, endDate =
 
       <div className="w-full overflow-hidden">
         <div className="w-full">
-          {/* Месяцы - только для планшетов и десктопов */}
           {(isTablet || isDesktop) && (
             <div className="flex text-xs text-muted-foreground h-6 ml-10">
               {months.map((month, i) => (
@@ -136,7 +123,6 @@ export function ActivityHeatmap({ data = [], startDate: propStartDate, endDate =
           )}
 
           <div className="flex">
-            {/* Дни недели - только для планшетов и десктопов */}
             {(isTablet || isDesktop) && (
               <div className="flex flex-col text-xs text-muted-foreground mr-2 mt-6 space-y-2">
                 {weekdays.map((day, i) => (
@@ -147,15 +133,12 @@ export function ActivityHeatmap({ data = [], startDate: propStartDate, endDate =
               </div>
             )}
 
-            {/* Адаптивная сетка активности */}
             <div className="w-full grid grid-flow-col gap-[2px] auto-cols-fr">
               {Array.from({ length: weeks }).map((_, weekIndex) => (
                 <div key={weekIndex} className="flex flex-col gap-[2px]">
                   {weekdays.map((_, dayIndex) => {
                     const dayOffset = weekIndex * 7 + dayIndex
                     const currentDay = addDays(startDate, dayOffset)
-
-                    // Проверяем, не выходит ли день за пределы диапазона
                     if (currentDay > endDate) {
                       return <div key={dayIndex} className={`w-full aspect-square`} />
                     }
@@ -188,8 +171,6 @@ export function ActivityHeatmap({ data = [], startDate: propStartDate, endDate =
               ))}
             </div>
           </div>
-
-          {/* Легенда */}
           <div className="flex items-center justify-end mt-2 text-xs text-muted-foreground">
             <span className="mr-2">Меньше</span>
             <div className="flex gap-1">
@@ -203,8 +184,6 @@ export function ActivityHeatmap({ data = [], startDate: propStartDate, endDate =
           </div>
         </div>
       </div>
-
-      {/* Информация о наведенном дне */}
       {hoveredDay && (
         <div className="text-sm text-muted-foreground mt-2 hidden md:block">
           <p>

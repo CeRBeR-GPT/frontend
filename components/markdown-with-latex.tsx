@@ -8,17 +8,16 @@ import remarkGfm from "remark-gfm";
 import remarkMermaid from "../lib/remarkMermoid";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
+import { Clipboard } from "lucide-react"
 import rehypeStringify from "rehype-stringify";
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism"
 import { Prism, SyntaxHighlighterProps } from "react-syntax-highlighter";
 import "katex/dist/katex.min.css";
 import "./styles.css";
 import { cn } from "@/lib/utils";
-import { title } from "process";
 import { useToast } from "@/hooks/use-toast";
 
-const SyntaxHighlighter =
-  Prism as unknown as typeof React.Component<SyntaxHighlighterProps>;
+const SyntaxHighlighter = Prism as unknown as typeof React.Component<SyntaxHighlighterProps>;
 
 const PROGRAMMING_LANGUAGES = [
   'javascript', 'typescript', 'python', 'java', 'csharp', 'cpp', 'c', 'php',
@@ -31,9 +30,7 @@ function detectLanguage(className?: string): string {
   if (!className) return 'text'
   
   for (const lang of PROGRAMMING_LANGUAGES) {
-    if (className.includes(lang)) {
-      return lang
-    }
+    if (className.includes(lang)) { return lang }
   }
   
   const match = /language-(\w+)/.exec(className)
@@ -59,11 +56,11 @@ const Markdown:  React.FC<MarkdownWithLatexProps> = ({ content,  theme,  onCopy,
         try {
             await navigator.clipboard.writeText(renderedText);
             handleCopyTextMarkdown(renderedText);
-            toast({
-              title: "Текст скопирован"
-            })
         } catch (err) {
-            
+          toast({
+            title: "Текст скопирован",
+            description: "Текст скопирован в буфер обмена",
+          })
         }
     }
 };
@@ -72,28 +69,14 @@ const Markdown:  React.FC<MarkdownWithLatexProps> = ({ content,  theme,  onCopy,
     <div>
       <div ref={markdownRef}>
         <ReactMarkdown 
-          remarkPlugins={[
-            [remarkMermaid],
-            remarkGfm,
-            remarkMath,
-          ]}
-          rehypePlugins={[
-            [rehypeKatex,{ 
-              output: "html",
-              throwOnError: false,
-              strict: false,
-              trust: true
-            }],
-            rehypeRaw,
-            rehypeStringify,
-          ]}
+          remarkPlugins={[ [remarkMermaid], remarkGfm, remarkMath ]}
+          rehypePlugins={[ [rehypeKatex,{  output: "html", throwOnError: false, strict: false, trust: true }],
+            rehypeRaw, rehypeStringify ]}
           components={{
             h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mt-4 mb-2" {...props} />,
             h2: ({ node, ...props }) => <h2 className="text-xl font-bold mt-3 mb-1.5" {...props} />,
             h3: ({ node, ...props }) => <h3 className="text-lg font-bold mt-2 mb-1" {...props} />,
-            
             strong: ({ node, ...props }) => <strong className="font-bold" {...props} />,
-            
             p: ({ node, ...props }) => <p className="mb-2" {...props} />,
 
             code: ({ children, className, ...rest }) => {
@@ -108,11 +91,8 @@ const Markdown:  React.FC<MarkdownWithLatexProps> = ({ content,  theme,  onCopy,
                       onClick={() => onCopy(codeString)}
                       className="p-1 rounded bg-background/80 backdrop-blur-sm opacity-80 hover:opacity-100"
                     >
-                      {copiedCode === codeString ? (
-                        <Check className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
+                      {copiedCode === codeString ? ( <Check className="h-4 w-4 text-green-500" /> ) : (
+                        <Copy className="h-4 w-4" /> )}
                     </button>
                   </div>
                   
@@ -205,21 +185,17 @@ const Markdown:  React.FC<MarkdownWithLatexProps> = ({ content,  theme,  onCopy,
               )
             },
           }}
-
         >
           {content.replaceAll("```", "^^^").replaceAll("`", "***").replaceAll("^^^", "```")}
         </ReactMarkdown>
       </div>
 
       {message_belong === "user" && (
-        <button 
-          onClick={copyRenderedText} 
-          className="mt-2 text-sm text-white hover:text-gray-700"
-        >
+        <button onClick={copyRenderedText} className="hover:text-gray-700">
+          <Clipboard className="w-4 h-4 inline-block" />
           Скопировать
-      </button>
+        </button>
       )}
-      
     </div>
   );
 };
