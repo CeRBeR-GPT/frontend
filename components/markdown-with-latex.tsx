@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import { Copy, Check } from "lucide-react"
 import ReactMarkdown from "react-markdown";
 import remarkMath from "../lib/remarkMath";
@@ -46,147 +46,173 @@ interface MarkdownWithLatexProps {
 }
 
 const Markdown:  React.FC<MarkdownWithLatexProps> = ({ content,  theme,  onCopy, copiedCode }) => {
+  const markdownRef = useRef<HTMLDivElement>(null);
+
+  const copyRenderedText = async () => {
+    if (markdownRef.current) {
+        const renderedText = markdownRef.current.innerText || markdownRef.current.textContent || "";
+        try {
+            await navigator.clipboard.writeText(renderedText);
+            onCopy(renderedText);
+        } catch (err) {
+            alert("Ошибка при копировании текста.");
+        }
+    }
+};
 
   return (
-    <ReactMarkdown
-      remarkPlugins={[
-        [remarkMermaid],
-        remarkGfm,
-        remarkMath,
-      ]}
-      rehypePlugins={[
-        [rehypeKatex,{ 
-          output: "html",
-          throwOnError: false,
-          strict: false,
-          trust: true
-        }],
-        rehypeRaw,
-        rehypeStringify,
-      ]}
-      components={{
-        h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mt-4 mb-2" {...props} />,
-        h2: ({ node, ...props }) => <h2 className="text-xl font-bold mt-3 mb-1.5" {...props} />,
-        h3: ({ node, ...props }) => <h3 className="text-lg font-bold mt-2 mb-1" {...props} />,
-        
-        strong: ({ node, ...props }) => <strong className="font-bold" {...props} />,
-        
-        p: ({ node, ...props }) => <p className="mb-2" {...props} />,
+    <div>
+      <div ref={markdownRef}>
+        <ReactMarkdown 
+          remarkPlugins={[
+            [remarkMermaid],
+            remarkGfm,
+            remarkMath,
+          ]}
+          rehypePlugins={[
+            [rehypeKatex,{ 
+              output: "html",
+              throwOnError: false,
+              strict: false,
+              trust: true
+            }],
+            rehypeRaw,
+            rehypeStringify,
+          ]}
+          components={{
+            h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mt-4 mb-2" {...props} />,
+            h2: ({ node, ...props }) => <h2 className="text-xl font-bold mt-3 mb-1.5" {...props} />,
+            h3: ({ node, ...props }) => <h3 className="text-lg font-bold mt-2 mb-1" {...props} />,
+            
+            strong: ({ node, ...props }) => <strong className="font-bold" {...props} />,
+            
+            p: ({ node, ...props }) => <p className="mb-2" {...props} />,
 
-        code: ({ children, className, ...rest }) => {
-          const match = /language-(?!mermaid)(\w+)/.exec(className || "");
-          const codeString = String(children).replace(/\n$/, '')
-          const detectedLanguage = detectLanguage(className)
+            code: ({ children, className, ...rest }) => {
+              const match = /language-(?!mermaid)(\w+)/.exec(className || "");
+              const codeString = String(children).replace(/\n$/, '')
+              const detectedLanguage = detectLanguage(className)
 
-          return match ? (
-            <div className="relative group">
-              <div className="absolute right-2 top-2 z-10">
-                <button
-                  onClick={() => onCopy(codeString)}
-                  className="p-1 rounded bg-background/80 backdrop-blur-sm opacity-80 hover:opacity-100"
-                >
-                  {copiedCode === codeString ? (
-                    <Check className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              
-              <div className="absolute left-2 top-0 text-xs font-mono text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
-                {detectedLanguage}
-              </div>
-              <SyntaxHighlighter
-                {...(rest as SyntaxHighlighterProps)}
-                style={theme === "dark" ? vscDarkPlus : vs}
-                language={match[1]}
-                customStyle={{
-                  marginTop: "0",
-                  marginBottom: "0",
-                  paddingTop: "2rem",
-                  borderRadius: "0.375rem",
-                }}
-                PreTag="div"
-              >
-                {String(children).trim()}
-              </SyntaxHighlighter>
-            </div>
-          ) : (
-            <code {...rest} className={cn("not-prose", className)}>
-              {children}
-            </code>
-          );
-        },
-        table({ node, ...props }) {
-          return (
-            <div className="overflow-x-auto my-2">
-              <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">
-                {props.children}
-              </table>
-            </div>
-          )
-        },
-        
-        thead({ node, ...props }) {
-          return (
-            <thead className="bg-gray-50 dark:bg-gray-800">
-              {props.children}
-            </thead>
-          )
-        },
-        
-        tbody({ node, ...props }) {
-          return (
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {props.children}
-            </tbody>
-          )
-        },
-        
-        tr({ node, ...props }) {
-          return <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50" {...props} />
-        },
-        
-        th({ node, ...props }) {
-          return (
-            <th 
-              className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700" 
-              {...props} 
-            />
-          )
-        },
-        
-        td({ node, ...props }) {
-          return (
-            <td 
-              className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700" 
-              {...props} 
-            />
-          )
-        },
-        
-        ul({ node, ...props }) {
-          return <ul className="list-disc pl-5 mb-2" {...props} />
-        },
-        
-        ol({ node, ...props }) {
-          return <ol className="list-decimal pl-5 mb-2" {...props} />
-        },
-        
-        blockquote({ node, ...props }) {
-          return (
-            <blockquote 
-              className="border-l-4 border-gray-300 pl-4 italic text-gray-600 dark:text-gray-300 mb-2" 
-              {...props} 
-            />
-          )
-        },
-      }}
+              return match ? (
+                <div className="relative group">
+                  <div className="absolute right-2 top-2 z-10">
+                    <button
+                      onClick={() => onCopy(codeString)}
+                      className="p-1 rounded bg-background/80 backdrop-blur-sm opacity-80 hover:opacity-100"
+                    >
+                      {copiedCode === codeString ? (
+                        <Check className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                  
+                  <div className="absolute left-2 top-0 text-xs font-mono text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
+                    {detectedLanguage}
+                  </div>
+                  <SyntaxHighlighter
+                    {...(rest as SyntaxHighlighterProps)}
+                    style={theme === "dark" ? vscDarkPlus : vs}
+                    language={match[1]}
+                    customStyle={{
+                      marginTop: "0",
+                      marginBottom: "0",
+                      paddingTop: "2rem",
+                      borderRadius: "0.375rem",
+                    }}
+                    PreTag="div"
+                  >
+                    {String(children).trim()}
+                  </SyntaxHighlighter>
+                </div>
+              ) : (
+                <code {...rest} className={cn("not-prose", className)}>
+                  {children}
+                </code>
+              );
+            },
+            table({ node, ...props }) {
+              return (
+                <div className="overflow-x-auto my-2">
+                  <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">
+                    {props.children}
+                  </table>
+                </div>
+              )
+            },
+            
+            thead({ node, ...props }) {
+              return (
+                <thead className="bg-gray-50 dark:bg-gray-800">
+                  {props.children}
+                </thead>
+              )
+            },
+            
+            tbody({ node, ...props }) {
+              return (
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {props.children}
+                </tbody>
+              )
+            },
+            
+            tr({ node, ...props }) {
+              return <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50" {...props} />
+            },
+            
+            th({ node, ...props }) {
+              return (
+                <th 
+                  className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700" 
+                  {...props} 
+                />
+              )
+            },
+            
+            td({ node, ...props }) {
+              return (
+                <td 
+                  className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700" 
+                  {...props} 
+                />
+              )
+            },
+            
+            ul({ node, ...props }) {
+              return <ul className="list-disc pl-5 mb-2" {...props} />
+            },
+            
+            ol({ node, ...props }) {
+              return <ol className="list-decimal pl-5 mb-2" {...props} />
+            },
+            
+            blockquote({ node, ...props }) {
+              return (
+                <blockquote 
+                  className="border-l-4 border-gray-300 pl-4 italic text-gray-600 dark:text-gray-300 mb-2" 
+                  {...props} 
+                />
+              )
+            },
+          }}
 
-    >
-      {content.replaceAll("```", "^^^").replaceAll("`", "***").replaceAll("^^^", "```")}
-    </ReactMarkdown>
+        >
+          {content.replaceAll("```", "^^^").replaceAll("`", "***").replaceAll("^^^", "```")}
+        </ReactMarkdown>
+      </div>
 
+      
+   
+      <button 
+        onClick={copyRenderedText} 
+        className="mt-2 text-sm text-gray-500 hover:text-gray-700"
+      >
+        Скопировать обработанный текст
+      </button>
+      
+    </div>
   );
 };
 

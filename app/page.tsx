@@ -22,6 +22,29 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const { toast } = useToast()
+  const [render, setRender] = useState<number>(0)
+
+  const token = getToken()
+
+  // useEffect(() => {
+  //   const handleStorageChange = (event: any) => {
+  //       if (event.key === 'access_token') {
+  //           const newToken = localStorage.getItem('access_token');
+  //           if (newToken !== token) {
+  //               localStorage.setItem('access_token', newToken)
+  //               //window.location.reload();
+  //               setRender( prev => prev + 1)
+  //               console.log(render)
+  //           }
+  //       }
+  //   };
+
+  //   window.addEventListener('storage', handleStorageChange);
+  //   return () => {
+  //       window.removeEventListener('storage', handleStorageChange);
+  //   };
+  // }, [token]);
+
 
   useEffect(() => {
     setIsAuth(isAuthenticated)
@@ -94,7 +117,7 @@ export default function Home() {
   }
 
   return (
-      <div className="flex flex-col min-h-screen">
+      <div key={`sidebar-${render}`} className="flex flex-col min-h-screen">
         <header className="border-b">
           <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
             <Link href="/" className="flex items-center gap-2 font-bold">

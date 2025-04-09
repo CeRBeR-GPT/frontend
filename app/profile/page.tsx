@@ -14,16 +14,6 @@ import { X } from 'lucide-react';
 import axios from "axios"
 import { subDays, format } from "date-fns"
 
-interface UserData {
-  id: string
-  email: string
-  plan: string
-  plan_purchase_date: string
-  available_message_count: number
-  message_length_limit: number
-  message_count_limit: number
-}
-
 interface UsageHistory {
   date: string
   usedMessages: number
@@ -51,14 +41,19 @@ const providersByPlan = {
 }
 
 export default function ProfilePage() {
-  const { isAuthenticated, logout, userData } = useAuth()
+  const { isAuthenticated, logout, userData, getToken } = useAuth()
   const router = useRouter()
-  //const [userData, setUserData] = useState<UserData | null>(null)
   const [usageHistory, setUsageHistory] = useState<UsageHistory[]>([])
   const [selectedProvider, setSelectedProvider] = useState<string>("default")
   const [availableProviders, setAvailableProviders] = useState<string[]>([])
-
+  const [render, setRender] = useState<number>(0)
   const isRequested = useRef(false)
+
+  const token = getToken()
+
+  // useEffect( () => {
+  //   setRender(prev => prev + 1); 
+  // }, [token])
 
   useEffect(() => {
     const getToken = () => localStorage.getItem('access_token')
@@ -66,7 +61,6 @@ export default function ProfilePage() {
 
     const getUserData = async () => {
 
-        // Обновляем историю использования сообщений
         const today = format(new Date(), 'yyyy-MM-dd')
         const existingHistory = JSON.parse(localStorage.getItem("usageHistory") || "[]")
         const todayUsage = existingHistory.find((entry: UsageHistory) => entry.date === today)
@@ -83,7 +77,6 @@ export default function ProfilePage() {
           setUsageHistory(existingHistory)
         }
 
-        // Загружаем чаты и обновляем статистику
         await fetchChats(token)
     }
 
@@ -96,8 +89,6 @@ export default function ProfilePage() {
     if (userData) {
       const providers = providersByPlan[userData.plan as keyof typeof providersByPlan] || providersByPlan.default
       setAvailableProviders(providers)
-
-      // Get saved provider from localStorage or use default
       const savedProvider = localStorage.getItem("selectedProvider")
       if (savedProvider && providers.includes(savedProvider)) {
         setSelectedProvider(savedProvider)
@@ -119,16 +110,12 @@ export default function ProfilePage() {
         },
       });
       const chats: Chat[] = response.data;
-  
-      // Создаем объект для группировки сообщений по дате
       const messagesByDate: { [key: string]: number } = {};
   
-      // Проходим по всем чатам и их сообщениям
       chats.forEach((chat) => {
         chat.messages.forEach((message) => {
-          // Преобразуем дату из UTC в московское время (MSK, UTC+3)
           const utcDate = new Date(message.created_at);
-          const mskTime = new Date(utcDate.getTime() + 3 * 60 * 60 * 1000); // Добавляем 3 часа
+          const mskTime = new Date(utcDate.getTime() + 3 * 60 * 60 * 1000);
           console.log("time", mskTime);
           const messageDate = format(mskTime, 'yyyy-MM-dd');
   
@@ -139,14 +126,12 @@ export default function ProfilePage() {
           }
         });
       });
-  
-      // Преобразуем объект в массив для использования в `usageHistory`
+
       const updatedHistory = Object.keys(messagesByDate).map((date) => ({
         date,
         usedMessages: messagesByDate[date],
       }));
   
-      // Обновляем состояние и локальное хранилище
       localStorage.setItem("usageHistory", JSON.stringify(updatedHistory));
       setUsageHistory(updatedHistory);
     } catch (error) {
@@ -337,7 +322,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div key={`sidebar-${render}`} className="flex flex-col min-h-screen">
       <header className="border-b">
         <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
           <Link href="/" className="flex items-center gap-2 font-bold">

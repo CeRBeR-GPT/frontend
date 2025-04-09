@@ -89,21 +89,24 @@ export default function ChatPage() {
   const [sidebarVersion, setSidebarVersion] = useState<number>(0)
   const [selectedProvider, setSelectedProvider] = useState<string>("default")
   const [availableProviders, setAvailableProviders] = useState<string[]>([])
-  const [showScrollToBottom, setShowScrollToBottom] = useState(false)
+  const [showScrollToBottom, setShowScrollToBottom] = useState<boolean>(false)
   const { toast } = useToast()
-
   const messagesContainerRef = useRef<HTMLDivElement>(null)
-
-  const [scrollPosition, setScrollPosition] = useState(0);
-  const [rootKey, setRootKey] = useState(0);
+  const [rootKey, setRootKey] = useState<number>(0);
+  const token = getToken()
+  const [CopiedText,setCopiedText] = useState<string | null>(null)
 
   useEffect(() => {
     const loadData = async () => {
       await fetchChats(); 
-      setRootKey(prev => prev + 1); 
+      //setRootKey(prev => prev + 1); 
     };
     loadData();
   }, []);
+
+  // useEffect(() => {
+  //   setRootKey(prev => prev + 1);
+  // }, [token])
 
   useEffect(() => {
     const container = messagesContainerRef.current
@@ -506,6 +509,16 @@ export default function ChatPage() {
     setTimeout(() => setCopiedCode(null), 2000)
   }, [])
 
+  const handleCopyTextMarkdown = useCallback((code: string) => {
+    navigator.clipboard.writeText(code)
+    setCopiedText(code)
+    toast({
+      title: "Текст markdown разметки скопирован",
+      description: "Текст был успешно скопирован в буфер обмена.",
+    })
+    setTimeout(() => setCopiedText(null), 2000)
+  }, [])
+
   useEffect(() => {
     if (!messagesContainerRef.current || isLoadingHistory) return
 
@@ -547,9 +560,9 @@ export default function ChatPage() {
 
   const renderedMessages = useMemo(() =>
       messages.map((message) => (
-        <MessageItem key={`${message.id}`} message={message} theme={theme} onCopy={handleCopyCode} copiedCode={copiedCode} />
+        <MessageItem key={`${message.id}`} handleCopyTextMarkdown = {handleCopyTextMarkdown} message={message} theme={theme} onCopy={handleCopyCode} copiedCode={copiedCode} />
       )),
-    [messages, theme, copiedCode, handleCopyCode, scrollPosition],
+    [messages, theme, copiedCode, handleCopyCode],
   )
 
   const handleProviderChange = useCallback( (provider: string) => {
@@ -569,7 +582,7 @@ export default function ChatPage() {
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-2 font-bold">
               <Bot className="w-6 h-6" />
-              <span className="hidden sm:inline">CeRBeR-AI</span>
+              <span className="hidden sm:inline">AI Chat</span>
             </Link>
             <div className="hidden md:flex items-center gap-1 text-sm text-muted-foreground">
               <span>/</span>
@@ -679,4 +692,3 @@ export default function ChatPage() {
     </div>
   )
 }
-

@@ -1,6 +1,6 @@
 import React from "react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Bot, User } from "lucide-react"
+import { Bot, User, Clipboard } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import  Markdown from "@/components/markdown-with-latex"
 
@@ -11,12 +11,23 @@ interface Message {
     timestamp: Date
 }
 
-const MessageItem = React.memo( ({ message, theme, onCopy, copiedCode }: {
+const MessageItem = React.memo( ({ message, theme, onCopy, copiedCode, handleCopyTextMarkdown }: {
     message: Message
     theme: string | undefined
     onCopy: (code: string) => void
     copiedCode: string | null
+    handleCopyTextMarkdown: (text: string) => void
   }) => {
+    const copyToClipboard = async () => {
+      try {
+          await navigator.clipboard.writeText(message.text);
+          handleCopyTextMarkdown(message.text);
+          //alert("Текст скопирован в буфер обмена!");
+      } catch (err) {
+          //alert("Ошибка при копировании текста.");
+      }
+    };
+
     return (
       <div
         className={`flex ${
@@ -39,8 +50,15 @@ const MessageItem = React.memo( ({ message, theme, onCopy, copiedCode }: {
             }`}
           >
             <div className="prose dark:prose-invert max-w-none overflow-x-auto [&_table]:w-full [&_table]:table-auto [&_pre]:overflow-x-auto [&_img]:max-w-full">
-              <Markdown content={message.text} theme={theme} onCopy={onCopy} copiedCode={copiedCode} />
+              <Markdown message = {message.message_belong} content={message.text} theme={theme} onCopy={onCopy} copiedCode={copiedCode} />
             </div>
+            {message.message_belong === "assistant" && (
+              <button onClick={copyToClipboard} className="...">
+                <Clipboard className="w-4 h-4 inline-block" />
+                Скопировать
+              </button>
+            )}
+
           </Card>
           {message.message_belong === "user" && (
             <Avatar className="mt-1 hidden sm:block">
