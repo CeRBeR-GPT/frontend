@@ -13,7 +13,6 @@ import rehypeStringify from "rehype-stringify";
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism"
 import { Prism, SyntaxHighlighterProps } from "react-syntax-highlighter";
 import "katex/dist/katex.min.css";
-import "./styles.css";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
