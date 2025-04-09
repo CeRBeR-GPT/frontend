@@ -14,6 +14,8 @@ import { Prism, SyntaxHighlighterProps } from "react-syntax-highlighter";
 import "katex/dist/katex.min.css";
 import "./styles.css";
 import { cn } from "@/lib/utils";
+import { title } from "process";
+import { useToast } from "@/hooks/use-toast";
 
 const SyntaxHighlighter =
   Prism as unknown as typeof React.Component<SyntaxHighlighterProps>;
@@ -43,19 +45,25 @@ interface MarkdownWithLatexProps {
   theme?: string
   onCopy: (code: string) => void
   copiedCode: string | null
+  message_belong?: "user" | "assistant"
+  handleCopyTextMarkdown: (text: string) => void
 }
 
-const Markdown:  React.FC<MarkdownWithLatexProps> = ({ content,  theme,  onCopy, copiedCode }) => {
+const Markdown:  React.FC<MarkdownWithLatexProps> = ({ content,  theme,  onCopy, copiedCode, message_belong, handleCopyTextMarkdown }) => {
   const markdownRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast()
 
   const copyRenderedText = async () => {
     if (markdownRef.current) {
         const renderedText = markdownRef.current.innerText || markdownRef.current.textContent || "";
         try {
             await navigator.clipboard.writeText(renderedText);
-            onCopy(renderedText);
+            handleCopyTextMarkdown(renderedText);
+            toast({
+              title: "Текст скопирован"
+            })
         } catch (err) {
-            alert("Ошибка при копировании текста.");
+            
         }
     }
 };
@@ -203,14 +211,14 @@ const Markdown:  React.FC<MarkdownWithLatexProps> = ({ content,  theme,  onCopy,
         </ReactMarkdown>
       </div>
 
-      
-   
-      <button 
-        onClick={copyRenderedText} 
-        className="mt-2 text-sm text-gray-500 hover:text-gray-700"
-      >
-        Скопировать обработанный текст
+      {message_belong === "user" && (
+        <button 
+          onClick={copyRenderedText} 
+          className="mt-2 text-sm text-white hover:text-gray-700"
+        >
+          Скопировать
       </button>
+      )}
       
     </div>
   );

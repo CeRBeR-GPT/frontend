@@ -513,8 +513,8 @@ export default function ChatPage() {
     navigator.clipboard.writeText(code)
     setCopiedText(code)
     toast({
-      title: "Текст markdown разметки скопирован",
-      description: "Текст был успешно скопирован в буфер обмена.",
+      title: "Текст скопирован",
+      description: "Текст скопирован в буфер обмена.",
     })
     setTimeout(() => setCopiedText(null), 2000)
   }, [])
@@ -638,6 +638,7 @@ export default function ChatPage() {
                             <Card className="p-3 bg-muted">
                               <div className="prose dark:prose-invert max-w-none">
                                 <Markdown
+                                  handleCopyTextMarkdown={handleCopyTextMarkdown}
                                   content="# Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?"
                                   theme={theme}
                                   onCopy={handleCopyCode}
