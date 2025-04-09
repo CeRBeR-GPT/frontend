@@ -10,7 +10,7 @@ import { ru } from "date-fns/locale"
 import { useMediaQuery } from "@/hooks/use-media-query"
 
 interface ActivityData {
-  date: string // ISO format date
+  date: string
   count: number
 }
 
@@ -22,12 +22,10 @@ export function ActivityStats({ data = [] }: ActivityStatsProps) {
   const [activeTab, setActiveTab] = useState("heatmap")
   const isMobile = !useMediaQuery("(min-width: 640px)")
 
-  // Если данные не предоставлены, используем пустой массив
   const activityData = data.length > 0 ? data : []
 
-  // Подготовка данных для недельного графика
   const today = new Date()
-  const weekStart = startOfWeek(today, { weekStartsOn: 1 }) // Неделя начинается с понедельника
+  const weekStart = startOfWeek(today, { weekStartsOn: 1 })
   const weekEnd = endOfWeek(today, { weekStartsOn: 1 })
   const daysOfWeek = eachDayOfInterval({ start: weekStart, end: weekEnd })
 
@@ -40,8 +38,6 @@ export function ActivityStats({ data = [] }: ActivityStatsProps) {
     }
   })
 
-  // Подготовка данных для месячной статистики
-  // Для мобильных устройств показываем меньше дней
   const daysToShow = isMobile ? 14 : 30
   const monthlyData = Array.from({ length: daysToShow })
     .map((_, i) => {
@@ -55,12 +51,10 @@ export function ActivityStats({ data = [] }: ActivityStatsProps) {
     })
     .reverse()
 
-  // Расчет общей статистики
   const totalMessages = activityData.reduce((sum, item) => sum + item.count, 0)
   const activeDays = activityData.filter((item) => item.count > 0).length
   const averagePerDay = activeDays > 0 ? Math.round(totalMessages / activeDays) : 0
 
-  // Находим день с максимальной активностью
   const maxActivityDay = activityData.reduce(
     (max, item) => (item.count > (max?.count || 0) ? item : max),
     null as ActivityData | null,

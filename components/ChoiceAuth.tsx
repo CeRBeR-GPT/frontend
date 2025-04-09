@@ -1,4 +1,3 @@
-import { ReactElement, JSXElementConstructor, ReactNode, ReactPortal } from "react"
 import { Separator } from "@/components/ui/separator"
 
 export const ChoiceAuth = (props: { text: string} ) => {

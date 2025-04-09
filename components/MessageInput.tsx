@@ -25,18 +25,8 @@ const MessageInput = React.memo( ({ value, onChange, onSubmit, isLoading, select
     const { toast } = useToast()
 
     const isTextFile = (file: File): boolean => {
-      const textMimeTypes = [
-        "text/plain",
-        "text/html",
-        "text/css",
-        "text/javascript",
-        "application/json",
-        "application/xml",
-        "application/javascript",
-        "application/typescript",
-        "text/markdown",
-        "text/csv",
-      ]
+      const textMimeTypes = [ "text/plain", "text/html", "text/css", "text/javascript", "application/json",
+        "application/xml", "application/javascript", "application/typescript", "text/markdown", "text/csv" ]
 
       if (textMimeTypes.includes(file.type)) return true
 
@@ -51,16 +41,13 @@ const MessageInput = React.memo( ({ value, onChange, onSubmit, isLoading, select
       }
     }, [])
 
-    const handleFileChange = useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = useCallback( (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files
         if (!files || files.length === 0) return
 
         const file = files[0]
 
-        if (fileInputRef.current) {
-          fileInputRef.current.value = ""
-        }
+        if (fileInputRef.current) { fileInputRef.current.value = "" }
 
         if (!isTextFile(file)) {
           toast({
@@ -85,7 +72,6 @@ const MessageInput = React.memo( ({ value, onChange, onSubmit, isLoading, select
         reader.onload = (event) => {
           try {
             const content = event.target?.result as string
-
             const sample = content.slice(0, 1000)
             const nonPrintableCount = sample.split("").filter((char) => {
               const code = char.charCodeAt(0)
@@ -104,13 +90,10 @@ const MessageInput = React.memo( ({ value, onChange, onSubmit, isLoading, select
             if (textareaRef.current) {
               const currentValue = textareaRef.current.value
               const newValue = currentValue ? `${currentValue}\n\n${content}` : content
-
               const syntheticEvent = {
                 target: { value: newValue },
               } as React.ChangeEvent<HTMLTextAreaElement>
-
               onChange(syntheticEvent)
-
               toast({
                 title: "Файл загружен",
                 description: `Содержимое файла "${file.name}" добавлено в поле ввода`,
@@ -179,13 +162,9 @@ const MessageInput = React.memo( ({ value, onChange, onSubmit, isLoading, select
         recognition.onresult = (event: any) => {
           setRecordingStatus("processing")
           const transcript = event.results[0][0].transcript
-
-          // Update the textarea with the transcribed text
           if (textareaRef.current) {
             const currentValue = textareaRef.current.value
             const newValue = currentValue ? `${currentValue} ${transcript}` : transcript
-
-            // Create a synthetic event to update the state
             const syntheticEvent = {
               target: { value: newValue },
             } as React.ChangeEvent<HTMLTextAreaElement>
