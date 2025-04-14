@@ -1,9 +1,8 @@
 "use client"
 import Link from "next/link"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Bot, Check, User, Zap, LogIn, LogOut, Lock, Cpu, Sparkles, Star } from "lucide-react"
+import { Bot, Check, Zap, Lock } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@/hooks/use-auth"
 import { UserMenu } from "@/components/user-menu"
@@ -13,6 +12,10 @@ import { useEffect, useRef, useState } from "react"
 import { X } from 'lucide-react';
 import axios from "axios"
 import { subDays, format } from "date-fns"
+import WithoutAuth from "@/components/WithoutAuth"
+import getProviderIcon, { getProviderDescription, getProviderName } from "@/utils/providers-utils"
+import { providersByPlan } from "@/const/providers"
+import ProfileSettings from "@/components/profile-settings"
 
 interface UsageHistory {
   date: string
@@ -34,27 +37,17 @@ interface Chat {
   }[]
 }
 
-const providersByPlan = {
-  default: ["default", "deepseek"],
-  premium: ["default", "deepseek", "gpt_4o_mini"],
-  business: ["default", "deepseek", "gpt_4o_mini", "gpt_4o", "gpt_4"],
-}
-
 export default function ProfilePage() {
-  const { isAuthenticated, logout, userData, getToken, getUserData } = useAuth()
+  const { isAuthenticated, logout, userData, getUserData } = useAuth()
   const router = useRouter()
   const [usageHistory, setUsageHistory] = useState<UsageHistory[]>([])
   const [selectedProvider, setSelectedProvider] = useState<string>("default")
   const [availableProviders, setAvailableProviders] = useState<string[]>([])
   const [render, setRender] = useState<number>(0)
-  const isRequested = useRef(false)
-
-  const token = getToken()
 
   useEffect(() => {
     const getToken = () => localStorage.getItem('access_token')
     const token = getToken()
-
     const getUserData1 = async () => {
 
         const today = format(new Date(), 'yyyy-MM-dd')
@@ -136,55 +129,44 @@ export default function ProfilePage() {
     }
   };
 
-  const generateActivityData = () => {
-    const data = []
-    const today = new Date()
+  // const generateActivityData = () => {
+  //   const data = []
+  //   const today = new Date()
 
-    for (let i = 0; i < 365; i++) {
-      const date = subDays(today, i)
-      const formattedDate = format(date, 'yyyy-MM-dd')
-      const usageEntry = usageHistory.find((entry) => entry.date === formattedDate)
+  //   for (let i = 0; i < 365; i++) {
+  //     const date = subDays(today, i)
+  //     const formattedDate = format(date, 'yyyy-MM-dd')
+  //     const usageEntry = usageHistory.find((entry) => entry.date === formattedDate)
 
-      data.push({
-        date: date.toISOString(),
-        count: usageEntry ? usageEntry.usedMessages : 0,
-      })
-    }
+  //     data.push({
+  //       date: date.toISOString(),
+  //       count: usageEntry ? usageEntry.usedMessages : 0,
+  //     })
+  //   }
 
-    return data
-  }
+  //   return data
+  // }
 
-  const activityData = generateActivityData()
+  // const activityData = generateActivityData()
 
   const payForPremium = async (plan: string) => {
     const getToken = () => localStorage.getItem('access_token')
     const token = getToken()
     try {
-      const response = await axios.post(
-        `https://api-gpt.energy-cerber.ru/transaction/new_payment?plan=${plan}`,
-        {},
-        {
+      const response = await axios.post( `https://api-gpt.energy-cerber.ru/transaction/new_payment?plan=${plan}`,{}, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       )
-
-      console.log(response.data.url)
       router.replace(response.data.url)
     } catch (error) {
       console.error("Fail to pay:", error)
     }
   }
 
-  const plan =
-    userData?.plan === "default"
-      ? "Базовый"
-      : userData?.plan === "premium"
-      ? "Премиум"
-      : userData?.plan === "business"
-      ? "Бизнес"
-      : ""
+  const plan = userData?.plan === "default" ? "Базовый" : userData?.plan === "premium" ? "Премиум"
+      : userData?.plan === "business" ? "Бизнес" : ""
 
   const handleLogout = () => {
     logout()
@@ -194,130 +176,10 @@ export default function ProfilePage() {
   const handleProviderChange = (provider: string) => {
     setSelectedProvider(provider)
     localStorage.setItem("selectedProvider", provider)
-
-    // Здесь можно добавить вызов API для сохранения выбранного провайдера на сервере
-    // например:
-    // const token = localStorage.getItem('access_token');
-    // axios.post('https://api-gpt.energy-cerber.ru/user/settings',
-    //   { provider },
-    //   { headers: { Authorization: `Bearer ${token}` } }
-    // );
   }
 
-  // Helper function to get provider icon
-  const getProviderIcon = (provider: string) => {
-    switch (provider) {
-      case "default":
-        return <Bot className="w-5 h-5" />
-      case "deepseek":
-        return <Cpu className="w-5 h-5" />
-      case "gpt_4o_mini":
-        return <Sparkles className="w-5 h-5" />
-      case "gpt_4o":
-        return <Zap className="w-5 h-5" />
-      case "gpt_4":
-        return <Star className="w-5 h-5" />
-      default:
-        return <Bot className="w-5 h-5" />
-    }
-  }
-
-  // Helper function to get provider name
-  const getProviderName = (provider: string) => {
-    switch (provider) {
-      case "default":
-        return "Стандартный"
-      case "deepseek":
-        return "DeepSeek"
-      case "gpt_4o_mini":
-        return "GPT-4o Mini"
-      case "gpt_4o":
-        return "GPT-4o"
-      case "gpt_4":
-        return "GPT-4"
-      default:
-        return provider
-    }
-  }
-
-  const getProviderDescription = (provider: string) => {
-    switch (provider) {
-      case "default":
-        return "Базовая модель для повседневных задач"
-      case "deepseek":
-        return "Мощная модель с открытым исходным кодом"
-      case "gpt_4o_mini":
-        return "Компактная версия GPT-4o с хорошим балансом скорости и качества"
-      case "gpt_4o":
-        return "Мультимодальная модель от OpenAI с расширенными возможностями"
-      case "gpt_4":
-        return "Продвинутая модель от OpenAI для сложных задач"
-      default:
-        return ""
-    }
-  }
-
-  // Helper function to determine if a provider requires a specific plan
-  const getRequiredPlan = (provider: string) => {
-    if (providersByPlan.default.includes(provider)) {
-      return "default"
-    } else if (providersByPlan.premium.includes(provider) && !providersByPlan.default.includes(provider)) {
-      return "premium"
-    } else {
-      return "business"
-    }
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="flex flex-col min-h-screen">
-        <header className="border-b">
-          <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
-            <Link href="/" className="flex items-center gap-2 font-bold">
-              <Bot className="w-6 h-6" />
-              <span>CeRBeR-AI</span>
-            </Link>
-            <nav className="flex items-center gap-4">
-              <NavLinks />
-              <ThemeToggle />
-              <UserMenu />
-            </nav>
-          </div>
-        </header>
-        <main className="flex-1 container mx-auto px-4 py-12 md:px-6 max-w-5xl flex flex-col items-center justify-center">
-          <Card className="w-full max-w-md mx-auto">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl">Профиль недоступен</CardTitle>
-              <CardDescription>Пожалуйста, войдите в систему для доступа к вашему профилю</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center gap-4 pt-6">
-              <div className="rounded-full bg-muted p-6">
-                <User className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <p className="text-center text-muted-foreground">
-                Войдите в систему, чтобы управлять вашей подпиской и просматривать статистику использования.
-              </p>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-4">
-              <Button size="lg" className="w-full" asChild>
-                <Link href="/auth/login">
-                  <LogIn className="mr-2 h-4 w-4" />
-                  Войти
-                </Link>
-              </Button>
-              <p className="text-center text-sm text-muted-foreground">
-                Нет аккаунта?{" "}
-                <Link href="/auth/register" className="text-primary underline underline-offset-4">
-                  Зарегистрироваться
-                </Link>
-              </p>
-            </CardFooter>
-          </Card>
-        </main>
-      </div>
-    )
-  }
-
+  if (!isAuthenticated) { return ( <WithoutAuth/> ) }
+    
   return (
     <div key={`sidebar-${render}`} className="flex flex-col min-h-screen">
       <header className="border-b">
@@ -335,50 +197,8 @@ export default function ProfilePage() {
       </header>
       <main className="flex-1 container mx-auto px-4 py-6 md:px-6 max-w-5xl">
         <div className="grid gap-6 md:grid-cols-[250px_1fr] lg:grid-cols-[300px_1fr]">
-          <div className="flex flex-col gap-6">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex flex-col items-center gap-4">
-                  <Avatar className="w-20 h-20 mt-2">
-                    <AvatarImage src="/user.png?height=85&width=85" />
-                    <AvatarFallback>
-                      <User className="w-10 h-10" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="text-center">
-                    <h2 className="text-lg font-bold">{userData?.email}</h2>
-                  </div>
-                  <Button variant="outline" asChild>
-                    <Link href="/profile/change-password" className="w-full">
-                      <Lock className="w-4 h-4 mr-2" />
-                      Изменить пароль
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full mt-2 text-red-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Выйти
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="font-medium mb-2">Текущий тариф</h3>
-                <div className="bg-primary/10 rounded-lg p-3 text-center">
-                  <p className="font-bold">{plan}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {plan === "Базовый" ? "Бесплатно" : plan === "Премиум" ? "999₽" : plan === "Бизнес" ? "2999₽" : ""}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <ProfileSettings plan={plan}/>
           <div>
-
             <Card className="mb-6">
               <CardHeader>
                 <CardTitle>Ваша подписка</CardTitle>
@@ -431,7 +251,6 @@ export default function ProfilePage() {
               <CardContent>
                 <div className="space-y-4">
                   <div className="grid gap-3">
-                    {/* Only show providers available for the current plan */}
                     {availableProviders.map((provider) => {
                       const isSelected = selectedProvider === provider
 
