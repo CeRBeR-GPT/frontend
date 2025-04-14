@@ -568,6 +568,7 @@ export default function ChatPage() {
   const handleProviderChange = useCallback( (provider: string) => {
       setSelectedProvider(provider)
       localStorage.setItem("selectedProvider", provider)
+      initializeWebSocket(chatId)
     },
     [chatId, initializeWebSocket],
   )
