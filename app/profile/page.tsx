@@ -41,7 +41,7 @@ const providersByPlan = {
 }
 
 export default function ProfilePage() {
-  const { isAuthenticated, logout, userData, getToken } = useAuth()
+  const { isAuthenticated, logout, userData, getToken, getUserData } = useAuth()
   const router = useRouter()
   const [usageHistory, setUsageHistory] = useState<UsageHistory[]>([])
   const [selectedProvider, setSelectedProvider] = useState<string>("default")
@@ -51,15 +51,11 @@ export default function ProfilePage() {
 
   const token = getToken()
 
-  // useEffect( () => {
-  //   setRender(prev => prev + 1); 
-  // }, [token])
-
   useEffect(() => {
     const getToken = () => localStorage.getItem('access_token')
     const token = getToken()
 
-    const getUserData = async () => {
+    const getUserData1 = async () => {
 
         const today = format(new Date(), 'yyyy-MM-dd')
         const existingHistory = JSON.parse(localStorage.getItem("usageHistory") || "[]")
@@ -82,6 +78,7 @@ export default function ProfilePage() {
 
     if (token) {
       getUserData()
+      getUserData1()
     }
   }, [])
 

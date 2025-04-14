@@ -117,7 +117,7 @@ export default function Home() {
   }
 
   return (
-      <div key={`sidebar-${render}`} className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen">
         <header className="border-b">
           <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
             <Link href="/" className="flex items-center gap-2 font-bold">
