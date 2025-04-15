@@ -146,9 +146,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
 
                 const lastSavedChat = localStorage.getItem("lastSavedChat")
                 let welcomeChatId = "1"
-                console.log("LAST SAVED IN LOGIN:", lastSavedChat)
                 if (!lastSavedChat) {
-                    console.log("Start getting chats in login...")
                     try {
                         const chatResponse = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
                             headers: {
@@ -165,8 +163,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                         console.error(error);
                     }
                 }
-                console.log("WelcomeChatId:", welcomeChatId);
-                console.log(lastSavedChat || welcomeChatId)
 
                 return {success: true, lastChatId: lastSavedChat || welcomeChatId};
             }
