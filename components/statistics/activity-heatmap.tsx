@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { format, parseISO, startOfWeek, addDays, subYears, isSameMonth, eachMonthOfInterval } from "date-fns"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -30,6 +30,31 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
     const totalMessages = stat.providers.reduce((sum, provider) => sum + provider.messages_sent, 0)
     return totalMessages > max ? totalMessages : max
   }, 0)
+
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Функция для прокрутки вправо
+  const scrollToRight = () => {
+    if (containerRef.current) {
+      const scrollContainer = containerRef.current.querySelector(
+        '[data-radix-scroll-area-viewport]'
+      ) as HTMLElement
+      
+      if (scrollContainer) {
+        const scrollWidth = scrollContainer.scrollWidth
+        const clientWidth = scrollContainer.clientWidth
+        
+        if (scrollWidth > clientWidth) {
+          scrollContainer.scrollLeft = scrollWidth - clientWidth
+        }
+      }
+    }
+  }
+
+  useEffect(() => {
+    const timer = setTimeout(scrollToRight, 100) // Небольшая задержка для рендера
+    return () => clearTimeout(timer)
+  }, [viewMode, statistics])
 
   const getColorIntensity = (count: number) => {
     if (count === 0) return "bg-gray-100 dark:bg-gray-800"
@@ -303,7 +328,7 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
           </TabsList>
 
           <TabsContent value="year" className="mt-2">
-            <ScrollArea className="w-full">
+            <ScrollArea className="w-full" ref={containerRef}>
               <ScrollBar orientation="horizontal" />
               <div className="text-sm mb-4 min-w-[800px]">
                 <div className="flex justify-between items-center">
