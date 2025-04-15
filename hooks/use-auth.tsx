@@ -144,8 +144,27 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                 setIsAuthenticated(true);
                 await getUserData();
 
-                const lastSavedChat = localStorage.getItem("lastSavedChat");
-                return {success: true, lastChatId: lastSavedChat || "1"};
+                const lastSavedChat = localStorage.getItem("lastSavedChat")
+                let welcomeChatId = "1"
+                if (!lastSavedChat) {
+                    try {
+                        const chatResponse = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
+                            headers: {
+                                Authorization: `Bearer ${response.data.access_token}`,
+                            },
+                        });
+                        if (chatResponse.data)
+                        {
+                            welcomeChatId = chatResponse.data[0].id
+                            localStorage.setItem("lastSavedChat", chatResponse.data[0].id);
+                        }
+                    } catch (error) {
+                        console.log("ERROR IN LOGIN")
+                        console.error(error);
+                    }
+                }
+
+                return {success: true, lastChatId: lastSavedChat || welcomeChatId};
             }
             return {success: false};
         } catch (error) {
@@ -185,14 +204,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
             return {success: false};
         }
     };
-
-    const Login = async (email: string, password: string) => {
-
-        setIsAuthenticated(true)
-        localStorage.setItem('isAuthenticated', 'true')
-        return {success: true, lastChatId: "1"}
-
-    }
 
     const register = async (email: string, password: string) => {
         localStorage.setItem("pendingRegistration", JSON.stringify({email, password}))

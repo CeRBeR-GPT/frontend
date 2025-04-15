@@ -583,7 +583,7 @@ export default function ChatPage() {
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-2 font-bold">
               <Bot className="w-6 h-6" />
-              <span className="hidden sm:inline">AI Chat</span>
+              <span className="hidden sm:inline">CeRBeR-AI</span>
             </Link>
             <div className="hidden md:flex items-center gap-1 text-sm text-muted-foreground">
               <span>/</span>

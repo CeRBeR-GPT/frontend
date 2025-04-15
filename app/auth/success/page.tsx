@@ -32,7 +32,25 @@ const AuthSuccess = () => {
           });
 
           const lastSavedChat = localStorage.getItem("lastSavedChat");
-          const lastChatId = lastSavedChat || "1"
+          let welcomeChatId = "1"
+          if (!lastSavedChat) {
+            try {
+              const chatResponse = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
+                headers: {
+                  Authorization: `Bearer ${accessToken}`,
+                },
+              });
+              if (chatResponse.data)
+              {
+                welcomeChatId = chatResponse.data[0].id
+                localStorage.setItem("lastSavedChat", chatResponse.data[0].id);
+              }
+            } catch (error) {
+              console.error(error);
+            }
+
+          }
+          const lastChatId = lastSavedChat || welcomeChatId
 
           const result = success()
           if (result.success) {
