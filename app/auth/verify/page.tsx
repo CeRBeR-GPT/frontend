@@ -67,8 +67,25 @@ export default function VerifyPage() {
           // Верифицируем код и сохраняем пользователя
           const result = await verifyCode(email, values.code, password);
           if (result.success) {
-            router.push(`/chat/1`);
-            getUserData()
+            let welcomeChatId = "1"
+              try {
+                const chatResponse = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
+                  headers: {
+                    Authorization: `Bearer ${registrationResponse.data.access_token}`,
+                  },
+                });
+                if (chatResponse.data)
+                {
+                  welcomeChatId = chatResponse.data[0].id
+                  localStorage.setItem("lastSavedChat", chatResponse.data[0].id);
+                }
+              } catch (error) {
+                console.error(error);
+              }
+
+            router.push(`/chat/${welcomeChatId}`);
+            await getUserData()
+
           } else {
             setError("Ошибка верификации кода.");
           }
