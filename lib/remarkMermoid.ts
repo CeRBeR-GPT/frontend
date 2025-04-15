@@ -7,6 +7,18 @@ export interface RemarkMermaidOptions {
   theme?: string;
 }
 
+function removeInnerBrackets(str) {
+  return str
+    .replace(/(\[)(.*?)(\])/g, (_, open, content, close) => 
+      open + content.replace(/[()[\]{}]/g, '') + close
+    )
+    .replace(/(\()(.*?)(\))/g, (_, open, content, close) => 
+      open + content.replace(/[()[\]{}]/g, '') + close
+    )
+    .replace(/(\{)(.*?)(\})/g, (_, open, content, close) => 
+      open + content.replace(/[()[\]{}]/g, '') + close
+    );}
+
 const remarkMermaid: Plugin<[RemarkMermaidOptions?], any> =
   function remarkMermaid({ theme = "default" } = {}) {
     return (ast) => {
