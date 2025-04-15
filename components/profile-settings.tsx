@@ -31,10 +31,16 @@ const ProfileSettings = ({plan}: propsProfileSetting) => {
                             <User className="w-10 h-10" />
                         </AvatarFallback>
                     </Avatar>
-                    <div className="text-center">
-                        <h2 className="text-lg font-bold">{userData?.email}</h2>
+                    <div className="space-y-2 w-full">
+                        <input
+                            id="email"
+                            value={userData?.email || ""}
+                            readOnly
+                            disabled
+                            className="px-3 py-2 border border-gray-300 rounded-md bg-muted text-muted-foreground w-full"
+                        />
                     </div>
-                    <Button variant="outline" asChild>
+                    <Button variant="outline" asChild className="w-full">
                         <Link href="/profile/change-password" className="w-full">
                             <Lock className="w-4 h-4 mr-2" />
                             Изменить пароль
@@ -49,17 +55,6 @@ const ProfileSettings = ({plan}: propsProfileSetting) => {
                     Выйти
                     </Button>
                 </div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardContent className="p-4">
-                    <h3 className="font-medium mb-2">Текущий тариф</h3>
-                    <div className="bg-primary/10 rounded-lg p-3 text-center">
-                        <p className="font-bold">{plan}</p>
-                        <p className="text-sm text-muted-foreground">
-                        {plan === "Базовый" ? "Бесплатно" : plan === "Премиум" ? "999₽" : plan === "Бизнес" ? "2999₽" : ""}
-                        </p>
-                    </div>
                 </CardContent>
             </Card>
         </div>
