@@ -273,7 +273,7 @@ export default function Home() {
                 energy_cerber
               </Link>
               <Link
-                  href="https://t.me/ApostaLD"
+                  href="https://t.me/MaluckowD"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
@@ -288,7 +288,7 @@ export default function Home() {
                 >
                   <path d="m20.665 3.717-17.73 6.837c-1.21.486-1.203 1.161-.222 1.462l4.552 1.42 10.532-6.645c.498-.303.953-.14.579.192l-8.533 7.701h-.002l.002.001-.314 4.692c.46 0 .663-.211.921-.46l2.211-2.15 4.599 3.397c.848.467 1.457.227 1.668-.785l3.019-14.228c.309-1.239-.473-1.8-1.282-1.434z"></path>
                 </svg>
-                ApostaLD
+                MaluckowD
               </Link>
             </div>
           </div>

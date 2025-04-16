@@ -10,15 +10,20 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { ArrowRight, Eye, EyeOff } from "lucide-react"
+import { AlertTriangle, ArrowRight, Eye, EyeOff } from "lucide-react"
 import axios from "axios"
 import { Header } from "@/components/Header"
 import { AuthIcons } from "@/components/AuthIcons"
 import { ChoiceAuth } from "@/components/ChoiceAuth"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 const formSchema = z
   .object({
-    email: z.string().email({ message: "Пожалуйста, введите корректный email" }),
+    email: z.string()
+      .email({ message: "Пожалуйста, введите корректный email" })
+      .refine(email => !email.endsWith('@mail.ru'), {
+        message: "Регистрация с @mail.ru временно недоступна",
+      }),
     password: z.string().min(6, { message: "Пароль должен содержать минимум 6 символов" }),
     confirmPassword: z.string().min(6, { message: "Пароль должен содержать минимум 6 символов" }),
   })
@@ -33,6 +38,7 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const router = useRouter()
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -86,6 +92,14 @@ export default function RegisterPage() {
             <CardDescription>Создайте аккаунт для использования CeRBeR-AI</CardDescription>
           </CardHeader>
           <CardContent>
+            <Alert variant="destructive" className="mb-6">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Внимание!</AlertTitle>
+                <AlertDescription>
+                  В настоящее время регистрация через почту с доменом @mail.ru недоступна из-за проблем с доставкой кода подтверждения.
+                  Пожалуйста, используйте альтернативные способы регистрации.
+                </AlertDescription>
+            </Alert>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 
