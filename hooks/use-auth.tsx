@@ -3,7 +3,7 @@
 import {createContext, useContext, useState, useEffect, useCallback, useRef} from "react"
 import axios from "axios"
 import {getAccess} from "@/utils/tokens-utils";
-
+import type { DailyStatistic } from "@/components/statistics/activity-heatmap"
 type User = { email: string; password?: string } | null
 
 type UserData = {
@@ -29,7 +29,10 @@ type AuthContextType = {
     Login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
     getUserData: () => Promise<void>
     getToken: () => Promise<string | null>,
-    success: () => { success: boolean }
+    success: () => { success: boolean },
+    refreshStatistics: () => void;
+    statistics: DailyStatistic[];
+    statisticsLoading: boolean
 }
 const AuthContext = createContext<AuthContextType>({
     user: null,
@@ -45,7 +48,10 @@ const AuthContext = createContext<AuthContextType>({
     Login: async () => ({success: false}),
     getUserData: async () => {},
     getToken: async () => null,
-    success: () => ({success: false})
+    success: () => ({success: false}),
+    refreshStatistics: () => {},
+    statistics: [],
+    statisticsLoading: true
 })
 
 export function AuthProvider({children}: { children: React.ReactNode }) {
@@ -54,6 +60,8 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
     const [authChecked, setAuthChecked] = useState(false);
+    const [statistics, setStatistics] = useState<DailyStatistic[]>([])
+    const [statisticsLoading, setStatisticsLoading] = useState(true)
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -92,7 +100,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
         if (typeof window === "undefined") return;
         // if (isRequested.current) return
         // isRequested.current = true
-
+        setStatisticsLoading(true)
         try {
             const token = await getToken();
             if (!token) {
@@ -102,6 +110,10 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
             const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
                 headers: {Authorization: `Bearer ${token}`},
             });
+
+            if (response.data?.statistics) {
+                setStatistics(response.data.statistics)
+            }
 
             setUserData(response.data);
             setIsAuthenticated(true);
@@ -116,8 +128,31 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
             localStorage.removeItem('refresh_token');
             localStorage.removeItem("user");
         }
+        finally{
+            setStatisticsLoading(false)
+        }
 
     }, [getToken]);
+
+    const refreshStatistics = () => {
+        getUserData()
+        const token = localStorage.getItem("access_token")
+        if (token) {
+          setStatisticsLoading(true)
+          axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }).then((response) => {
+              if (response.data?.statistics) {
+                setStatistics(response.data.statistics)
+              }
+              setStatisticsLoading(false)
+            })
+            .catch((error) => {
+              console.error("Error refreshing statistics:", error)
+              setStatisticsLoading(false)
+            })
+        }
+      }
 
 
     useEffect(() => {
@@ -265,7 +300,10 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                 updatePassword,
                 Login: login,
                 getToken,
-                success
+                success,
+                refreshStatistics,
+                statistics,
+                statisticsLoading
             }}
         >
             {children}

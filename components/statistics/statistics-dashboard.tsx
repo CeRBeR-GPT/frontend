@@ -5,16 +5,12 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { ActivityHeatmap, type DailyStatistic } from "./activity-heatmap"
 import { Button } from "@/components/ui/button"
 import { RefreshCw } from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
 
-interface StatisticsDashboardProps {
-  statistics: DailyStatistic[] | undefined
-  loading?: boolean
-  onRefresh?: () => void
-}
-
-export function StatisticsDashboard({ statistics, loading = false, onRefresh }: StatisticsDashboardProps) {
+export function StatisticsDashboard() {
+  const { statistics, statisticsLoading, refreshStatistics} = useAuth()
   console.log("statistics", statistics)
-  if (loading) {
+  if (statisticsLoading) {
     return (
       <Card className="w-full">
         <CardHeader>
@@ -48,8 +44,8 @@ export function StatisticsDashboard({ statistics, loading = false, onRefresh }: 
           <div className="text-center py-8 text-muted-foreground">
             <p>Нет данных о сообщениях.</p>
             <p className="mt-2">Начните общаться с AI, чтобы увидеть статистику.</p>
-            {onRefresh && (
-              <Button variant="outline" onClick={onRefresh} className="mt-4">
+            {refreshStatistics && (
+              <Button variant="outline" onClick={refreshStatistics} className="mt-4">
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Обновить
               </Button>

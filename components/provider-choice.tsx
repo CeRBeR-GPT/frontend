@@ -1,16 +1,36 @@
+'use client'
+
 import { Check, Lock } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
 import { useAuth } from "@/hooks/use-auth"
 import getProviderIcon, { getProviderDescription, getProviderName } from "@/utils/providers-utils"
+import { useEffect, useState } from "react";
+import { providersByPlan } from "@/const/providers"
 
-interface ProviderChoiceProps {
-    availableProviders: string[],
-    selectedProvider: string,
-    handleProviderChange: (provider: string) => void;
-}
-
-const ProviderChoice = ({availableProviders, selectedProvider, handleProviderChange}: ProviderChoiceProps) => {
+const ProviderChoice = () => {
     const { userData } = useAuth()
+    const [selectedProvider, setSelectedProvider] = useState<string>("default")
+    const [availableProviders, setAvailableProviders] = useState<string[]>([])
+
+    useEffect(() => {
+        if (userData) {
+          const providers = providersByPlan[userData.plan as keyof typeof providersByPlan] || providersByPlan.default
+          setAvailableProviders(providers)
+          const savedProvider = localStorage.getItem("selectedProvider")
+          if (savedProvider && providers.includes(savedProvider)) {
+            setSelectedProvider(savedProvider)
+          } else {
+            setSelectedProvider(providers[0])
+            localStorage.setItem("selectedProvider", providers[0])
+          }
+        }
+    }, [userData])
+
+    const handleProviderChange = (provider: string) => {
+      setSelectedProvider(provider)
+      localStorage.setItem("selectedProvider", provider)
+    }
+
     return(
         <div className="mb-8 w-full">
           <Card className="w-full">
