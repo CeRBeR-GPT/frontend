@@ -188,13 +188,9 @@ export default function ProfilePage() {
     const token = localStorage.getItem("access_token")
     if (token) {
       setStatisticsLoading(true)
-      axios
-        .get("https://api-gpt.energy-cerber.ru/self", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => {
+      axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then((response) => {
           if (response.data?.statistics) {
             setStatistics(response.data.statistics)
           }
