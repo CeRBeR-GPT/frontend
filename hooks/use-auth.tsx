@@ -3,7 +3,7 @@
 import {createContext, useContext, useState, useEffect, useCallback, useRef} from "react"
 import axios from "axios"
 import {getAccess} from "@/utils/tokens-utils";
-
+import type { DailyStatistic } from "@/components/statistics/activity-heatmap"
 type User = { email: string; password?: string } | null
 
 type UserData = {
@@ -16,54 +16,52 @@ type UserData = {
 } | null
 
 type AuthContextType = {
-    user: User
     userData: UserData
     isAuthenticated: boolean
     login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string, error?: string; }>
     register: (email: string, password: string) => Promise<void>
     verifyCode: (email: string, code: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
     logout: () => void
-    socialLogin: (provider: "google" | "yandex" | "github") => Promise<{ success: boolean; lastChatId?: string }>
     updatePassword: (newPassword: string) => Promise<{ success: boolean } | undefined>
     isLoading: boolean
     Login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
     getUserData: () => Promise<void>
     getToken: () => Promise<string | null>,
-    success: () => { success: boolean }
+    success: () => { success: boolean },
+    refreshStatistics: () => void;
+    statistics: DailyStatistic[];
+    statisticsLoading: boolean
 }
 const AuthContext = createContext<AuthContextType>({
-    user: null,
     userData: null,
     isAuthenticated: false,
     login: async () => ({success: false}),
     register: async () => {},
     verifyCode: async () => ({success: false}),
     logout: () => {},
-    socialLogin: async () => ({success: false}),
     updatePassword: async () => ({success: false}),
     isLoading: false,
     Login: async () => ({success: false}),
     getUserData: async () => {},
     getToken: async () => null,
-    success: () => ({success: false})
+    success: () => ({success: false}),
+    refreshStatistics: () => {},
+    statistics: [],
+    statisticsLoading: true
 })
 
 export function AuthProvider({children}: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null)
     const [userData, setUserData] = useState<UserData | null>(null)
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
     const [authChecked, setAuthChecked] = useState(false);
+    const [statistics, setStatistics] = useState<DailyStatistic[]>([])
+    const [statisticsLoading, setStatisticsLoading] = useState(true)
 
     useEffect(() => {
         const checkAuth = async () => {
             if (typeof window !== "undefined") {
-                const storedUser = localStorage.getItem("user")
                 const storedIsAuthenticated = localStorage.getItem('isAuthenticated')
-
-                if (storedUser) {
-                    setUser(JSON.parse(storedUser))
-                }
 
                 if (storedIsAuthenticated === 'true') {
                     setIsAuthenticated(true)
@@ -86,13 +84,14 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
 
         return await getAccess(accessToken, refreshToken);
     }, []);
+
     const isRequested = useRef(false)
 
     const getUserData = useCallback(async (): Promise<void> => {
         if (typeof window === "undefined") return;
         // if (isRequested.current) return
         // isRequested.current = true
-
+        setStatisticsLoading(true)
         try {
             const token = await getToken();
             if (!token) {
@@ -102,6 +101,10 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
             const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
                 headers: {Authorization: `Bearer ${token}`},
             });
+
+            if (response.data?.statistics) {
+                setStatistics(response.data.statistics)
+            }
 
             setUserData(response.data);
             setIsAuthenticated(true);
@@ -114,10 +117,32 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
             localStorage.removeItem('isAuthenticated');
             localStorage.removeItem('access_token');
             localStorage.removeItem('refresh_token');
-            localStorage.removeItem("user");
+        }
+        finally{
+            setStatisticsLoading(false)
         }
 
     }, [getToken]);
+
+    const refreshStatistics = () => {
+        getUserData()
+        const token = localStorage.getItem("access_token")
+        if (token) {
+          setStatisticsLoading(true)
+          axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }).then((response) => {
+              if (response.data?.statistics) {
+                setStatistics(response.data.statistics)
+              }
+              setStatisticsLoading(false)
+            })
+            .catch((error) => {
+              console.error("Error refreshing statistics:", error)
+              setStatisticsLoading(false)
+            })
+        }
+      }
 
 
     useEffect(() => {
@@ -134,13 +159,10 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
             });
 
             if (response.data?.access_token) {
-                const user = {email};
                 localStorage.setItem('access_token', response.data.access_token);
                 localStorage.setItem('refresh_token', response.data.refresh_token);
                 localStorage.setItem('isAuthenticated', 'true');
-                localStorage.setItem('user', JSON.stringify(user));
 
-                setUser(user);
                 setIsAuthenticated(true);
                 await getUserData();
 
@@ -159,7 +181,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                             localStorage.setItem("lastSavedChat", chatResponse.data[0].id);
                         }
                     } catch (error) {
-                        console.log("ERROR IN LOGIN")
                         console.error(error);
                     }
                 }
@@ -188,12 +209,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                 localStorage.setItem('access_token', response.data.access_token);
                 localStorage.setItem('refresh_token', response.data.refresh_token);
 
-                if (user) {
-                    const updatedUser = {...user};
-                    setUser(updatedUser);
-                    localStorage.setItem("user", JSON.stringify(updatedUser));
-                }
-
                 setIsAuthenticated(true);
                 localStorage.setItem('isAuthenticated', 'true');
                 return {success: true};
@@ -217,10 +232,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
 
     const verifyCode = async (email: string, code: string, password: string) => {
         if (code.length === 5 && /^\d+$/.test(code)) {
-            const newUser = {email, name: email.split("@")[0], password}
-            localStorage.setItem('isAuthenticated', 'true') // Добавлено
-            localStorage.setItem("user", JSON.stringify(newUser))
-            setUser(newUser)
+            localStorage.setItem('isAuthenticated', 'true')
             setIsAuthenticated(true)
             return {success: true, lastChatId: "1"}
         }
@@ -229,30 +241,16 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
 
     const logout = () => {
         localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem("user");
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        setUser(null);
         setUserData(null);
         setIsAuthenticated(false);
         setAuthChecked(false);
     };
 
-    const socialLogin = async (provider: "google" | "yandex" | "github") => {
-        const email = `user@${provider}.com`
-        const newUser = {email, name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} User`}
-        setUser(newUser)
-        setIsAuthenticated(true)
-        const lastSavedChat = localStorage.getItem("lastSavedChat")
-        localStorage.setItem("user", JSON.stringify(newUser))
-        localStorage.setItem('isAuthenticated', 'true')
-        return {success: true, lastChatId: lastSavedChat || ""}
-    }
-
     return (
         <AuthContext.Provider
             value={{
-                user,
                 userData,
                 getUserData,
                 isAuthenticated,
@@ -261,11 +259,13 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                 register,
                 verifyCode,
                 logout,
-                socialLogin,
                 updatePassword,
                 Login: login,
                 getToken,
-                success
+                success,
+                refreshStatistics,
+                statistics,
+                statisticsLoading
             }}
         >
             {children}
