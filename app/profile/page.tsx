@@ -18,6 +18,7 @@ import { providersByPlan } from "@/const/providers"
 import { StatisticsDashboard } from "@/components/statistics/statistics-dashboard"
 import type { DailyStatistic } from "@/components/statistics/activity-heatmap"
 import ProfileSettings from "@/components/profile-settings"
+import Subscription from "@/components/subscription"
 
 interface UsageHistory {
   date: string
@@ -203,9 +204,7 @@ export default function ProfilePage() {
     }
   }
 
-  if (!isAuthenticated) {
-    return <WithoutAuth />
-  }
+  if (!isAuthenticated) { return <WithoutAuth /> }
 
   return (
     <div key={`sidebar-${render}`} className="flex flex-col min-h-screen">
@@ -225,53 +224,7 @@ export default function ProfilePage() {
       <main className="flex-1 container mx-auto px-4 py-6 md:px-6 max-w-7xl">
         <div className="grid gap-6 md:grid-cols-[250px_1fr] lg:grid-cols-[300px_1fr]">
           <ProfileSettings plan={plan} />
-
-          <div>
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle>Ваша подписка</CardTitle>
-                <CardDescription>Управляйте вашим тарифным планом</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Использовано сообщений</span>
-                      <span className="text-sm font-medium">
-                        {userData ? userData.message_count_limit - userData.available_message_count : 0} /{" "}
-                        {userData?.message_count_limit || 0}
-                      </span>
-                    </div>
-                    <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary rounded-full"
-                        style={{
-                          width: `${
-                            userData
-                              ? (
-                                  (userData.message_count_limit - userData.available_message_count) /
-                                    userData.message_count_limit
-                                ) * 100
-                              : 0
-                          }%`,
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div className="bg-muted rounded-lg p-4">
-                    <h4 className="font-medium mb-1">{plan} тариф</h4>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      У вас активирован {plan} тариф с ограничением в {userData?.message_count_limit || 0} сообщений в
-                      день.
-                    </p>
-                    <Button variant="outline" size="sm">
-                      Управление тарифом
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <Subscription plan={plan}/>
         </div>
 
         <div className="mt-8 mb-8 w-full">
