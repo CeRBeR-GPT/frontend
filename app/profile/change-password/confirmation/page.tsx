@@ -14,7 +14,7 @@ import { Mail } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import axios from "axios"
 import { Header } from "@/components/Header"
-
+import { toast } from "@/components/ui/use-toast"
 
 interface IUserDataRegistration{
   email: string;
@@ -32,13 +32,13 @@ export default function VerifyPage() {
   const searchParams = useSearchParams()
   const email = searchParams.get("email") || ""
   const password = searchParams.get("password") || ""
-  const { verifyCode } = useAuth()
-
+  const { getToken, userData, updatePassword } = useAuth()
+  const token = getToken()
   useEffect(() => {
-    if (!email) {
-      router.push("/auth/register")
+    if (!token) {
+      router.push("/auth/login")
     }
-  }, [email, router])
+  }, [token, router])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -48,49 +48,51 @@ export default function VerifyPage() {
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const userData = {
-      email,
-      password,
-    };
+    const token = await getToken()
     setIsSubmitting(true);
     setError("");
+    const email = userData?.email
     try {
-      const response = await verifyEmailCode(email, values.code);
+      const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/secure_verify_code?email=${email}&code=${values.code}`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       if (response.status === 200 || response.status === 201) {
-        const registrationResponse = await registartionApi(userData);
-        if (registrationResponse.status === 200 || registrationResponse.status === 201) {
-          localStorage.setItem("access_token", registrationResponse.data.access_token);
-          
-          // Верифицируем код и сохраняем пользователя
-          const result = await verifyCode(email, values.code, password);
-          if (result.success) {
-            let welcomeChatId = "1"
-              try {
-                const chatResponse = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
-                  headers: {
-                    Authorization: `Bearer ${registrationResponse.data.access_token}`,
-                  },
-                });
-                if (chatResponse.data)
-                {
-                  welcomeChatId = chatResponse.data[0].id
-                  localStorage.setItem("lastSavedChat", chatResponse.data[0].id);
-                }
-              } catch (error) {
-                console.error(error);
+        const newPassword = localStorage.getItem("new_password")
+        if (newPassword !== null){
+          try {
+              const result = await updatePassword(newPassword)
+              if ( result !== undefined && result.success) {
+                toast({
+                  title: "Пароль успешно изменен",
+                  description: "Ваш пароль был успешно обновлен",
+                })
+                setTimeout(() => {
+                  router.push("/profile")
+                }, 2000)
+              } else {
+                toast({
+                  title: "Ошибка",
+                  description: "Произошла ошибка при обновлении пароля. Пожалуйста, попробуйте снова.",
+                  variant: "destructive",
+                })
               }
-
-            router.push(`/chat/${welcomeChatId}`);
-            await getUserData()
-
-          } else {
-            setError("Ошибка верификации кода.");
-          }
-        } else {
-          setError("Ошибка регистрации. Пожалуйста, попробуйте снова.");
-          console.error("Ошибка регистрации:", registrationResponse.status, registrationResponse.data);
+            } catch (error) {
+              console.error("Password update error:", error)
+              toast({
+                title: "Ошибка",
+                description: "Произошла ошибка при обновлении пароля. Пожалуйста, попробуйте снова.",
+                variant: "destructive",
+              })
+            } finally {
+              setIsSubmitting(false)
+            }
         }
+
+
       }
+      
     } catch (error) {
       console.error("Verification error:", error);
       setError("Произошла ошибка при проверке кода. Пожалуйста, попробуйте снова.");
@@ -119,24 +121,23 @@ export default function VerifyPage() {
     }
   }
 
-  const getToken = () => localStorage.getItem('access_token');
 
-  const getUserData = async () => {
-    try {
-      const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-        },
-      });
+  // const getUserData = async () => {
+  //   try {
+  //     const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
+  //       headers: {
+  //         Authorization: `Bearer ${getToken()}`,
+  //       },
+  //     });
 
-      const userData = response.data;
-      const email = userData.email;
-      const password = userData.password;
+  //     const userData = response.data;
+  //     const email = userData.email;
+  //     const password = userData.password;
 
-    } catch (error) {
+  //   } catch (error) {
 
-    }
-  } 
+  //   }
+  // } 
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -149,7 +150,7 @@ export default function VerifyPage() {
                 <Mail className="h-10 w-10 text-primary" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-center">Проверка Email</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">Проверка пароля</CardTitle>
             <CardDescription className="text-center">
               Мы отправили код подтверждения на <span className="font-medium">{email}</span>
             </CardDescription>
@@ -165,7 +166,7 @@ export default function VerifyPage() {
                       <FormLabel>Код подтверждения</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="123456"
+                          placeholder="12345"
                           {...field}
                           maxLength={5}
                           inputMode="numeric"
@@ -197,11 +198,6 @@ export default function VerifyPage() {
               <Button variant="link" className="p-0 h-auto" onClick={() => router.refresh()}>
                 Отправить повторно
               </Button>
-            </div>
-            <div className="text-center text-sm">
-              <Link href="/auth/register" className="text-primary underline underline-offset-4">
-                Использовать другой email
-              </Link>
             </div>
           </CardFooter>
         </Card>

@@ -4,7 +4,7 @@ import {createContext, useContext, useState, useEffect, useCallback, useRef} fro
 import axios from "axios"
 import {getAccess} from "@/utils/tokens-utils";
 import type { DailyStatistic } from "@/components/statistics/activity-heatmap"
-type User = { email: string; password?: string } | null
+import { useRouter } from "next/navigation"
 
 type UserData = {
     id: string,
@@ -19,7 +19,6 @@ type AuthContextType = {
     userData: UserData
     isAuthenticated: boolean
     login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string, error?: string; }>
-    register: (email: string, password: string) => Promise<void>
     verifyCode: (email: string, code: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
     logout: () => void
     updatePassword: (newPassword: string) => Promise<{ success: boolean } | undefined>
@@ -36,7 +35,6 @@ const AuthContext = createContext<AuthContextType>({
     userData: null,
     isAuthenticated: false,
     login: async () => ({success: false}),
-    register: async () => {},
     verifyCode: async () => ({success: false}),
     logout: () => {},
     updatePassword: async () => ({success: false}),
@@ -57,19 +55,19 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     const [authChecked, setAuthChecked] = useState(false);
     const [statistics, setStatistics] = useState<DailyStatistic[]>([])
     const [statisticsLoading, setStatisticsLoading] = useState(true)
+    const router = useRouter()
 
     useEffect(() => {
         const checkAuth = async () => {
             if (typeof window !== "undefined") {
                 const storedIsAuthenticated = localStorage.getItem('isAuthenticated')
-
                 if (storedIsAuthenticated === 'true') {
                     setIsAuthenticated(true)
                 }
-
                 setIsLoading(false)
             }
         }
+
         checkAuth()
     }, [])
 
@@ -144,7 +142,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
         }
       }
 
-
     useEffect(() => {
         if (isAuthenticated && !authChecked) {
             getUserData();
@@ -199,6 +196,14 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
             const token = await getToken();
             if (!token) throw new Error("No valid token");
 
+            // const response = await axios.get(
+            //     `https://api-gpt.energy-cerber.ru/user/secure_verify_code`,
+            //     {headers: {Authorization: `Bearer ${token}`}}
+            // );
+
+            // router.push("/auth/verify")
+
+
             const response = await axios.post(
                 `https://api-gpt.energy-cerber.ru/user/edit_password?new_password=${newPassword}`,
                 {},
@@ -208,7 +213,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
             if (response.data?.access_token) {
                 localStorage.setItem('access_token', response.data.access_token);
                 localStorage.setItem('refresh_token', response.data.refresh_token);
-
                 setIsAuthenticated(true);
                 localStorage.setItem('isAuthenticated', 'true');
                 return {success: true};
@@ -219,10 +223,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
             return {success: false};
         }
     };
-
-    const register = async (email: string, password: string) => {
-        localStorage.setItem("pendingRegistration", JSON.stringify({email, password}))
-    }
 
     const success = () => {
         setIsAuthenticated(true)
@@ -256,7 +256,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                 isAuthenticated,
                 isLoading: isLoading || !authChecked,
                 login,
-                register,
                 verifyCode,
                 logout,
                 updatePassword,
