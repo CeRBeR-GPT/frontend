@@ -17,6 +17,7 @@ import { UserMenu } from "@/components/user-menu"
 import { NavLinks } from "@/components/nav-links"
 import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
+import axios from "axios"
 
 const formSchema = z
   .object({
@@ -33,8 +34,8 @@ export default function ChangePasswordPage() {
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const router = useRouter()
-  const { isAuthenticated, updatePassword } = useAuth()
-
+  const { isAuthenticated, getToken } = useAuth()
+  const token = getToken()
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/auth/login")
@@ -50,34 +51,47 @@ export default function ChangePasswordPage() {
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    const token = await getToken()
+    localStorage.setItem("new_password", values.newPassword)
     setIsSubmitting(true)
-    try {
-      const result = await updatePassword(values.newPassword)
-      if ( result !== undefined && result.success) {
-        toast({
-          title: "Пароль успешно изменен",
-          description: "Ваш пароль был успешно обновлен",
-        })
-        setTimeout(() => {
-          router.push("/profile")
-        }, 2000)
-      } else {
-        toast({
-          title: "Ошибка",
-          description: "Произошла ошибка при обновлении пароля. Пожалуйста, попробуйте снова.",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      console.error("Password update error:", error)
-      toast({
-        title: "Ошибка",
-        description: "Произошла ошибка при обновлении пароля. Пожалуйста, попробуйте снова.",
-        variant: "destructive",
-      })
-    } finally {
+    try{
+      const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/secure_verify_code`,  {
+        headers: {Authorization: `Bearer ${token}`},
+      });
+      router.push("/profile/change-password/confirmation")
+    }
+    catch(error){
+      console.error(error)
       setIsSubmitting(false)
     }
+
+    // try {
+    //   const result = await updatePassword(values.newPassword)
+    //   if ( result !== undefined && result.success) {
+    //     toast({
+    //       title: "Пароль успешно изменен",
+    //       description: "Ваш пароль был успешно обновлен",
+    //     })
+    //     setTimeout(() => {
+    //       router.push("/profile")
+    //     }, 2000)
+    //   } else {
+    //     toast({
+    //       title: "Ошибка",
+    //       description: "Произошла ошибка при обновлении пароля. Пожалуйста, попробуйте снова.",
+    //       variant: "destructive",
+    //     })
+    //   }
+    // } catch (error) {
+    //   console.error("Password update error:", error)
+    //   toast({
+    //     title: "Ошибка",
+    //     description: "Произошла ошибка при обновлении пароля. Пожалуйста, попробуйте снова.",
+    //     variant: "destructive",
+    //   })
+    // } finally {
+    //   setIsSubmitting(false)
+    // }
   }
 
   if (!isAuthenticated) {
