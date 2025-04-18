@@ -86,7 +86,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     const isRequested = useRef(false)
 
     const getUserData = useCallback(async (): Promise<void> => {
-        if (typeof window === "undefined") return;
+        //if (typeof window === "undefined") return;
         // if (isRequested.current) return
         // isRequested.current = true
         setStatisticsLoading(true)
@@ -196,20 +196,12 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
             const token = await getToken();
             if (!token) throw new Error("No valid token");
 
-            // const response = await axios.get(
-            //     `https://api-gpt.energy-cerber.ru/user/secure_verify_code`,
-            //     {headers: {Authorization: `Bearer ${token}`}}
-            // );
-
-            // router.push("/auth/verify")
-
-
             const response = await axios.post(
                 `https://api-gpt.energy-cerber.ru/user/edit_password?new_password=${newPassword}`,
                 {},
                 {headers: {Authorization: `Bearer ${token}`}}
             );
-
+            localStorage.removeItem("new_password")
             if (response.data?.access_token) {
                 localStorage.setItem('access_token', response.data.access_token);
                 localStorage.setItem('refresh_token', response.data.refresh_token);

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
@@ -15,8 +15,7 @@ import { useAuth } from "@/hooks/use-auth"
 import axios from "axios"
 import { Header } from "@/components/Header"
 
-
-interface IUserDataRegistration{
+interface IUserDataRegistration {
   email: string;
   password: string;
 }
@@ -29,16 +28,29 @@ export default function VerifyPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const email = searchParams.get("email") || ""
-  const password = searchParams.get("password") || ""
-  const { verifyCode } = useAuth()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const { verifyCode, getUserData } = useAuth()
 
+  // Исправление 1: Переносим логику получения данных из localStorage в useEffect
   useEffect(() => {
-    if (!email) {
+    const savedEmail = localStorage.getItem("email")
+    const savedPassword = localStorage.getItem("password")
+    
+    if (savedEmail && savedPassword) {
+      setEmail(savedEmail)
+      setPassword(savedPassword)
+    } else {
       router.push("/auth/register")
     }
-  }, [email, router])
+  }, [router])
+
+  // Исправление 2: Выносим проверку email в отдельный эффект
+  // useEffect(() => {
+  //   if (email === "") {
+  //     router.push("/auth/register")
+  //   }
+  // }, [email, router])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -48,10 +60,9 @@ export default function VerifyPage() {
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const userData = {
-      email,
-      password,
-    };
+    if (!email || !password) return
+
+    const userData = { email, password };
     setIsSubmitting(true);
     setError("");
     try {
@@ -61,34 +72,31 @@ export default function VerifyPage() {
         if (registrationResponse.status === 200 || registrationResponse.status === 201) {
           localStorage.setItem("access_token", registrationResponse.data.access_token);
           
-          // Верифицируем код и сохраняем пользователя
           const result = await verifyCode(email, values.code, password);
           if (result.success) {
             let welcomeChatId = "1"
-              try {
-                const chatResponse = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
-                  headers: {
-                    Authorization: `Bearer ${registrationResponse.data.access_token}`,
-                  },
-                });
-                if (chatResponse.data)
-                {
-                  welcomeChatId = chatResponse.data[0].id
-                  localStorage.setItem("lastSavedChat", chatResponse.data[0].id);
-                }
-              } catch (error) {
-                console.error(error);
+            localStorage.removeItem("email")
+            localStorage.removeItem("password")
+            
+            try {
+              const chatResponse = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
+                headers: {
+                  Authorization: `Bearer ${registrationResponse.data.access_token}`,
+                },
+              });
+              
+              if (chatResponse.data) {
+                welcomeChatId = chatResponse.data[0].id
+                localStorage.setItem("lastSavedChat", chatResponse.data[0].id);
               }
-
-            router.push(`/chat/${welcomeChatId}`);
+            } catch (error) {
+              console.error(error);
+            }
             await getUserData()
-
+            router.push(`/chat/${welcomeChatId}`);
           } else {
             setError("Ошибка верификации кода.");
           }
-        } else {
-          setError("Ошибка регистрации. Пожалуйста, попробуйте снова.");
-          console.error("Ошибка регистрации:", registrationResponse.status, registrationResponse.data);
         }
       }
     } catch (error) {
@@ -101,8 +109,7 @@ export default function VerifyPage() {
 
   const verifyEmailCode = async (email: string, code: string) => {
     try {
-      const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/register/verify_code?email=${email}&code=${code}`);
-      return response;
+      return await axios.post(`https://api-gpt.energy-cerber.ru/user/register/verify_code?email=${email}&code=${code}`);
     } catch (error) {
       throw error;
     }
@@ -118,25 +125,6 @@ export default function VerifyPage() {
       throw error;
     }
   }
-
-  const getToken = () => localStorage.getItem('access_token');
-
-  const getUserData = async () => {
-    try {
-      const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-        },
-      });
-
-      const userData = response.data;
-      const email = userData.email;
-      const password = userData.password;
-
-    } catch (error) {
-
-    }
-  } 
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -165,7 +153,7 @@ export default function VerifyPage() {
                       <FormLabel>Код подтверждения</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="123456"
+                          placeholder="12345"
                           {...field}
                           maxLength={5}
                           inputMode="numeric"

@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -14,12 +13,6 @@ import { Mail } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import axios from "axios"
 import { Header } from "@/components/Header"
-import { toast } from "@/components/ui/use-toast"
-
-interface IUserDataRegistration{
-  email: string;
-  password: string;
-}
 
 const formSchema = z.object({
   code: z.string().min(5, { message: "Код должен содержать 5 цифр" }).max(5),
@@ -29,10 +22,8 @@ export default function VerifyPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const email = searchParams.get("email") || ""
-  const password = searchParams.get("password") || ""
   const { getToken, userData, updatePassword } = useAuth()
+  const email = userData?.email
   const token = getToken()
   useEffect(() => {
     if (!token) {
@@ -64,33 +55,16 @@ export default function VerifyPage() {
           try {
               const result = await updatePassword(newPassword)
               if ( result !== undefined && result.success) {
-                toast({
-                  title: "Пароль успешно изменен",
-                  description: "Ваш пароль был успешно обновлен",
-                })
                 setTimeout(() => {
                   router.push("/profile")
                 }, 2000)
-              } else {
-                toast({
-                  title: "Ошибка",
-                  description: "Произошла ошибка при обновлении пароля. Пожалуйста, попробуйте снова.",
-                  variant: "destructive",
-                })
               }
             } catch (error) {
               console.error("Password update error:", error)
-              toast({
-                title: "Ошибка",
-                description: "Произошла ошибка при обновлении пароля. Пожалуйста, попробуйте снова.",
-                variant: "destructive",
-              })
             } finally {
               setIsSubmitting(false)
             }
         }
-
-
       }
       
     } catch (error) {
@@ -100,44 +74,6 @@ export default function VerifyPage() {
       setIsSubmitting(false);
     }
   }
-
-  const verifyEmailCode = async (email: string, code: string) => {
-    try {
-      const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/register/verify_code?email=${email}&code=${code}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  const registartionApi = async (userData: IUserDataRegistration) => {
-    try {
-      const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/register`, userData);
-      localStorage.setItem('access_token', response.data.access_token);
-      localStorage.setItem('refresh_token', response.data.refresh_token);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-
-  // const getUserData = async () => {
-  //   try {
-  //     const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
-  //       headers: {
-  //         Authorization: `Bearer ${getToken()}`,
-  //       },
-  //     });
-
-  //     const userData = response.data;
-  //     const email = userData.email;
-  //     const password = userData.password;
-
-  //   } catch (error) {
-
-  //   }
-  // } 
 
   return (
     <div className="flex flex-col min-h-screen">
