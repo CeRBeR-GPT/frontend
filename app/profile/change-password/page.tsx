@@ -54,7 +54,7 @@ export default function ChangePasswordPage() {
     localStorage.setItem("new_password", values.newPassword)
     setIsSubmitting(true)
     try{
-      const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/secure_verify_code`,  {
+      await axios.get(`https://api-gpt.energy-cerber.ru/user/secure_verify_code`,  {
         headers: {Authorization: `Bearer ${token}`},
       });
       router.push("/profile/change-password/confirmation")

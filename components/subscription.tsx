@@ -2,11 +2,11 @@ import { Button } from "./ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
 import { useAuth } from "@/hooks/use-auth"
 
-interface SubscriptionProps{
-    plan: string
-}
-const Subscription = ({plan}: SubscriptionProps) => {
+const Subscription = () => {
     const {userData} = useAuth()
+
+    const plan = userData?.plan === "default" ? "Базовый" : userData?.plan === "premium" ? "Премиум"
+        : userData?.plan === "business" ? "Бизнес"  : ""
 
     return(
         <div>

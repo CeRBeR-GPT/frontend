@@ -17,9 +17,7 @@ import { AuthIcons } from "@/components/AuthIcons"
 import { ChoiceAuth } from "@/components/ChoiceAuth"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
-const formSchema = z
-  .object({
-    email: z.string()
+const formSchema = z.object({ email: z.string()
       .email({ message: "Пожалуйста, введите корректный email" })
       .refine(email => !email.endsWith('@mail.ru'), {
         message: "Регистрация с @mail.ru временно недоступна",
@@ -30,7 +28,7 @@ const formSchema = z
   .refine((data) => data.password === data.confirmPassword, {
     message: "Пароли не совпадают",
     path: ["confirmPassword"],
-  })
+})
 
 export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -38,7 +36,6 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const router = useRouter()
-
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

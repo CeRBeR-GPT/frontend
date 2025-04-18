@@ -3,12 +3,15 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "./ui/button"
 import axios from "axios"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/use-auth"
 
-interface propsTarifs {
-    plan: string
-}
-const Tarifs = ({plan}: propsTarifs) => {
+const Tarifs = () => {
     const router = useRouter()
+    const { userData} = useAuth()
+
+    const plan = userData?.plan === "default" ? "Базовый" : userData?.plan === "premium" ? "Премиум"
+        : userData?.plan === "business" ? "Бизнес"  : ""
+
     const payForPremium = async (plan: string) => {
         const getToken = () => localStorage.getItem("access_token")
         const token = getToken()
@@ -26,7 +29,7 @@ const Tarifs = ({plan}: propsTarifs) => {
         } catch (error) {
           console.error("Fail to pay:", error)
         }
-      }
+    }
     return(
         <div className="mb-8 w-full">
           <h2 className="text-xl font-bold mb-4">Доступные тарифы</h2>
