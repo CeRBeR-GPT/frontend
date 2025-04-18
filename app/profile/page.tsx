@@ -6,7 +6,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@/hooks/use-auth"
 import { UserMenu } from "@/components/user-menu"
 import { NavLinks } from "@/components/nav-links"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import WithoutAuth from "@/components/WithoutAuth"
 import { StatisticsDashboard } from "@/components/statistics/statistics-dashboard"
 import ProfileSettings from "@/components/profile-settings"
@@ -15,8 +15,7 @@ import ProviderChoice from "@/components/provider-choice"
 import Tarifs from "@/components/tarifs"
 
 export default function ProfilePage() {
-  const { isAuthenticated, userData, getUserData } = useAuth()
-
+  const { isAuthenticated, getUserData } = useAuth()
   useEffect(() => {
     const getToken = () => localStorage.getItem("access_token")
     const token = getToken()
@@ -24,9 +23,6 @@ export default function ProfilePage() {
       getUserData()
     }
   }, [])
-
-  const plan = userData?.plan === "default" ? "Базовый" : userData?.plan === "premium" ? "Премиум"
-        : userData?.plan === "business" ? "Бизнес"  : ""
 
   if (!isAuthenticated) { return <WithoutAuth /> }
 
@@ -48,8 +44,8 @@ export default function ProfilePage() {
 
       <main className="flex-1 container mx-auto px-4 py-6 md:px-6 max-w-7xl">
         <div className="grid gap-6 md:grid-cols-[250px_1fr] lg:grid-cols-[300px_1fr]">
-          <ProfileSettings plan={plan} />
-          <Subscription plan={plan}/>
+          <ProfileSettings/>
+          <Subscription/>
         </div>
 
         <div className="mt-8 mb-8 w-full">
@@ -61,7 +57,7 @@ export default function ProfilePage() {
           </Card>
         </div>
         <ProviderChoice/>
-        <Tarifs plan = {plan}/>
+        <Tarifs/>
       </main>
     </div>
   )

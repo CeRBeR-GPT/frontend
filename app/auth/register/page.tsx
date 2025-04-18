@@ -56,9 +56,9 @@ export default function RegisterPage() {
       const response = await sendEmailCode(values.email);
   
       if (response.status === 200 || response.status === 201) {
-        router.push(
-          `/auth/verify?email=${encodeURIComponent(values.email)}&password=${encodeURIComponent(values.password)}`,
-        );
+        localStorage.setItem("email", values.email)
+        localStorage.setItem("password", values.password)
+        router.push(`/auth/verify`);
       }
       
     } catch (error) {

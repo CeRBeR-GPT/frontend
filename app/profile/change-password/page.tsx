@@ -15,7 +15,6 @@ import { useAuth } from "@/hooks/use-auth"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { UserMenu } from "@/components/user-menu"
 import { NavLinks } from "@/components/nav-links"
-import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import axios from "axios"
 
@@ -35,7 +34,7 @@ export default function ChangePasswordPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const router = useRouter()
   const { isAuthenticated, getToken } = useAuth()
-  const token = getToken()
+  
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/auth/login")
@@ -64,34 +63,6 @@ export default function ChangePasswordPage() {
       console.error(error)
       setIsSubmitting(false)
     }
-
-    // try {
-    //   const result = await updatePassword(values.newPassword)
-    //   if ( result !== undefined && result.success) {
-    //     toast({
-    //       title: "Пароль успешно изменен",
-    //       description: "Ваш пароль был успешно обновлен",
-    //     })
-    //     setTimeout(() => {
-    //       router.push("/profile")
-    //     }, 2000)
-    //   } else {
-    //     toast({
-    //       title: "Ошибка",
-    //       description: "Произошла ошибка при обновлении пароля. Пожалуйста, попробуйте снова.",
-    //       variant: "destructive",
-    //     })
-    //   }
-    // } catch (error) {
-    //   console.error("Password update error:", error)
-    //   toast({
-    //     title: "Ошибка",
-    //     description: "Произошла ошибка при обновлении пароля. Пожалуйста, попробуйте снова.",
-    //     variant: "destructive",
-    //   })
-    // } finally {
-    //   setIsSubmitting(false)
-    // }
   }
 
   if (!isAuthenticated) {
