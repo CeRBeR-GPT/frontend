@@ -27,12 +27,12 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
-  const { login, isAuthenticated } = useAuth()
+  const { login, isAuthenticated, getToken } = useAuth()
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const token = getToken()
+        const token = await getToken()
         if (isAuthenticated || token) {
           const lastSavedChat = localStorage.getItem("lastSavedChat") || "1"
           router.push(`/chat/${lastSavedChat}`)
@@ -73,8 +73,6 @@ export default function LoginPage() {
       setIsSubmitting(false)
     }
   }
-
-  const getToken = () => localStorage.getItem('access_token')
 
   if (isLoading) {
     return (

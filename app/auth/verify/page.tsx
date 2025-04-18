@@ -15,11 +15,6 @@ import { useAuth } from "@/hooks/use-auth"
 import axios from "axios"
 import { Header } from "@/components/Header"
 
-interface IUserDataRegistration {
-  email: string;
-  password: string;
-}
-
 const formSchema = z.object({
   code: z.string().min(5, { message: "Код должен содержать 5 цифр" }).max(5),
 })
@@ -30,9 +25,8 @@ export default function VerifyPage() {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const { verifyCode, getUserData } = useAuth()
+  const { verifyCode, getUserData, verifyEmailCode,  registartionApi } = useAuth()
 
-  // Исправление 1: Переносим логику получения данных из localStorage в useEffect
   useEffect(() => {
     const savedEmail = localStorage.getItem("email")
     const savedPassword = localStorage.getItem("password")
@@ -44,13 +38,6 @@ export default function VerifyPage() {
       router.push("/auth/register")
     }
   }, [router])
-
-  // Исправление 2: Выносим проверку email в отдельный эффект
-  // useEffect(() => {
-  //   if (email === "") {
-  //     router.push("/auth/register")
-  //   }
-  // }, [email, router])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -104,25 +91,6 @@ export default function VerifyPage() {
       setError("Произошла ошибка при проверке кода. Пожалуйста, попробуйте снова.");
     } finally {
       setIsSubmitting(false);
-    }
-  }
-
-  const verifyEmailCode = async (email: string, code: string) => {
-    try {
-      return await axios.post(`https://api-gpt.energy-cerber.ru/user/register/verify_code?email=${email}&code=${code}`);
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  const registartionApi = async (userData: IUserDataRegistration) => {
-    try {
-      const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/register`, userData);
-      localStorage.setItem('access_token', response.data.access_token);
-      localStorage.setItem('refresh_token', response.data.refresh_token);
-      return response;
-    } catch (error) {
-      throw error;
     }
   }
 

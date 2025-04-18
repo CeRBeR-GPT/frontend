@@ -1,7 +1,7 @@
 "use client"
 
 import {createContext, useContext, useState, useEffect, useCallback, useRef} from "react"
-import axios from "axios"
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios"
 import {getAccess} from "@/utils/tokens-utils";
 import type { DailyStatistic } from "@/components/statistics/activity-heatmap"
 import { useRouter } from "next/navigation"
@@ -14,6 +14,17 @@ type UserData = {
     message_length_limit: number,
     message_count_limit: number
 } | null
+
+interface IUserDataRegistration {
+    email: string;
+    password: string;
+  }
+
+interface tokensInterface{
+    "access_token": string,
+    "refresh_token": string,
+    "token_type": "Bearer"
+}
 
 type AuthContextType = {
     userData: UserData
@@ -29,7 +40,10 @@ type AuthContextType = {
     success: () => { success: boolean },
     refreshStatistics: () => void;
     statistics: DailyStatistic[];
-    statisticsLoading: boolean
+    statisticsLoading: boolean,
+    verifyEmailCode: (email: string, code: string) => Promise<{status: number}>;
+    registartionApi: (UserData: IUserDataRegistration) => Promise<{status: number, data: { access_token: string; refresh_token: any; };}>
+
 }
 const AuthContext = createContext<AuthContextType>({
     userData: null,
@@ -45,7 +59,9 @@ const AuthContext = createContext<AuthContextType>({
     success: () => ({success: false}),
     refreshStatistics: () => {},
     statistics: [],
-    statisticsLoading: true
+    statisticsLoading: true,
+    verifyEmailCode: async () => ({status: 0}),
+    registartionApi: async () => ({status: 0, data: {access_token: "", refresh_token: ""}})
 })
 
 export function AuthProvider({children}: { children: React.ReactNode }) {
@@ -55,7 +71,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     const [authChecked, setAuthChecked] = useState(false);
     const [statistics, setStatistics] = useState<DailyStatistic[]>([])
     const [statisticsLoading, setStatisticsLoading] = useState(true)
-    const router = useRouter()
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -240,6 +255,25 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
         setAuthChecked(false);
     };
 
+    const verifyEmailCode = async (email: string, code: string) => {
+        try {
+          return await axios.post(`https://api-gpt.energy-cerber.ru/user/register/verify_code?email=${email}&code=${code}`);
+        } catch (error) {
+          throw error;
+        }
+      };
+    
+    const registartionApi = async (userData: IUserDataRegistration) => {
+        try {
+            const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/register`, userData);
+            localStorage.setItem('access_token', response.data.access_token);
+            localStorage.setItem('refresh_token', response.data.refresh_token);
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     return (
         <AuthContext.Provider
             value={{
@@ -256,7 +290,9 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                 success,
                 refreshStatistics,
                 statistics,
-                statisticsLoading
+                statisticsLoading,
+                verifyEmailCode,
+                registartionApi
             }}
         >
             {children}

@@ -7,11 +7,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 
-interface propsProfileSetting {
-    plan: string
-}
-
-const ProfileSettings = ({plan}: propsProfileSetting) => {
+const ProfileSettings = () => {
     const router = useRouter()
     const { logout, userData} = useAuth()
     

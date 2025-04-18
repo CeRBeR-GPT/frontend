@@ -25,11 +25,11 @@ const AuthSuccess = () => {
         Cookies.remove("refresh_token");
 
         try {
-          const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          });
+          // await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
+          //   headers: {
+          //     Authorization: `Bearer ${accessToken}`,
+          //   },
+          // });
 
           const lastSavedChat = localStorage.getItem("lastSavedChat");
           let welcomeChatId = "1"
@@ -40,8 +40,7 @@ const AuthSuccess = () => {
                   Authorization: `Bearer ${accessToken}`,
                 },
               });
-              if (chatResponse.data)
-              {
+              if (chatResponse.data){
                 welcomeChatId = chatResponse.data[0].id
                 localStorage.setItem("lastSavedChat", chatResponse.data[0].id);
               }
