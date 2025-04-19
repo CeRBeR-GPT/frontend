@@ -8,6 +8,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import { ru } from "date-fns/locale"
 import { ProviderStats } from "./provider-stats"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { getProviderName } from "@/utils/providers-utils"
 export interface ProviderStatistic {
   provider_name: string
   messages_sent: number
@@ -164,7 +165,7 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
                 {stat &&
                   stat.providers.map((p) => (
                     <div key={p.provider_name} className="text-xs mt-1">
-                      {p.provider_name}: {p.messages_sent} сообщений
+                      {getProviderName(p.provider_name)}: {p.messages_sent} сообщений
                     </div>
                   ))}
               </div>
@@ -254,7 +255,7 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
                 {stat &&
                   stat.providers.map((p) => (
                     <div key={p.provider_name} className="text-xs mt-1">
-                      {p.provider_name}: {p.messages_sent} сообщений
+                      {getProviderName(p.provider_name)}: {p.messages_sent} сообщений
                     </div>
                   ))}
               </div>
