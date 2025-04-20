@@ -92,21 +92,14 @@ export default function ChatPage() {
   const [showScrollToBottom, setShowScrollToBottom] = useState<boolean>(false)
   const { toast } = useToast()
   const messagesContainerRef = useRef<HTMLDivElement>(null)
-  const [rootKey, setRootKey] = useState<number>(0);
-  const token = getToken()
-  const [CopiedText,setCopiedText] = useState<string | null>(null)
+  //const [rootKey, setRootKey] = useState<number>(0);
 
   useEffect(() => {
     const loadData = async () => {
       await fetchChats(); 
-      //setRootKey(prev => prev + 1); 
     };
     loadData();
   }, []);
-
-  // useEffect(() => {
-  //   setRootKey(prev => prev + 1);
-  // }, [token])
 
   useEffect(() => {
     const container = messagesContainerRef.current
@@ -511,12 +504,10 @@ export default function ChatPage() {
 
   const handleCopyTextMarkdown = useCallback((code: string) => {
     navigator.clipboard.writeText(code)
-    setCopiedText(code)
     toast({
       title: "Текст скопирован",
       description: "Текст скопирован в буфер обмена.",
     })
-    setTimeout(() => setCopiedText(null), 2000)
   }, [])
 
   useEffect(() => {
@@ -529,7 +520,7 @@ export default function ChatPage() {
       })
     }
 
-    const timer = setTimeout(scrollToBottom, 100)
+    const timer = setTimeout(scrollToBottom, 200)
     return () => clearTimeout(timer)
   }, [messages, isLoadingHistory])
 
@@ -576,7 +567,7 @@ export default function ChatPage() {
   if (isAuthLoading || !isAuthenticated) { return null }
 
   return (
-    <div key={`root-${rootKey}`} className="flex flex-col min-h-screen">
+    <div key={`root-${1}`} className="flex flex-col min-h-screen">
       <Toaster />
       <header className="border-b sticky top-0 z-10 bg-background">
         <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
