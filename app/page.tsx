@@ -288,10 +288,7 @@ export default function Home() {
                               Прикрепить файл (опционально)
                             </Label>
 
-                            <Alert
-                                variant="outline"
-                                className="bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800 mb-3"
-                            >
+                            <Alert className="bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800 mb-3">
                               <Info className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                               <AlertTitle className="text-amber-800 dark:text-amber-400 text-sm font-medium">
                                 Ограничения для файлов
