@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import axios from "axios"
@@ -7,21 +9,23 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowRight, Bot, Send, Lock, MessageSquarePlus, CheckCircle } from "lucide-react"
+import { ArrowRight, Bot, Send, Lock, MessageSquarePlus, CheckCircle, Upload, FileUp } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { UserMenu } from "@/components/user-menu"
 import { useAuth } from "@/hooks/use-auth"
 import { NavLinks } from "@/components/nav-links"
 import { useToast } from "@/hooks/use-toast"
+import { Label } from "@/components/ui/label"
 
 export default function Home() {
-  const { isAuthenticated, getToken} = useAuth()
+  const { isAuthenticated, getToken } = useAuth()
   const [isAuth, setIsAuth] = useState(false)
   const [name, setName] = useState("")
   const [message, setMessage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const { toast } = useToast()
+  const [file, setFile] = useState<File | null>(null)
 
   useEffect(() => {
     setIsAuth(isAuthenticated)
@@ -33,7 +37,7 @@ export default function Home() {
     if (!name.trim() || !message.trim()) {
       toast({
         title: "Не заполнены поля",
-        description: "Пожалуйста, укажите ваше имя и текст отзыва.",
+        description: "Пожалуйста, укажите Ваше имя и текст отзыва.",
         variant: "destructive",
       })
       return
@@ -54,19 +58,30 @@ export default function Home() {
         return
       }
 
+      const formData = new FormData()
+      if (file) {
+        formData.append("file", file)
+      }
+
       await axios.post(
-          "https://api-gpt.energy-cerber.ru/user/feedback",
-          { name, message },
-          { headers: { Authorization: `Bearer ${token}` } },
+          `https://api-gpt.energy-cerber.ru/user/feedback?name=${encodeURIComponent(name)}&message=${encodeURIComponent(message)}`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": file ? "multipart/form-data" : "application/json",
+            },
+          },
       )
 
       toast({
         title: "Отзыв отправлен",
-        description: "Спасибо за ваш отзыв! Мы ценим ваше мнение.",
+        description: "Спасибо за Ваш отзыв! Мы ценим Ваше мнение.",
       })
 
       setName("")
       setMessage("")
+      setFile(null)
       setIsSuccess(true)
 
       setTimeout(() => {
@@ -93,6 +108,12 @@ export default function Home() {
     }
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0])
+    }
+  }
+
   return (
       <div className="flex flex-col min-h-screen">
         <header className="border-b">
@@ -113,9 +134,7 @@ export default function Home() {
             <div className="container px-4 mx-auto md:px-6">
               <div className="flex flex-col items-center justify-center space-y-4 text-center">
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                    Мощный AI-ассистент
-                  </h1>
+                  <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Мощный AI-ассистент</h1>
                   <p className="max-w-[700px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
                     Генерация кода, решение разного рода задач и многое другое!
                   </p>
@@ -180,10 +199,59 @@ export default function Home() {
                                 required
                             />
                           </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="file" className="text-sm font-medium">
+                              Прикрепить файл (опционально)
+                            </Label>
+                            <div className="flex items-center gap-2">
+                              <Input id="file" type="file" onChange={handleFileChange} className="hidden" />
+                              <div className="flex-1">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full justify-start text-left font-normal"
+                                    onClick={() => document.getElementById("file")?.click()}
+                                >
+                                  <FileUp className="mr-2 h-4 w-4" />
+                                  {file ? file.name : "Выберите файл..."}
+                                </Button>
+                              </div>
+                              {file && (
+                                  <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => setFile(null)}
+                                      className="h-8 w-8 text-gray-500"
+                                  >
+                                    <span className="sr-only">Удалить файл</span>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        className="h-4 w-4"
+                                    >
+                                      <path d="M18 6 6 18"></path>
+                                      <path d="m6 6 12 12"></path>
+                                    </svg>
+                                  </Button>
+                              )}
+                            </div>
+                            {file && (
+                                <p className="text-xs text-gray-500 mt-1">{(file.size / 1024 / 1024).toFixed(2)} МБ</p>
+                            )}
+                          </div>
                         </form>
                       </CardContent>
                       <CardFooter className="flex justify-between items-center pt-2">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Мы ценим ваше мнение</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Мы ценим Ваше мнение</p>
                         <Button type="submit" form="feedbackForm" className="gap-2 px-6" disabled={isSubmitting} size="lg">
                           {isSubmitting ? (
                               <>
@@ -194,9 +262,7 @@ export default function Home() {
                                 Отправлено <CheckCircle className="w-4 h-4" />
                               </>
                           ) : (
-                              <>
-                                Отправить отзыв <Send className="w-4 h-4" />
-                              </>
+                              <>Отправить отзыв {file ? <Upload className="w-4 h-4" /> : <Send className="w-4 h-4" />}</>
                           )}
                         </Button>
                       </CardFooter>
