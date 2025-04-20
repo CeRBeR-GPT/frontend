@@ -27,7 +27,7 @@ export function UserMenu() {
   if (!isAuth) {
     return (
       <Button size="sm" asChild>
-        <Link href="/auth/login">Sign In</Link>
+        <Link href="/auth/login">Войти</Link>
       </Button>
     )
   }
