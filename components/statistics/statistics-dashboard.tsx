@@ -9,7 +9,6 @@ import { useAuth } from "@/hooks/use-auth"
 
 export function StatisticsDashboard() {
   const { statistics, statisticsLoading, refreshStatistics} = useAuth()
-  console.log("statistics", statistics)
   if (statisticsLoading) {
     return (
       <Card className="w-full">
