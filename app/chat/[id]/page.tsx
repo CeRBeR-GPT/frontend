@@ -1,5 +1,5 @@
 "use client"
-import React from "react"
+import React, { useLayoutEffect } from "react"
 import { useState, useEffect, useRef, useReducer, useCallback, useMemo } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
@@ -96,6 +96,22 @@ export default function ChatPage() {
   const token = getToken()
   const [CopiedText,setCopiedText] = useState<string | null>(null)
 
+  useLayoutEffect(() => {
+    if (!messagesContainerRef.current || isLoadingHistory) return;
+    
+    const container = messagesContainerRef.current;
+    const isAtBottom = container.scrollHeight - (container.scrollTop + container.clientHeight) < 50;
+    
+    if (isAtBottom) {
+      requestAnimationFrame(() => {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: "auto",
+        });
+      });
+    }
+  }, [messages, isLoadingHistory]);
+
   useEffect(() => {
     const loadData = async () => {
       await fetchChats(); 
@@ -154,18 +170,17 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!isLoadingHistory && messages.length > 0) {
-      const timer = setTimeout(() => {
-        if (messagesContainerRef.current) {
-          messagesContainerRef.current.scrollTo({
-            top: messagesContainerRef.current.scrollHeight,
+      const container = messagesContainerRef.current;
+      if (container) {
+        requestAnimationFrame(() => {
+          container.scrollTo({
+            top: container.scrollHeight,
             behavior: "smooth",
-          })
-        }
-      }, 150)
-
-      return () => clearTimeout(timer)
+          });
+        });
+      }
     }
-  }, [isLoadingHistory, messages.length, chatId])
+  }, [isLoadingHistory, messages.length, chatId]);
 
   useEffect(() => {
     document.documentElement.classList.add("overflow-hidden")
@@ -351,6 +366,16 @@ export default function ChatPage() {
             })
           }, 50)
         }
+
+        requestAnimationFrame(() => {
+          const container = messagesContainerRef.current;
+          if (container) {
+            container.scrollTo({
+              top: container.scrollHeight,
+              behavior: "smooth",
+            });
+          }
+        });
 
         ws.current.onerror = (error) => {
           console.error("WebSocket error:", error)
@@ -618,7 +643,11 @@ export default function ChatPage() {
                   </div>
                 ) : (
                   <>
-                    <div ref={messagesContainerRef} className="flex-1 overflow-y-auto mb-4 space-y-4 px-2 sm:px-4">
+                    <div 
+                      ref={messagesContainerRef} 
+                      data-messages-container
+                      className="flex-1 overflow-y-auto mb-4 space-y-4 px-2 sm:px-4"
+>
                       {showScrollToBottom && (
                         <button
                           onClick={scrollToBottom}
