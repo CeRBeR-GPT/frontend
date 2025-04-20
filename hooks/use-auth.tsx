@@ -125,7 +125,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
             setAuthChecked(true);
 
         } catch (error) {
-            console.error("Error fetching user data:", error);
             setIsAuthenticated(false);
             setAuthChecked(true);
             localStorage.removeItem('isAuthenticated');
@@ -152,7 +151,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
               setStatisticsLoading(false)
             })
             .catch((error) => {
-              console.error("Error refreshing statistics:", error)
               setStatisticsLoading(false)
             })
         }
@@ -194,7 +192,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                             localStorage.setItem("lastSavedChat", chatResponse.data[0].id);
                         }
                     } catch (error) {
-                        console.error(error);
                     }
                 }
 
@@ -232,7 +229,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
             }
             return {success: false};
         } catch (error) {
-            console.error("Password update error:", error);
             return {success: false};
         }
     };

@@ -361,7 +361,7 @@ export default function ChatPage() {
               top: messagesContainerRef.current.scrollHeight,
               behavior: "smooth",
             })
-          }, 50)
+          }, 50) 
         }
 
         ws.current.onerror = (error) => {

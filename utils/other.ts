@@ -7,7 +7,6 @@ export const formatExpireDate = (dateString: any) => {
         const date = new Date(dateString)
         return format(date, "d MMMM yyyy", {locale: ru})
     } catch (error) {
-        console.error("Error formatting date:", error)
         return dateString
     }
 }
