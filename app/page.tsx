@@ -9,13 +9,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowRight, Bot, Send, Lock, MessageSquarePlus, CheckCircle, Upload, FileUp } from "lucide-react"
+import { ArrowRight, Bot, Send, Lock, MessageSquarePlus, CheckCircle, Upload, FileUp, Info } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { UserMenu } from "@/components/user-menu"
 import { useAuth } from "@/hooks/use-auth"
 import { NavLinks } from "@/components/nav-links"
 import { useToast } from "@/hooks/use-toast"
 import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export default function Home() {
   const { isAuthenticated, getToken } = useAuth()
@@ -26,6 +27,54 @@ export default function Home() {
   const [isSuccess, setIsSuccess] = useState(false)
   const { toast } = useToast()
   const [file, setFile] = useState<File | null>(null)
+  const [fileError, setFileError] = useState<string | null>(null)
+
+  // Список разрешенных типов файлов
+  const allowedFileTypes = [
+    // Изображения
+    "image/jpeg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+    "image/svg+xml",
+    // Документы
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    // Текстовые файлы
+    "text/plain",
+    "text/csv",
+    "text/html",
+    "text/css",
+    "text/javascript",
+    // Аудио
+    "audio/mpeg",
+    "audio/wav",
+    "audio/ogg",
+    // Видео (небольшие)
+    "video/mp4",
+    "video/webm",
+  ]
+
+  // Список запрещенных расширений файлов
+  const blockedExtensions = [
+    ".zip",
+    ".rar",
+    ".7z",
+    ".tar",
+    ".gz",
+    ".exe",
+    ".bat",
+    ".cmd",
+    ".msi",
+    ".dll",
+    ".bin",
+    ".iso",
+  ]
 
   useEffect(() => {
     setIsAuth(isAuthenticated)
@@ -38,6 +87,15 @@ export default function Home() {
       toast({
         title: "Не заполнены поля",
         description: "Пожалуйста, укажите Ваше имя и текст отзыва.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (fileError) {
+      toast({
+        title: "Проблема с файлом",
+        description: fileError,
         variant: "destructive",
       })
       return
@@ -109,8 +167,33 @@ export default function Home() {
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileError(null)
+
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0])
+      const selectedFile = e.target.files[0]
+
+      // Проверка расширения файла
+      const fileName = selectedFile.name.toLowerCase()
+      const fileExtension = fileName.substring(fileName.lastIndexOf("."))
+
+      if (blockedExtensions.includes(fileExtension)) {
+        setFileError(`Файлы с расширением ${fileExtension} не поддерживаются из соображений безопасности.`)
+        return
+      }
+
+      // Проверка типа файла
+      if (!allowedFileTypes.includes(selectedFile.type) && selectedFile.type !== "") {
+        setFileError(`Тип файла ${selectedFile.type || fileExtension} не поддерживается.`)
+        return
+      }
+
+      // Проверка размера файла (ограничение 10 МБ)
+      if (selectedFile.size > 10 * 1024 * 1024) {
+        setFileError("Размер файла не должен превышать 10 МБ.")
+        return
+      }
+
+      setFile(selectedFile)
     }
   }
 
@@ -204,17 +287,39 @@ export default function Home() {
                             <Label htmlFor="file" className="text-sm font-medium">
                               Прикрепить файл (опционально)
                             </Label>
+
+                            <Alert
+                                variant="outline"
+                                className="bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800 mb-3"
+                            >
+                              <Info className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                              <AlertTitle className="text-amber-800 dark:text-amber-400 text-sm font-medium">
+                                Ограничения для файлов
+                              </AlertTitle>
+                              <AlertDescription className="text-amber-700 dark:text-amber-300 text-xs">
+                                Пожалуйста, не прикрепляйте архивы (.zip, .rar, .7z), исполняемые файлы (.exe, .bat) и
+                                другие потенциально небезопасные файлы. Рекомендуемые форматы: изображения, PDF, документы
+                                Office, текстовые файлы. Максимальный размер: 10 МБ.
+                              </AlertDescription>
+                            </Alert>
+
                             <div className="flex items-center gap-2">
-                              <Input id="file" type="file" onChange={handleFileChange} className="hidden" />
+                              <Input
+                                  id="file"
+                                  type="file"
+                                  onChange={handleFileChange}
+                                  className="hidden"
+                                  accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.mp3,.mp4,.wav"
+                              />
                               <div className="flex-1">
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    className="w-full justify-start text-left font-normal"
+                                    className={`w-full justify-start text-left font-normal ${fileError ? "border-red-300 dark:border-red-700" : ""}`}
                                     onClick={() => document.getElementById("file")?.click()}
                                 >
-                                  <FileUp className="mr-2 h-4 w-4" />
-                                  {file ? file.name : "Выберите файл..."}
+                                  <FileUp className={`mr-2 h-4 w-4 ${fileError ? "text-red-500" : ""}`} />
+                                  {file ? file.name : fileError ? "Выберите другой файл..." : "Выберите файл..."}
                                 </Button>
                               </div>
                               {file && (
@@ -244,7 +349,8 @@ export default function Home() {
                                   </Button>
                               )}
                             </div>
-                            {file && (
+                            {fileError && <p className="text-xs text-red-500 mt-1">{fileError}</p>}
+                            {file && !fileError && (
                                 <p className="text-xs text-gray-500 mt-1">{(file.size / 1024 / 1024).toFixed(2)} МБ</p>
                             )}
                           </div>
@@ -252,7 +358,13 @@ export default function Home() {
                       </CardContent>
                       <CardFooter className="flex justify-between items-center pt-2">
                         <p className="text-xs text-gray-500 dark:text-gray-400">Мы ценим Ваше мнение</p>
-                        <Button type="submit" form="feedbackForm" className="gap-2 px-6" disabled={isSubmitting} size="lg">
+                        <Button
+                            type="submit"
+                            form="feedbackForm"
+                            className="gap-2 px-6"
+                            disabled={isSubmitting || !!fileError}
+                            size="lg"
+                        >
                           {isSubmitting ? (
                               <>
                                 Отправка<span className="loading">...</span>
