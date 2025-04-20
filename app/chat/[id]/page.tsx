@@ -59,14 +59,7 @@ function messagesReducer(state: Message[], action: { type: string; payload?: any
     case "SET":
       return action.payload
     case "CLEAR":
-      return [
-        {
-          id: 1,
-          text: "# Привет! Я ваш AI ассистент.",
-          message_belong: "assistant",
-          timestamp: new Date(),
-        },
-      ]
+      return []
     default:
       return state
   }
@@ -496,8 +489,9 @@ export default function ChatPage() {
   )
 
   const shouldShowInput = useMemo(() => {
-    return !(messages.length === 1 && messages[0].text === "# Привет! Я ваш AI ассистент.")
-  }, [messages])
+    return messages.length > 0 || isTestMessageShown
+  }, [messages.length, isTestMessageShown])
+  
 
   const handleCopyCode = useCallback((code: string) => {
     navigator.clipboard.writeText(code)
