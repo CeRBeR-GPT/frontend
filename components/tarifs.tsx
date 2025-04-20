@@ -7,8 +7,7 @@ import axios from "axios"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { Badge } from "./ui/badge"
-import { format } from "date-fns"
-import { ru } from "date-fns/locale"
+import { formatExpireDate } from "@/utils/other"
 
 const Tarifs = () => {
   const router = useRouter()
@@ -22,18 +21,6 @@ const Tarifs = () => {
               : userData?.plan === "business"
                   ? "Бизнес"
                   : ""
-
-  // Форматирование даты окончания тарифа
-  const formatExpireDate = (dateString: any) => {
-    if (!dateString) return null
-    try {
-      const date = new Date(dateString)
-      return format(date, "d MMMM yyyy", { locale: ru })
-    } catch (error) {
-      console.error("Error formatting date:", error)
-      return dateString
-    }
-  }
 
   const expireDate = formatExpireDate(userData?.plan_expire_date)
   const isPaidPlan = userData?.plan === "premium" || userData?.plan === "business"
@@ -67,7 +54,7 @@ const Tarifs = () => {
                   className="flex items-center gap-1 px-3 py-1 bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-300 border-amber-200 dark:border-amber-800"
               >
                 <Calendar className="h-3.5 w-3.5 mr-1" />
-                Срок действия до: {expireDate}
+                Истекает {expireDate}
               </Badge>
           )}
         </div>
@@ -142,13 +129,9 @@ const Tarifs = () => {
               </ul>
             </CardContent>
             {plan === "Премиум" && (
-                <CardFooter className="flex flex-col gap-2">
+                <CardFooter>
                   <Button className="w-full" variant="outline">
                     Текущий план
-                  </Button>
-                  <Button onClick={() => payForPlan("premium")} className="w-full" variant="secondary">
-                    <Zap className="w-4 h-4 mr-2" />
-                    Продлить тариф
                   </Button>
                 </CardFooter>
             )}
@@ -191,13 +174,9 @@ const Tarifs = () => {
               </ul>
             </CardContent>
             {plan === "Бизнес" && (
-                <CardFooter className="flex flex-col gap-2">
+                <CardFooter>
                   <Button className="w-full" variant="outline">
                     Текущий план
-                  </Button>
-                  <Button onClick={() => payForPlan("business")} className="w-full" variant="secondary">
-                    <Zap className="w-4 h-4 mr-2" />
-                    Продлить тариф
                   </Button>
                 </CardFooter>
             )}
