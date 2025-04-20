@@ -54,7 +54,7 @@ const Tarifs = () => {
                   className="flex items-center gap-1 px-3 py-1 bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-300 border-amber-200 dark:border-amber-800"
               >
                 <Calendar className="h-3.5 w-3.5 mr-1" />
-                Истекает {expireDate}
+                Текущий тариф действует до {expireDate} года
               </Badge>
           )}
         </div>

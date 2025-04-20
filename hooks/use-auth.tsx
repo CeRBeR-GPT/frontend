@@ -202,8 +202,13 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
             }
             return {success: false};
         } catch (error) {
-            console.error("Login error:", error);
-            throw new Error("Произошла ошибка при входе. Пожалуйста, попробуйте снова.");
+            // @ts-ignore
+            if (error.response.status === 401) {
+                throw new Error("Неверный логин или пароль. Пожалуйста, попробуйте снова!");
+            }
+            else {
+                throw new Error("Произошла ошибка при входе. Пожалуйста, попробуйте снова!");
+            }
         }
     };
 

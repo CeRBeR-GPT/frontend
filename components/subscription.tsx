@@ -48,7 +48,7 @@ const Subscription = () => {
                     <h4 className="font-medium mb-1">{plan} тариф</h4>
                     <p className="text-sm text-muted-foreground mb-3">
                       У вас активирован {plan} тариф с ограничением в {userData?.message_count_limit || 0} сообщений в
-                      день. Действует до {ExpireDate}
+                      день. Действует до {ExpireDate} года
                     </p>
                     {/*<Button variant="outline" size="sm">*/}
                     {/*  Управление тарифом*/}

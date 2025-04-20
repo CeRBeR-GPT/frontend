@@ -54,23 +54,27 @@ export default function LoginPage() {
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true)
-    setError("")
-    form.clearErrors()
-    
+    setIsSubmitting(true);
+    setError("");
+    form.clearErrors();
+
     try {
-      const result = await login(values.email, values.password)
-      
+      const result = await login(values.email, values.password);
+
       if (result.success) {
-        const lastSavedChat = localStorage.getItem("lastSavedChat") || "1"
-        router.push(`/chat/${lastSavedChat}`)
+        const lastSavedChat = localStorage.getItem("lastSavedChat") || "1";
+        router.push(`/chat/${lastSavedChat}`);
       } else {
-        setError(result.error || "Неверный email или пароль. Пожалуйста, попробуйте снова.")
+        setError(result.error || "Неверный email или пароль. Пожалуйста, попробуйте снова.");
       }
     } catch (error) {
-      setError("Произошла ошибка при входе. Пожалуйста, попробуйте снова.")
+      if (error instanceof Error) {
+        setError(error.message)
+      } else {
+        setError("Произошла неизвестная ошибка при входе")
+      }
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
