@@ -327,7 +327,9 @@ export default function ChatPage() {
     async (chatId: string) => {
       if (chatId === "1") return
 
-      if (!shouldShowInput) return
+      console.log(shouldShowInput)
+
+      if (shouldShowInput) return
 
       try {
         const token = await getToken()
@@ -640,7 +642,17 @@ export default function ChatPage() {
       </div>
     ) : !isValidChat ? (
       <div className="flex-1 flex items-center justify-center">
-        Добро пожаловать!
+        <Card className="p-3 bg-muted">
+            <div className="prose dark:prose-invert max-w-none">
+              <Markdown
+                handleCopyTextMarkdown={handleCopyTextMarkdown}
+                content="# Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?"
+                theme={theme}
+                onCopy={handleCopyCode}
+                copiedCode={copiedCode}
+              />
+            </div>
+        </Card>
       </div>
     ) : (
       <main className="flex-1 overflow-auto">
