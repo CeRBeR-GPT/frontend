@@ -88,14 +88,33 @@ export default function ChatPage() {
   const [rootKey, setRootKey] = useState<number>(0);
   const token = getToken()
   const [CopiedText,setCopiedText] = useState<string | null>(null)
+  const [isValidChat, setIsValidChat] = useState<boolean>(true)
+  const [isCheckingChat, setIsCheckingChat] = useState<boolean>(true)
 
   useEffect(() => {
+    if (isAuthLoading) return
+    if (!isAuthenticated) {
+      router.push("/auth/login")
+      return
+    }
+  
+    // Для "пустого" чата показываем приветствие и скрываем поле ввода
+    if (chatId === "1") {
+      dispatchMessages({ type: "CLEAR" })
+      setIsTestMessageShown(true)
+      setChatTitle("Новый чат")
+      return
+    }
+  
+    // Загрузка обычного чата
     const loadData = async () => {
-      await fetchChats(); 
-      //setRootKey(prev => prev + 1); 
-    };
-    loadData();
-  }, []);
+      await loadChatHistory(chatId)
+      await initializeWebSocket(chatId)
+      await fetchChats()
+    }
+    
+    loadData()
+  }, [chatId, isAuthenticated, isAuthLoading, router])
 
   // useEffect(() => {
   //   setRootKey(prev => prev + 1);
@@ -308,6 +327,8 @@ export default function ChatPage() {
     async (chatId: string) => {
       if (chatId === "1") return
 
+      if (!shouldShowInput) return
+
       try {
         const token = await getToken()
         if (!token) return
@@ -429,6 +450,10 @@ export default function ChatPage() {
       const sortedChats = formattedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
       setChatHistory(sortedChats)
 
+      const chatExists = sortedChats.some((chat: ChatHistory) => chat.id === chatId)
+      setIsValidChat(chatExists || chatId === "1")
+      setIsCheckingChat(false)
+
       if (sortedChats.length > 0) {
         localStorage.setItem("lastSavedChat", sortedChats[0].id)
       } else {
@@ -483,9 +508,18 @@ export default function ChatPage() {
     [input, throttledSubmit],
   )
 
+  useEffect(() => {
+    if (chatHistory.length > 0 && chatId !== "1") {
+      const exists = chatHistory.some(chat => chat.id === chatId)
+      setIsValidChat(exists)
+    }
+  }, [chatHistory, chatId])
+
+  // Обновленное условие отображения поля ввода
   const shouldShowInput = useMemo(() => {
-    return messages.length > 0 || isTestMessageShown
-  }, [messages.length, isTestMessageShown])
+    return isValidChat && !isCheckingChat && (messages.length > 0 || isTestMessageShown)
+  }, [isValidChat, isCheckingChat, messages.length, isTestMessageShown])
+
   
 
   const handleCopyCode = useCallback((code: string) => {
@@ -566,120 +600,137 @@ export default function ChatPage() {
 
   return (
     <div key={`root-${rootKey}`} className="flex flex-col min-h-screen">
-      <Toaster />
-      <header className="border-b sticky top-0 z-10 bg-background">
-        <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-2 font-bold">
-              <Bot className="w-6 h-6" />
-              <span className="hidden sm:inline">CeRBeR-AI</span>
-            </Link>
-            <div className="hidden md:flex items-center gap-1 text-sm text-muted-foreground">
-              <span>/</span>
-              <span className="font-medium text-foreground">{chatTitle === "Новый чат" ? "" : chatTitle}</span>
-            </div>
-          </div>
-          <nav className="flex items-center gap-4">
-            <NavLinks />
-            <ThemeToggle />
-            <UserMenu />
-          </nav>
+  <Toaster />
+  <header className="border-b sticky top-0 z-10 bg-background">
+    <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
+      <div className="flex items-center gap-4">
+        <Link href="/" className="flex items-center gap-2 font-bold">
+          <Bot className="w-6 h-6" />
+          <span className="hidden sm:inline">CeRBeR-AI</span>
+        </Link>
+        <div className="hidden md:flex items-center gap-1 text-sm text-muted-foreground">
+          <span>/</span>
+          <span className="font-medium text-foreground">
+            {chatTitle === "Новый чат" ? "" : chatTitle}
+          </span>
         </div>
-      </header>
-      <div className="flex flex-1 overflow-hidden">
-        <ChatSidebar
-          key={`sidebar-${sidebarVersion}`}
-          chatHistory={chatHistory}
-          setChatHistory={setChatHistory}
-          onChatDeleted={handleChatDeleted}
-          renameChatTitle={renameChatTitle}
-          clearChatMessages={clearChatMessages}
-          deleteChat={deleteChat}
-        />
-
-        {chatHistory.length > 0 ? (
-          <main className="flex-1 overflow-auto">
-            <div className="container mx-auto px-0 py-6 md:px-6 max-w-5xl lg:max-w-6xl">
-              <div className="flex flex-col h-[calc(100vh-7rem)] w-full">
-                {isLoadingHistory ? (
-                  <div className="flex justify-center items-center h-full">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                  </div>
-                ) : (
-                  <>
-                    <div ref={messagesContainerRef} className="flex-1 overflow-y-auto mb-4 space-y-4 px-2 sm:px-4">
-                      {showScrollToBottom && (
-                        <button
-                          onClick={scrollToBottom}
-                          className="fixed right-4 bottom-24 md:right-14 lg:right-24 z-10 p-2 rounded-full bg-background border shadow-lg hover:bg-muted transition-colors"
-                          aria-label="Прокрутить вниз"
-                        >
-                          <ArrowDown className="h-5 w-5" />
-                        </button>
-                      )}
-                      {isTestMessageShown && messages.length === 0 ? (
-                        <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-3 duration-300">
-                          <div className="flex items-start gap-3 max-w-[80%]">
-                            <Avatar className="mt-1">
-                              <AvatarFallback>
-                                <Bot className="w-4 h-4" />
-                              </AvatarFallback>
-                            </Avatar>
-                            <Card className="p-3 bg-muted">
-                              <div className="prose dark:prose-invert max-w-none">
-                                <Markdown
-                                  handleCopyTextMarkdown={handleCopyTextMarkdown}
-                                  content="# Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?"
-                                  theme={theme}
-                                  onCopy={handleCopyCode}
-                                  copiedCode={copiedCode}
-                                />
-                              </div>
-                            </Card>
-                          </div>
-                        </div>
-                      ) : (
-                        renderedMessages
-                      )}
-                      {isLoading && (
-                        <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-3 duration-300">
-                          <div className="flex items-start gap-3 max-w-[80%]">
-                            <Avatar className="mt-1">
-                              <AvatarFallback>
-                                <Bot className="w-4 h-4" />
-                              </AvatarFallback>
-                            </Avatar>
-                            <Card className="p-3 bg-muted">
-                              <div className="flex space-x-2">
-                                <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
-                                <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.2s]" />
-                                <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.4s]" />
-                              </div>
-                            </Card>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    {shouldShowInput && (
-                      <div className="sticky bottom-0 bg-background border-t">
-                        <MessageInput
-                          value={input}
-                          onChange={handleInputChange}
-                          onSubmit={handleSubmit}
-                          isLoading={isLoading}
-                          selectedProvider={selectedProvider}
-                          availableProviders={availableProviders}
-                          onProviderChange={handleProviderChange}
-                        />
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          </main>
-        ) : null}
       </div>
+      <nav className="flex items-center gap-4">
+        <NavLinks />
+        <ThemeToggle />
+        <UserMenu />
+      </nav>
     </div>
+  </header>
+
+  <div className="flex flex-1 overflow-hidden">
+    <ChatSidebar
+      key={`sidebar-${sidebarVersion}`}
+      chatHistory={chatHistory}
+      setChatHistory={setChatHistory}
+      onChatDeleted={handleChatDeleted}
+      renameChatTitle={renameChatTitle}
+      clearChatMessages={clearChatMessages}
+      deleteChat={deleteChat}
+    />
+
+    {isCheckingChat ? (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    ) : !isValidChat ? (
+      <div className="flex-1 flex items-center justify-center">
+        Добро пожаловать!
+      </div>
+    ) : (
+      <main className="flex-1 overflow-auto">
+        <div className="container mx-auto px-0 py-6 md:px-6 max-w-5xl lg:max-w-6xl">
+          <div className="flex flex-col h-[calc(100vh-7rem)] w-full">
+            {isLoadingHistory ? (
+              <div className="flex justify-center items-center h-full">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              </div>
+            ) : (
+              <>
+                <div 
+                  ref={messagesContainerRef} 
+                  className="flex-1 overflow-y-auto mb-4 space-y-4 px-2 sm:px-4"
+                >
+                  {showScrollToBottom && (
+                    <button
+                      onClick={scrollToBottom}
+                      className="fixed right-4 bottom-24 md:right-14 lg:right-24 z-10 p-2 rounded-full bg-background border shadow-lg hover:bg-muted transition-colors"
+                      aria-label="Прокрутить вниз"
+                    >
+                      <ArrowDown className="h-5 w-5" />
+                    </button>
+                  )}
+
+                  {isTestMessageShown && messages.length === 0 && (
+                    <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-3 duration-300">
+                      <div className="flex items-start gap-3 max-w-[80%]">
+                        <Avatar className="mt-1">
+                          <AvatarFallback>
+                            <Bot className="w-4 h-4" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <Card className="p-3 bg-muted">
+                          <div className="prose dark:prose-invert max-w-none">
+                            <Markdown
+                              handleCopyTextMarkdown={handleCopyTextMarkdown}
+                              content="# Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?"
+                              theme={theme}
+                              onCopy={handleCopyCode}
+                              copiedCode={copiedCode}
+                            />
+                          </div>
+                        </Card>
+                      </div>
+                    </div>
+                  )}
+
+                  {renderedMessages}
+
+                  {isLoading && (
+                    <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-3 duration-300">
+                      <div className="flex items-start gap-3 max-w-[80%]">
+                        <Avatar className="mt-1">
+                          <AvatarFallback>
+                            <Bot className="w-4 h-4" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <Card className="p-3 bg-muted">
+                          <div className="flex space-x-2">
+                            <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
+                            <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.2s]" />
+                            <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.4s]" />
+                          </div>
+                        </Card>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {shouldShowInput && (
+                  <div className="sticky bottom-0 bg-background border-t">
+                    <MessageInput
+                      value={input}
+                      onChange={handleInputChange}
+                      onSubmit={handleSubmit}
+                      isLoading={isLoading}
+                      selectedProvider={selectedProvider}
+                      availableProviders={availableProviders}
+                      onProviderChange={handleProviderChange}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </main>
+    )}
+  </div>
+</div>
   )
 }
