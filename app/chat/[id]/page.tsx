@@ -125,7 +125,6 @@ export default function ChatPage() {
   
     container.addEventListener("scroll", handleScrollEvent)
     return () => {
-      console.log("Cleaning up scroll listener")
       container.removeEventListener("scroll", handleScrollEvent)
     }
   }, [messagesContainerRef.current, messages.length])
@@ -323,13 +322,10 @@ export default function ChatPage() {
         const provider = localStorage.getItem("selectedProvider")
         const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}&provider=${provider}`
 
-        console.log("ChatId", chatId)
         const idChat = localStorage.getItem("lastDeletedChat")
         if (chatId === idChat) { return }
 
         ws.current = new WebSocket(wsUrl)
-        ws.current.onopen = () => { console.log("WebSocket connection established") }
-
         ws.current.onmessage = (event) => {
           dispatchMessages({
             type: "ADD",
@@ -357,7 +353,6 @@ export default function ChatPage() {
         }
 
         ws.current.onclose = (event) => {
-          console.log("WebSocket connection closed:", event)
           if (event.code !== 1000) {
             setTimeout(() => initializeWebSocket(chatId), 5000)
           }
