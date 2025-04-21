@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { format, parseISO, startOfWeek, addDays, subYears, isSameMonth } from "date-fns"
+import { format, parseISO, startOfWeek, addDays, subYears, isSameMonth, eachMonthOfInterval } from "date-fns"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
@@ -9,6 +9,7 @@ import { ru } from "date-fns/locale"
 import { ProviderStats } from "./provider-stats"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { getProviderName } from "@/utils/providers-utils"
+
 export interface ProviderStatistic {
   provider_name: string
   messages_sent: number
@@ -34,10 +35,11 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
 
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // Функция для прокрутки вправо
   const scrollToRight = () => {
     if (containerRef.current) {
-      const scrollContainer = containerRef.current.querySelector("[data-radix-scroll-area-viewport]") as HTMLElement
+      const scrollContainer = containerRef.current.querySelector(
+          '[data-radix-scroll-area-viewport]'
+      ) as HTMLElement
 
       if (scrollContainer) {
         const scrollWidth = scrollContainer.scrollWidth
@@ -51,7 +53,7 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
   }
 
   useEffect(() => {
-    const timer = setTimeout(scrollToRight, 100) // Небольшая задержка для рендера
+    const timer = setTimeout(scrollToRight, 100)
     return () => clearTimeout(timer)
   }, [viewMode, statistics])
 
@@ -76,8 +78,8 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
 
   const generateYearlyGrid = () => {
     const today = new Date()
-    // Use today as the end date and calculate back exactly 52 weeks (1 year)
-    const startDate = startOfWeek(subYears(today, 1), { weekStartsOn: 1 })
+    const oneYearAgo = subYears(today, 1)
+    const startDate = oneYearAgo // Исправлено: используем ровно дату год назад
     const weeks = []
     const dayLabels = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
 
@@ -94,7 +96,7 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
           monthsData.push({
             name: currentMonth,
             startWeek: currentStartWeek,
-            endWeek: week - 1,
+            endWeek: week - 1
           })
         }
         currentMonth = monthName
@@ -106,100 +108,97 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
       monthsData.push({
         name: currentMonth,
         startWeek: currentStartWeek,
-        endWeek: 52,
+        endWeek: 52
       })
     }
 
-    // Генерируем метки месяцев
     const monthLabels = monthsData.map((month) => {
       const startPosition = (month.startWeek / 53) * 100
       const width = ((month.endWeek - month.startWeek + 1) / 53) * 100
 
       return (
-        <div
-          key={`${month.name}-${month.startWeek}`}
-          className="text-xs text-muted-foreground truncate"
-          style={{
-            left: `${startPosition}%`,
-            width: `${width}%`,
-            position: "absolute",
-            textIndent: "4px",
-          }}
-        >
-          {month.name}
-        </div>
+          <div
+              key={`${month.name}-${month.startWeek}`}
+              className="text-xs text-muted-foreground truncate"
+              style={{
+                left: `${startPosition}%`,
+                width: `${width}%`,
+                position: "absolute",
+                textIndent: "4px"
+              }}
+          >
+            {month.name}
+          </div>
       )
     })
 
-    // Генерируем ячейки календаря
     for (let week = 0; week < 53; week++) {
       const days = []
 
       for (let day = 0; day < 7; day++) {
         const date = addDays(startDate, week * 7 + day)
-        // Include today by using >= instead of >
-        if (date.setHours(0, 0, 0, 0) > today.setHours(0, 0, 0, 0)) continue // Пропускаем будущие даты
+        if (date > today) continue
 
         const dateStr = format(date, "yyyy-MM-dd")
         const stat = statistics.find((s) => s.day === dateStr)
         const totalMessages = stat ? stat.providers.reduce((sum, p) => sum + p.messages_sent, 0) : 0
 
         days.push(
-          <HoverCard key={dateStr} openDelay={300} closeDelay={100}>
-            <HoverCardTrigger asChild>
-              <div
-                className={`w-3 h-3 m-0.5 rounded-sm cursor-pointer ${getColorIntensity(totalMessages)} ${
-                  selectedDate === dateStr ? "ring-2 ring-primary" : ""
-                }`}
-                onClick={() => {
-                  setSelectedDate(dateStr)
-                  setViewMode("day")
-                }}
-              />
-            </HoverCardTrigger>
-            <HoverCardContent className="w-56" side="top">
-              <div className="text-sm">
-                <div className="font-medium">{format(parseISO(dateStr), "PPP", { locale: ru })}</div>
-                <div>{totalMessages} сообщений</div>
-                {stat &&
-                  stat.providers.map((p) => (
-                    <div key={p.provider_name} className="text-xs mt-1">
-                      {getProviderName(p.provider_name)}: {p.messages_sent} сообщений
-                    </div>
-                  ))}
-              </div>
-            </HoverCardContent>
-          </HoverCard>,
+            <HoverCard key={dateStr} openDelay={300} closeDelay={100}>
+              <HoverCardTrigger asChild>
+                <div
+                    className={`w-3 h-3 m-0.5 rounded-sm cursor-pointer ${getColorIntensity(totalMessages)} ${
+                        selectedDate === dateStr ? "ring-2 ring-primary" : ""
+                    }`}
+                    onClick={() => {
+                      setSelectedDate(dateStr)
+                      setViewMode("day")
+                    }}
+                />
+              </HoverCardTrigger>
+              <HoverCardContent className="w-56" side="top">
+                <div className="text-sm">
+                  <div className="font-medium">{format(parseISO(dateStr), "PPP", { locale: ru })}</div>
+                  <div>{totalMessages} сообщений</div>
+                  {stat &&
+                      stat.providers.map((p) => (
+                          <div key={p.provider_name} className="text-xs mt-1">
+                            {getProviderName(p.provider_name)}: {p.messages_sent} сообщений
+                          </div>
+                      ))}
+                </div>
+              </HoverCardContent>
+            </HoverCard>
         )
       }
 
       if (days.length > 0) {
         weeks.push(
-          <div key={week} className="flex flex-col">
-            {days}
-          </div>,
+            <div key={week} className="flex flex-col">
+              {days}
+            </div>
         )
       }
     }
 
     return (
-      <div className="mt-6">
-        <div className="relative h-5 mb-1" style={{ width: "100%" }}>
-          {monthLabels}
-        </div>
-        <div className="flex items-start">
-          <div className="flex flex-col mr-2 text-xs text-muted-foreground">
-            {dayLabels.map((label, idx) => (
-              <div key={idx} className="h-4 flex items-center">
-                {label}
-              </div>
-            ))}
+        <div className="mt-6">
+          <div className="relative h-5 mb-1" style={{ width: "100%" }}>
+            {monthLabels}
           </div>
-          <ScrollArea className="w-full">
-            <div className="flex space-x-1 min-w-max pb-2">{weeks}</div>
-          </ScrollArea>
+          <div className="flex items-start">
+            <div className="flex flex-col mr-2 text-xs text-muted-foreground">
+              {dayLabels.map((label, idx) => (
+                  <div key={idx} className="h-4 flex items-center">
+                    {label}
+                  </div>
+              ))}
+            </div>
+            <ScrollArea className="w-full">
+              <div className="flex space-x-1 min-w-max pb-2">{weeks}</div>
+            </ScrollArea>
+          </div>
         </div>
-      </div>
     )
   }
 
@@ -271,8 +270,6 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
 
   const calculateViewTotals = () => {
     const today = new Date()
-    // Clone today to avoid modifying the original
-    const todayClone = new Date(today)
 
     return statistics.reduce(
       (totals, stat) => {
@@ -281,12 +278,7 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
 
         switch (viewMode) {
           case "year":
-            // Ensure we include exactly one year of data including today
-            const yearAgo = subYears(todayClone, 1)
-            yearAgo.setHours(0, 0, 0, 0)
-            const dateClone = new Date(date)
-            dateClone.setHours(0, 0, 0, 0)
-            isInCurrentView = dateClone >= yearAgo && dateClone <= todayClone
+            isInCurrentView = date >= subYears(today, 1)
             break
           case "month":
             isInCurrentView = isSameMonth(date, today)
@@ -373,7 +365,8 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
               <ScrollBar orientation="horizontal" />
               <div className="text-sm mb-2 min-w-[600px]">
                 <p>
-                  Всего сообщений за {format(new Date(), "LLLL", { locale: ru })}: <strong>{viewTotals.total}</strong>
+                  Всего сообщений за {format(new Date(), "LLLL", { locale: ru })}:{" "}
+                  <strong>{viewTotals.total}</strong>
                 </p>
               </div>
               {generateMonthlyGrid()}
