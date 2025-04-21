@@ -212,7 +212,6 @@ export default function ChatPage() {
       )
       setChatTitle(newTitle)
     } catch (error) {
-      console.error("Ошибка при переименовании чата:", error)
     }
   }
 
@@ -256,7 +255,6 @@ export default function ChatPage() {
         localStorage.setItem("lastSavedChat", sortedChats[0].id)
       }
     } catch (error) {
-      console.error("Error updating chat history:", error)
     }
   }, [getToken])
 
@@ -286,7 +284,6 @@ export default function ChatPage() {
         setIsTestMessageShown(history.length === 0)
         setIsLoadingHistory(false)
       } catch (error) {
-        console.error("Failed to load chat history:", error)
       } finally {
         setIsLoadingHistory(false)
       }
@@ -317,7 +314,6 @@ export default function ChatPage() {
 
         await loadChatHistory(chatId)
       } catch (error) {
-        console.error("Error clearing chat messages:", error)
       }
     },
     [chatId, getToken, loadChatHistory],
@@ -326,8 +322,6 @@ export default function ChatPage() {
   const initializeWebSocket = useCallback(
     async (chatId: string) => {
       if (chatId === "1") return
-
-      console.log(shouldShowInput)
 
       if (shouldShowInput) return
 
@@ -365,7 +359,6 @@ export default function ChatPage() {
         }
 
         ws.current.onerror = (error) => {
-          console.error("WebSocket error:", error)
         }
 
         ws.current.onclose = (event) => {
@@ -374,7 +367,6 @@ export default function ChatPage() {
           }
         }
       } catch (error) {
-        console.error("WebSocket initialization error:", error)
       }
     },
     [getToken, updateSidebar, updateChatHistory],
@@ -413,7 +405,6 @@ export default function ChatPage() {
 
         updateSidebar()
       } catch (error) {
-        console.error("Error deleting chat:", error)
       } finally {
         setIsLoading(false)
       }
@@ -462,7 +453,6 @@ export default function ChatPage() {
         localStorage.removeItem("lastSavedChat")
       }
     } catch (error) {
-      console.error("Error fetching chats:", error)
     }
   }, [getToken])
 

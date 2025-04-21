@@ -77,7 +77,6 @@ export default function VerifyPage() {
                 localStorage.setItem("lastSavedChat", chatResponse.data[0].id);
               }
             } catch (error) {
-              console.error(error);
             }
             await getUserData()
             router.push(`/chat/${welcomeChatId}`);
@@ -87,7 +86,6 @@ export default function VerifyPage() {
         }
       }
     } catch (error) {
-      console.error("Verification error:", error);
       setError("Произошла ошибка при проверке кода. Пожалуйста, попробуйте снова.");
     } finally {
       setIsSubmitting(false);

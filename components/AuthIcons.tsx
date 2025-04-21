@@ -11,7 +11,6 @@ export const AuthIcons = (props: { setError: (arg0: string) => void; disabled?: 
         try {
           window.location.href = `https://api-gpt.energy-cerber.ru/auth/${provider}`;
         } catch (error) {
-          console.error(`${provider} login error:`, error);
           props.setError(`Произошла ошибка при входе через ${provider}. Пожалуйста, попробуйте снова.`);
         }
     };

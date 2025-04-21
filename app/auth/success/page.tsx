@@ -45,7 +45,6 @@ const AuthSuccess = () => {
                 localStorage.setItem("lastSavedChat", chatResponse.data[0].id);
               }
             } catch (error) {
-              console.error(error);
             }
 
           }

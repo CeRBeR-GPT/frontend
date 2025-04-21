@@ -146,7 +146,6 @@ export default function Home() {
         setIsSuccess(false)
       }, 3000)
     } catch (error: any) {
-      console.error("Ошибка отправки отзыва:", error)
 
       if (error.response?.status === 401) {
         toast({

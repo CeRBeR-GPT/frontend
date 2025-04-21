@@ -40,7 +40,6 @@ const Tarifs = () => {
       )
       router.replace(response.data.url)
     } catch (error) {
-      console.error("Fail to pay:", error)
     }
   }
 

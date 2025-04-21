@@ -60,7 +60,6 @@ export default function ChangePasswordPage() {
       router.push("/profile/change-password/confirmation")
     }
     catch(error){
-      console.error(error)
       setIsSubmitting(false)
     }
   }

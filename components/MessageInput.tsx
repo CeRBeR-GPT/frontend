@@ -133,7 +133,6 @@ const MessageInput = React.memo(
               })
             }
           } catch (error) {
-            console.error("Error reading file:", error)
             toast({
               title: "Ошибка чтения файла",
               description: "Не удалось прочитать содержимое файла",
@@ -207,7 +206,6 @@ const MessageInput = React.memo(
         }
 
         recognition.onerror = (event: any) => {
-          console.error("Speech recognition error", event.error)
           setIsRecording(false)
           setRecordingStatus("idle")
 
@@ -225,7 +223,6 @@ const MessageInput = React.memo(
 
         recognition.start()
       } catch (error) {
-        console.error("Speech recognition error:", error)
         setIsRecording(false)
         setRecordingStatus("idle")
 

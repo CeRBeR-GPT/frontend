@@ -33,7 +33,6 @@ export function EditChatDialog({ open, onOpenChange, chatTitle, onSave }: EditCh
       onSave(title)
       onOpenChange(false)
     } catch (error) {
-      console.error("Error updating chat title:", error)
     } finally {
       setIsSubmitting(false)
     }

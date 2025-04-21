@@ -58,7 +58,6 @@ export const NewChatDialog = ({ open, onOpenChange }: NewChatDialogProps) => {
       if (axios.isAxiosError(error) && error.response?.status === 400){
         setError("Превышен лимит чатов по вашему тарифу")
       }
-      console.error("Error creating chat:", error)
     } finally {
       setIsSubmitting(false)
     }

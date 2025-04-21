@@ -18,7 +18,6 @@ export const refreshAccess = async (refresh_token: string | null): Promise<strin
 
         return response.data.access_token;
     } catch (error) {
-        console.error("Refresh token failed:", error);
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
         localStorage.removeItem("isAuthenticated");
@@ -34,7 +33,6 @@ const isTokenExpired = (token: string): boolean => {
         const expiresAt = payload.exp * 1000;
         return Date.now() >= expiresAt;
     } catch (error) {
-        console.error("Error parsing JWT:", error);
         return true;
     }
 };

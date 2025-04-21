@@ -59,7 +59,6 @@ export default function RegisterPage() {
       }
       
     } catch (error) {
-      console.error("Registration error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -93,8 +92,13 @@ export default function RegisterPage() {
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>Внимание!</AlertTitle>
                 <AlertDescription>
-                  В настоящее время регистрация через почту с доменом @mail.ru недоступна из-за проблем с доставкой кода подтверждения.
-                  Пожалуйста, используйте альтернативные способы регистрации.
+                  <div>
+                    В настоящее время регистрация через почту с доменом @mail.ru недоступна из-за проблем с доставкой кода подтверждения.
+                    <br />
+                    Пожалуйста, используйте альтернативные способы регистрации.
+                    <br />
+                    Проверяйте, пожалуйста, спам!
+                  </div>
                 </AlertDescription>
             </Alert>
             <Form {...form}>

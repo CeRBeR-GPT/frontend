@@ -60,7 +60,6 @@ export default function VerifyPage() {
                 }, 2000)
               }
             } catch (error) {
-              console.error("Password update error:", error)
             } finally {
               setIsSubmitting(false)
             }
@@ -68,7 +67,6 @@ export default function VerifyPage() {
       }
       
     } catch (error) {
-      console.error("Verification error:", error);
       setError("Произошла ошибка при проверке кода. Пожалуйста, попробуйте снова.");
     } finally {
       setIsSubmitting(false);
