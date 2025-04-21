@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { format, parseISO, startOfWeek, addDays, subYears, isSameMonth, eachMonthOfInterval } from "date-fns"
+import { format, parseISO, startOfWeek, addDays, subYears, isSameMonth } from "date-fns"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
@@ -37,14 +37,12 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
   // Функция для прокрутки вправо
   const scrollToRight = () => {
     if (containerRef.current) {
-      const scrollContainer = containerRef.current.querySelector(
-        '[data-radix-scroll-area-viewport]'
-      ) as HTMLElement
-      
+      const scrollContainer = containerRef.current.querySelector("[data-radix-scroll-area-viewport]") as HTMLElement
+
       if (scrollContainer) {
         const scrollWidth = scrollContainer.scrollWidth
         const clientWidth = scrollContainer.clientWidth
-        
+
         if (scrollWidth > clientWidth) {
           scrollContainer.scrollLeft = scrollWidth - clientWidth
         }
@@ -78,45 +76,45 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
 
   const generateYearlyGrid = () => {
     const today = new Date()
-    const oneYearAgo = subYears(today, 1)
-    const startDate = startOfWeek(oneYearAgo, { weekStartsOn: 1 })
+    // Use today as the end date and calculate back exactly 52 weeks (1 year)
+    const startDate = startOfWeek(subYears(today, 1), { weekStartsOn: 1 })
     const weeks = []
     const dayLabels = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
-  
+
     const monthsData: { name: string; startWeek: number; endWeek: number }[] = []
     let currentMonth = ""
     let currentStartWeek = 0
-  
+
     for (let week = 0; week < 53; week++) {
       const weekStart = addDays(startDate, week * 7)
       const monthName = format(weekStart, "MMM", { locale: ru })
-  
+
       if (monthName !== currentMonth) {
         if (currentMonth) {
           monthsData.push({
             name: currentMonth,
             startWeek: currentStartWeek,
-            endWeek: week - 1
+            endWeek: week - 1,
           })
         }
         currentMonth = monthName
         currentStartWeek = week
       }
     }
-  
+
     if (currentMonth) {
       monthsData.push({
         name: currentMonth,
         startWeek: currentStartWeek,
-        endWeek: 52
+        endWeek: 52,
       })
     }
-  
+
     // Генерируем метки месяцев
     const monthLabels = monthsData.map((month) => {
       const startPosition = (month.startWeek / 53) * 100
       const width = ((month.endWeek - month.startWeek + 1) / 53) * 100
-      
+
       return (
         <div
           key={`${month.name}-${month.startWeek}`}
@@ -125,26 +123,27 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
             left: `${startPosition}%`,
             width: `${width}%`,
             position: "absolute",
-            textIndent: "4px"
+            textIndent: "4px",
           }}
         >
           {month.name}
         </div>
       )
     })
-  
+
     // Генерируем ячейки календаря
     for (let week = 0; week < 53; week++) {
       const days = []
-      
+
       for (let day = 0; day < 7; day++) {
         const date = addDays(startDate, week * 7 + day)
-        if (date > today) continue // Пропускаем будущие даты
-  
+        // Include today by using >= instead of >
+        if (date.setHours(0, 0, 0, 0) > today.setHours(0, 0, 0, 0)) continue // Пропускаем будущие даты
+
         const dateStr = format(date, "yyyy-MM-dd")
         const stat = statistics.find((s) => s.day === dateStr)
         const totalMessages = stat ? stat.providers.reduce((sum, p) => sum + p.messages_sent, 0) : 0
-  
+
         days.push(
           <HoverCard key={dateStr} openDelay={300} closeDelay={100}>
             <HoverCardTrigger asChild>
@@ -170,19 +169,19 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
                   ))}
               </div>
             </HoverCardContent>
-          </HoverCard>
+          </HoverCard>,
         )
       }
-  
+
       if (days.length > 0) {
         weeks.push(
           <div key={week} className="flex flex-col">
             {days}
-          </div>
+          </div>,
         )
       }
     }
-  
+
     return (
       <div className="mt-6">
         <div className="relative h-5 mb-1" style={{ width: "100%" }}>
@@ -204,7 +203,6 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
     )
   }
 
-
   const generateMonthlyGrid = () => {
     const today = new Date()
     const currentMonth = today.getMonth()
@@ -218,7 +216,7 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
       const stat = statistics.find((s) => s.day === dateStr)
       const totalMessages = stat ? stat.providers.reduce((sum, p) => sum + p.messages_sent, 0) : 0
 
-      daysInMonth.push({ date, dateStr, day, totalMessages, stat, })
+      daysInMonth.push({ date, dateStr, day, totalMessages, stat })
     }
 
     return (
@@ -273,6 +271,8 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
 
   const calculateViewTotals = () => {
     const today = new Date()
+    // Clone today to avoid modifying the original
+    const todayClone = new Date(today)
 
     return statistics.reduce(
       (totals, stat) => {
@@ -281,7 +281,12 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
 
         switch (viewMode) {
           case "year":
-            isInCurrentView = date >= subYears(today, 1)
+            // Ensure we include exactly one year of data including today
+            const yearAgo = subYears(todayClone, 1)
+            yearAgo.setHours(0, 0, 0, 0)
+            const dateClone = new Date(date)
+            dateClone.setHours(0, 0, 0, 0)
+            isInCurrentView = dateClone >= yearAgo && dateClone <= todayClone
             break
           case "month":
             isInCurrentView = isSameMonth(date, today)
@@ -368,8 +373,7 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
               <ScrollBar orientation="horizontal" />
               <div className="text-sm mb-2 min-w-[600px]">
                 <p>
-                  Всего сообщений за {format(new Date(), "LLLL", { locale: ru })}:{" "}
-                  <strong>{viewTotals.total}</strong>
+                  Всего сообщений за {format(new Date(), "LLLL", { locale: ru })}: <strong>{viewTotals.total}</strong>
                 </p>
               </div>
               {generateMonthlyGrid()}

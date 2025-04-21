@@ -86,10 +86,10 @@ export default function ChatPage() {
   const { toast } = useToast()
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const [rootKey, setRootKey] = useState<number>(0);
-  const token = getToken()
   const [CopiedText,setCopiedText] = useState<string | null>(null)
   const [isValidChat, setIsValidChat] = useState<boolean>(true)
   const [isCheckingChat, setIsCheckingChat] = useState<boolean>(true)
+  
 
   useEffect(() => {
     if (isAuthLoading) return
@@ -115,10 +115,6 @@ export default function ChatPage() {
     
     loadData()
   }, [chatId, isAuthenticated, isAuthLoading, router])
-
-  // useEffect(() => {
-  //   setRootKey(prev => prev + 1);
-  // }, [token])
 
   useEffect(() => {
     const container = messagesContainerRef.current
@@ -319,11 +315,33 @@ export default function ChatPage() {
     [chatId, getToken, loadChatHistory],
   )
 
+  useEffect(() => {
+    const checkChatValidity = () => {
+      if (chatId === "1") {
+        setIsValidChat(true);
+        setIsCheckingChat(false);
+        return;
+      }
+  
+      if (chatHistory.length === 0) {
+        setIsValidChat(false);
+        setIsCheckingChat(false);
+        return;
+      }
+  
+      const exists = chatHistory.some(chat => chat.id === chatId);
+      setIsValidChat(exists);
+      setIsCheckingChat(false);
+    };
+  
+    // Запускаем проверку при каждом изменении истории или ID чата
+    checkChatValidity();
+  }, [chatHistory, chatId]);
+
   const initializeWebSocket = useCallback(
     async (chatId: string) => {
       if (chatId === "1") return
 
-      if (shouldShowInput) return
 
       try {
         const token = await getToken()
@@ -334,6 +352,7 @@ export default function ChatPage() {
 
         const idChat = localStorage.getItem("lastDeletedChat")
         if (chatId === idChat) { return }
+        if (!isValidChat) return
 
         ws.current = new WebSocket(wsUrl)
         ws.current.onmessage = (event) => {
@@ -346,6 +365,7 @@ export default function ChatPage() {
               timestamp: new Date(),
             },
           })
+
           setIsLoading(false)
           updateSidebar()
           updateChatHistory().then(() => updateSidebar())
@@ -363,7 +383,7 @@ export default function ChatPage() {
 
         ws.current.onclose = (event) => {
           if (event.code !== 1000) {
-            setTimeout(() => initializeWebSocket(chatId), 5000)
+            //setTimeout(() => initializeWebSocket(chatId), 5000)
           }
         }
       } catch (error) {
@@ -636,7 +656,7 @@ export default function ChatPage() {
             <div className="prose dark:prose-invert max-w-none">
               <Markdown
                 handleCopyTextMarkdown={handleCopyTextMarkdown}
-                content="# Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?"
+                content="# Привет! Я ваш AI ассистент. Выберите чат или создайте новый!"
                 theme={theme}
                 onCopy={handleCopyCode}
                 copiedCode={copiedCode}
