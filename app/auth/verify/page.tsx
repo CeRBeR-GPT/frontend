@@ -25,7 +25,7 @@ export default function VerifyPage() {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const { verifyCode, getUserData, verifyEmailCode,  registartionApi } = useAuth()
+  const { verifyCode, getUserData, verifyEmailCode,  registartion } = useAuth()
 
   useEffect(() => {
     const savedEmail = localStorage.getItem("email")
@@ -55,7 +55,7 @@ export default function VerifyPage() {
     try {
       const response = await verifyEmailCode(email, values.code);
       if (response.status === 200 || response.status === 201) {
-        const registrationResponse = await registartionApi(userData);
+        const registrationResponse = await registartion(userData);
         if (registrationResponse.status === 200 || registrationResponse.status === 201) {
           localStorage.setItem("access_token", registrationResponse.data.access_token);
           

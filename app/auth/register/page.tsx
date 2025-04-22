@@ -16,6 +16,7 @@ import { Header } from "@/components/Header"
 import { AuthIcons } from "@/components/AuthIcons"
 import { ChoiceAuth } from "@/components/ChoiceAuth"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { sendEmailCodeApi } from "@/api/api"
 
 const formSchema = z.object({ email: z.string()
       .email({ message: "Пожалуйста, введите корректный email" })
@@ -66,8 +67,8 @@ export default function RegisterPage() {
   
   const sendEmailCode = async (email: string) => {
     try {
-      const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/register/verify_code?email=${email}`);
-      return response;
+      const response = await sendEmailCodeApi(email)
+      return response
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 400) {
         setErrorMessage("Пользователь с такой почтой уже существует.");

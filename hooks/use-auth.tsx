@@ -5,6 +5,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from "axios"
 import {getAccess} from "@/utils/tokens-utils";
 import type { DailyStatistic } from "@/components/statistics/activity-heatmap"
 import { useRouter } from "next/navigation"
+import { registartionApi, verifyEmailCodeApi } from "@/api/api";
 
 type UserData = {
     id: string,
@@ -43,7 +44,7 @@ type AuthContextType = {
     statistics: DailyStatistic[];
     statisticsLoading: boolean,
     verifyEmailCode: (email: string, code: string) => Promise<{status: number}>;
-    registartionApi: (UserData: IUserDataRegistration) => Promise<{status: number, data: { access_token: string; refresh_token: any; };}>
+    registartion: (UserData: IUserDataRegistration) => Promise<{status: number, data: { access_token: string; refresh_token: any; };}>
 
 }
 const AuthContext = createContext<AuthContextType>({
@@ -62,7 +63,7 @@ const AuthContext = createContext<AuthContextType>({
     statistics: [],
     statisticsLoading: true,
     verifyEmailCode: async () => ({status: 0}),
-    registartionApi: async () => ({status: 0, data: {access_token: "", refresh_token: ""}})
+    registartion: async () => ({status: 0, data: {access_token: "", refresh_token: ""}})
 })
 
 export function AuthProvider({children}: { children: React.ReactNode }) {
@@ -259,15 +260,15 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
 
     const verifyEmailCode = async (email: string, code: string) => {
         try {
-          return await axios.post(`https://api-gpt.energy-cerber.ru/user/register/verify_code?email=${email}&code=${code}`);
+          return await verifyEmailCodeApi(email, code);
         } catch (error) {
           throw error;
         }
-      };
+    };
     
-    const registartionApi = async (userData: IUserDataRegistration) => {
+    const registartion = async (userData: IUserDataRegistration) => {
         try {
-            const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/register`, userData);
+            const response = await registartionApi(userData);
             localStorage.setItem('access_token', response.data.access_token);
             localStorage.setItem('refresh_token', response.data.refresh_token);
             return response;
@@ -294,7 +295,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                 statistics,
                 statisticsLoading,
                 verifyEmailCode,
-                registartionApi
+                registartion
             }}
         >
             {children}
