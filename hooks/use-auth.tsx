@@ -5,7 +5,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from "axios"
 import {getAccess} from "@/utils/tokens-utils";
 import type { DailyStatistic } from "@/components/statistics/activity-heatmap"
 import { useRouter } from "next/navigation"
-import { registartionApi, verifyEmailCodeApi } from "@/api/api";
+import { getUserDataApi, loginApi, registartionApi, updatePasswordApi, verifyEmailCodeApi } from "@/api/api";
 
 type UserData = {
     id: string,
@@ -21,12 +21,6 @@ interface IUserDataRegistration {
     email: string;
     password: string;
   }
-
-interface tokensInterface{
-    "access_token": string,
-    "refresh_token": string,
-    "token_type": "Bearer"
-}
 
 type AuthContextType = {
     userData: UserData
@@ -151,7 +145,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
               }
               setStatisticsLoading(false)
             })
-            .catch((error) => {
+            .catch(() => {
               setStatisticsLoading(false)
             })
         }
@@ -163,12 +157,10 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
         }
     }, [isAuthenticated, authChecked, getUserData]);
 
+
     const login = async (email: string, password: string) => {
         try {
-            const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/login`, {
-                email,
-                password
-            });
+            const response = await loginApi(email, password)
 
             if (response.data?.access_token) {
                 localStorage.setItem('access_token', response.data.access_token);
@@ -215,11 +207,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
             const token = await getToken();
             if (!token) throw new Error("No valid token");
 
-            const response = await axios.post(
-                `https://api-gpt.energy-cerber.ru/user/edit_password?new_password=${newPassword}`,
-                {},
-                {headers: {Authorization: `Bearer ${token}`}}
-            );
+            const response = await updatePasswordApi(newPassword)
             localStorage.removeItem("new_password")
             if (response.data?.access_token) {
                 localStorage.setItem('access_token', response.data.access_token);

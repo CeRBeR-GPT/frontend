@@ -17,6 +17,7 @@ import { UserMenu } from "@/components/user-menu"
 import { NavLinks } from "@/components/nav-links"
 import { Toaster } from "@/components/ui/toaster"
 import axios from "axios"
+import { getVerifyPasswordCodeApi } from "@/api/api"
 
 const formSchema = z
   .object({
@@ -33,7 +34,7 @@ export default function ChangePasswordPage() {
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const router = useRouter()
-  const { isAuthenticated, getToken } = useAuth()
+  const { isAuthenticated } = useAuth()
   
   useEffect(() => {
     if (!isAuthenticated) {
@@ -50,13 +51,10 @@ export default function ChangePasswordPage() {
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const token = await getToken()
     localStorage.setItem("new_password", values.newPassword)
     setIsSubmitting(true)
     try{
-      await axios.get(`https://api-gpt.energy-cerber.ru/user/secure_verify_code`,  {
-        headers: {Authorization: `Bearer ${token}`},
-      });
+      await getVerifyPasswordCodeApi()
       router.push("/profile/change-password/confirmation")
     }
     catch(error){

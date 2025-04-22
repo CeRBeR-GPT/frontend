@@ -45,3 +45,39 @@ export const registartionApi = async (userData: IUserDataRegistration) => {
         return response;
     })
 }
+
+export const loginApi = async (email: string, password: string) => {
+    return instance.post(`user/login`, {email, password}).then(response => {
+        return response;
+    })
+}
+
+// export const refreshApi = async () => {
+//     return instance.post(`user/refresh`, {email, password}).then(response => {
+//         return response;
+//     })
+// }
+
+export const updatePasswordApi = async (newPassword: string) => {
+    return instance.post(`user/edit_password?new_password=${newPassword}`).then(response => {
+        return response;
+    })
+}
+
+export const getVerifyPasswordCodeApi = async () => {
+    return instance.get(`user/secure_verify_code`).then(response => {
+        return response;
+    })
+}
+
+export const VerifyPasswordCodeApi = async (email: string | undefined, code: string) => {
+    return instance.post(`user/secure_verify_code?email=${email}&code=${code}`).then(response => {
+        return response;
+    })
+}
+
+export const getUserDataApi = async (email: string | undefined, code: string) => {
+    return instance.get(`user/self`).then(response => {
+        return response;
+    })
+}
