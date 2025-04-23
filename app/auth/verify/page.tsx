@@ -12,8 +12,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Mail } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
-import axios from "axios"
 import { Header } from "@/components/Header"
+import { getChatAllApi } from "@/api/api"
 
 const formSchema = z.object({
   code: z.string().min(5, { message: "Код должен содержать 5 цифр" }).max(5),
@@ -66,11 +66,7 @@ export default function VerifyPage() {
             localStorage.removeItem("password")
             
             try {
-              const chatResponse = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
-                headers: {
-                  Authorization: `Bearer ${registrationResponse.data.access_token}`,
-                },
-              });
+              const chatResponse = await getChatAllApi()
               
               if (chatResponse.data) {
                 welcomeChatId = chatResponse.data[0].id

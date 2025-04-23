@@ -82,3 +82,30 @@ export const VerifyPasswordCodeApi = async (email: string | undefined, code: str
 export const getUserDataApi = async () => {
     return instance.get(`user/self`);
 };
+
+// chat API
+
+export const createChatApi = async (chatName: string) => {
+    return instance.post(`chat/new?name=${chatName}`);
+};
+
+export const getChatAllApi = async () => {
+    return instance.get(`chat/all`);
+};
+
+export const getChatByIdApi = async (id: string) => {
+    return instance.get(`chat/${id}`);
+};
+
+export const editChatNameApi = async (id: string, newName: string) => {
+    return instance.put(`chat/${id}?new_name=${newName}`);
+};
+
+export const deleteChatApi = async (id: string) => {
+    return instance.delete(`chat/${id}`);
+};
+
+export const clearChatApi = async (id: string) => {
+    return instance.delete(`chat/${id}/clear`);
+};
+

@@ -13,13 +13,13 @@ import { useAuth } from "@/hooks/use-auth"
 import { NavLinks } from "@/components/nav-links"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
-import axios from "axios"
 import { useTheme } from "next-themes"
 import "katex/dist/katex.min.css"
 import  Markdown from "@/components/markdown-with-latex"
 import { throttle } from "lodash-es"
 import MessageItem from "@/components/MessageItem"
 import MessageInput from "@/components/MessageInput"
+import { clearChatApi, deleteChatApi, editChatNameApi, getChatAllApi, getChatByIdApi } from "@/api/api"
 
 declare global {
   interface Window {
@@ -198,10 +198,7 @@ export default function ChatPage() {
   const renameChatTitle = async (id: string, newTitle: string) => {
     const token = await getToken()
     try {
-      await axios.put(
-        `https://api-gpt.energy-cerber.ru/chat/${id}?new_name=${newTitle}`, {},
-        {headers: { Authorization: `Bearer ${token}` } },
-      )
+      await editChatNameApi(id, newTitle)
 
       setChatHistory((prev: ChatHistory[]) =>
         prev.map((chat) => (chat.id === id ? { ...chat, title: newTitle } : chat)),
@@ -223,9 +220,7 @@ export default function ChatPage() {
       const token = await getToken()
       if (!token) return
 
-      const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const response = await getChatAllApi()
 
       const updatedChats = response.data.map((chat: any) => {
         const lastMessageDate =
@@ -270,9 +265,7 @@ export default function ChatPage() {
           return
         }
 
-        const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/${chatId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        const response = await getChatByIdApi(chatId)
 
         const history = response.data.messages
         dispatchMessages({ type: "SET", payload: history })
@@ -289,13 +282,8 @@ export default function ChatPage() {
 
   const clearChatMessages = useCallback(
     async (id: string) => {
-      const token = await getToken()
       try {
-        await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}/clear`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
+        await clearChatApi(id)
 
         setChatHistory((prev: ChatHistory[]) =>
           prev.map((chat) =>
@@ -399,12 +387,7 @@ export default function ChatPage() {
       try {
         setIsLoading(true)
 
-        await axios.delete(`https://api-gpt.energy-cerber.ru/chat/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-
+        await deleteChatApi(id)
         localStorage.setItem("lastDeletedChat", id || "")
         const remainingChats = chatHistory.filter((chat) => chat.id !== id)
         setChatHistory(remainingChats)
@@ -440,9 +423,7 @@ export default function ChatPage() {
       if (!token) return
       if (isRequested1.current) return
       isRequested1.current = true
-      const response = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const response = await getChatAllApi()
 
       const formattedChats = response.data.map((chat: any) => {
         const lastMessageDate =

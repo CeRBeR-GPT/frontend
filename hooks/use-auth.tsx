@@ -1,10 +1,9 @@
 "use client"
 
 import {createContext, useContext, useState, useEffect, useCallback, useRef} from "react"
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios"
 import {getAccess} from "@/utils/tokens-utils";
 import type { DailyStatistic } from "@/components/statistics/activity-heatmap"
-import { getUserDataApi, loginApi, registartionApi, updatePasswordApi, verifyEmailCodeApi } from "@/api/api";
+import { getChatAllApi, getUserDataApi, loginApi, registartionApi, updatePasswordApi, verifyEmailCodeApi } from "@/api/api";
 
 type UserData = {
     id: string,
@@ -171,11 +170,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                 let welcomeChatId = "1"
                 if (!lastSavedChat) {
                     try {
-                        const chatResponse = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
-                            headers: {
-                                Authorization: `Bearer ${response.data.access_token}`,
-                            },
-                        });
+                        const chatResponse = await getChatAllApi()
                         if (chatResponse.data)
                         {
                             welcomeChatId = chatResponse.data[0].id

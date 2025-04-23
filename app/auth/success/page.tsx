@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { useAuth } from "@/hooks/use-auth";
 import axios from "axios";
+import { getChatAllApi } from "@/api/api";
 
 const AuthSuccess = () => {
   const router = useRouter();
@@ -29,11 +30,7 @@ const AuthSuccess = () => {
           let welcomeChatId = "1"
           if (!lastSavedChat) {
             try {
-              const chatResponse = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
-                headers: {
-                  Authorization: `Bearer ${accessToken}`,
-                },
-              });
+              const chatResponse = await getChatAllApi()
               if (chatResponse.data){
                 welcomeChatId = chatResponse.data[0].id
                 localStorage.setItem("lastSavedChat", chatResponse.data[0].id);
