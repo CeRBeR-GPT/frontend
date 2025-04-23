@@ -25,12 +25,6 @@ const AuthSuccess = () => {
         Cookies.remove("refresh_token");
 
         try {
-          // await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
-          //   headers: {
-          //     Authorization: `Bearer ${accessToken}`,
-          //   },
-          // });
-
           const lastSavedChat = localStorage.getItem("lastSavedChat");
           let welcomeChatId = "1"
           if (!lastSavedChat) {

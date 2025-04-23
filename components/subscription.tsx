@@ -1,16 +1,12 @@
 import { Button } from "./ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
 import { useAuth } from "@/hooks/use-auth"
-import {formatExpireDate} from "@/utils/other";
-import {Calendar} from "lucide-react";
 
 const Subscription = () => {
     const {userData} = useAuth()
 
     const plan = userData?.plan === "default" ? "Базовый" : userData?.plan === "premium" ? "Премиум"
         : userData?.plan === "business" ? "Бизнес"  : ""
-
-    const ExpireDate = formatExpireDate(userData?.plan_expire_date)
 
     return(
         <div>
@@ -49,15 +45,11 @@ const Subscription = () => {
                     <h4 className="font-medium mb-1">{plan} тариф</h4>
                     <p className="text-sm text-muted-foreground mb-3">
                       У вас активирован {plan} тариф с ограничением в {userData?.message_count_limit || 0} сообщений в
-                      день
+                      день.
                     </p>
-                      {userData?.plan !== "default" && (
-                          <p className="text-sm text-muted-foreground mb-3">Действует до {ExpireDate} года</p>
-                      )}
-
-                      {/*<Button variant="outline" size="sm">*/}
-                    {/*  Управление тарифом*/}
-                    {/*</Button>*/}
+                    <Button variant="outline" size="sm">
+                      Управление тарифом
+                    </Button>
                   </div>
                 </div>
               </CardContent>

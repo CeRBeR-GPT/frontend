@@ -11,7 +11,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Mail } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
-import axios from "axios"
 import { Header } from "@/components/Header"
 import { VerifyPasswordCodeApi } from "@/api/api"
 

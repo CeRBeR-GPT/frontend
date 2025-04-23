@@ -4,7 +4,6 @@ import {createContext, useContext, useState, useEffect, useCallback, useRef} fro
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios"
 import {getAccess} from "@/utils/tokens-utils";
 import type { DailyStatistic } from "@/components/statistics/activity-heatmap"
-import { useRouter } from "next/navigation"
 import { getUserDataApi, loginApi, registartionApi, updatePasswordApi, verifyEmailCodeApi } from "@/api/api";
 
 type UserData = {
@@ -107,9 +106,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                 throw new Error("No valid token");
             }
 
-            const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
-                headers: {Authorization: `Bearer ${token}`},
-            });
+            const response = await getUserDataApi()
 
             if (response.data?.statistics) {
                 setStatistics(response.data.statistics)
@@ -132,24 +129,24 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
 
     }, [getToken]);
 
-    const refreshStatistics = () => {
-        getUserData()
+    const refreshStatistics = async () => {
+        await getUserData()
         const token = localStorage.getItem("access_token")
         if (token) {
           setStatisticsLoading(true)
-          axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }).then((response) => {
-              if (response.data?.statistics) {
+
+          try{
+            const response = await getUserDataApi()
+            if (response.data?.statistics) {
                 setStatistics(response.data.statistics)
-              }
-              setStatisticsLoading(false)
-            })
-            .catch(() => {
-              setStatisticsLoading(false)
-            })
+            }
+            setStatisticsLoading(false)
+          }
+          catch(error) {
+            setStatisticsLoading(false)
+          }
         }
-      }
+    }
 
     useEffect(() => {
         if (isAuthenticated && !authChecked) {

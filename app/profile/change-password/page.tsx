@@ -16,7 +16,6 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { UserMenu } from "@/components/user-menu"
 import { NavLinks } from "@/components/nav-links"
 import { Toaster } from "@/components/ui/toaster"
-import axios from "axios"
 import { getVerifyPasswordCodeApi } from "@/api/api"
 
 const formSchema = z
@@ -34,7 +33,7 @@ export default function ChangePasswordPage() {
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const router = useRouter()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated} = useAuth()
   
   useEffect(() => {
     if (!isAuthenticated) {
