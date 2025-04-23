@@ -11,8 +11,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Mail } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
-import axios from "axios"
 import { Header } from "@/components/Header"
+import { VerifyPasswordCodeApi } from "@/api/api"
 
 const formSchema = z.object({
   code: z.string().min(5, { message: "Код должен содержать 5 цифр" }).max(5),
@@ -44,11 +44,7 @@ export default function VerifyPage() {
     setError("");
     const email = userData?.email
     try {
-      const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/secure_verify_code?email=${email}&code=${values.code}`, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      const response = await VerifyPasswordCodeApi(email, values.code)
       if (response.status === 200 || response.status === 201) {
         const newPassword = localStorage.getItem("new_password")
         if (newPassword !== null){

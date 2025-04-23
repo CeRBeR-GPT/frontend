@@ -12,8 +12,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Mail } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
-import axios from "axios"
 import { Header } from "@/components/Header"
+import { getChatAllApi } from "@/api/api"
 
 const formSchema = z.object({
   code: z.string().min(5, { message: "Код должен содержать 5 цифр" }).max(5),
@@ -25,7 +25,7 @@ export default function VerifyPage() {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const { verifyCode, getUserData, verifyEmailCode,  registartionApi } = useAuth()
+  const { verifyCode, getUserData, verifyEmailCode,  registartion } = useAuth()
 
   useEffect(() => {
     const savedEmail = localStorage.getItem("email")
@@ -55,7 +55,7 @@ export default function VerifyPage() {
     try {
       const response = await verifyEmailCode(email, values.code);
       if (response.status === 200 || response.status === 201) {
-        const registrationResponse = await registartionApi(userData);
+        const registrationResponse = await registartion(userData);
         if (registrationResponse.status === 200 || registrationResponse.status === 201) {
           localStorage.setItem("access_token", registrationResponse.data.access_token);
           
@@ -66,11 +66,7 @@ export default function VerifyPage() {
             localStorage.removeItem("password")
             
             try {
-              const chatResponse = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
-                headers: {
-                  Authorization: `Bearer ${registrationResponse.data.access_token}`,
-                },
-              });
+              const chatResponse = await getChatAllApi()
               
               if (chatResponse.data) {
                 welcomeChatId = chatResponse.data[0].id

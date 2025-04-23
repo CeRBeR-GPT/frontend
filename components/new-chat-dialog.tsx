@@ -12,6 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Sparkles, MessageSquarePlus } from "lucide-react"
 import axios from "axios"
+import { createChatApi } from "@/api/api"
 
 const formSchema = z.object({
   chatName: z
@@ -38,20 +39,10 @@ export const NewChatDialog = ({ open, onOpenChange }: NewChatDialogProps) => {
     },
   })
 
-  const getToken = () => localStorage.getItem('access_token')
-  const token = getToken()
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit() {
     setIsSubmitting(true)
     try {
-      const response = await axios.post(
-        `https://api-gpt.energy-cerber.ru/chat/new?name=${chatName}`, {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
+      const response = await createChatApi(chatName)
       onOpenChange(false)
       router.push(`/chat/${response.data.id}`)
     } catch (error) {

@@ -17,6 +17,7 @@ import { NavLinks } from "@/components/nav-links"
 import { useToast } from "@/hooks/use-toast"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { handleSubmitFeedbackApi } from "@/api/api"
 
 export default function Home() {
   const { isAuthenticated, getToken } = useAuth()
@@ -121,16 +122,7 @@ export default function Home() {
         formData.append("file", file)
       }
 
-      await axios.post(
-          `https://api-gpt.energy-cerber.ru/user/feedback?name=${encodeURIComponent(name)}&message=${encodeURIComponent(message)}`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": file ? "multipart/form-data" : "application/json",
-            },
-          },
-      )
+      await handleSubmitFeedbackApi(name, message, formData)
 
       toast({
         title: "Отзыв отправлен",

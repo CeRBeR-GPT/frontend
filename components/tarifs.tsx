@@ -3,11 +3,11 @@
 import { Check, X, Zap, Calendar } from "lucide-react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card"
 import { Button } from "./ui/button"
-import axios from "axios"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { Badge } from "./ui/badge"
 import { formatExpireDate } from "@/utils/other"
+import { newPaymentApi } from "@/api/api"
 
 const Tarifs = () => {
   const router = useRouter()
@@ -26,18 +26,8 @@ const Tarifs = () => {
   const isPaidPlan = userData?.plan === "premium" || userData?.plan === "business"
 
   const payForPlan = async (plan: string) => {
-    const getToken = () => localStorage.getItem("access_token")
-    const token = getToken()
     try {
-      const response = await axios.post(
-          `https://api-gpt.energy-cerber.ru/transaction/new_payment?plan=${plan}`,
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-      )
+      const response = await newPaymentApi(plan)
       router.replace(response.data.url)
     } catch (error) {
     }

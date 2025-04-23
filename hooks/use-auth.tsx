@@ -1,10 +1,9 @@
 "use client"
 
 import {createContext, useContext, useState, useEffect, useCallback, useRef} from "react"
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios"
 import {getAccess} from "@/utils/tokens-utils";
 import type { DailyStatistic } from "@/components/statistics/activity-heatmap"
-import { useRouter } from "next/navigation"
+import { getChatAllApi, getUserDataApi, loginApi, registartionApi, updatePasswordApi, verifyEmailCodeApi } from "@/api/api";
 
 type UserData = {
     id: string,
@@ -20,12 +19,6 @@ interface IUserDataRegistration {
     email: string;
     password: string;
   }
-
-interface tokensInterface{
-    "access_token": string,
-    "refresh_token": string,
-    "token_type": "Bearer"
-}
 
 type AuthContextType = {
     userData: UserData
@@ -43,7 +36,7 @@ type AuthContextType = {
     statistics: DailyStatistic[];
     statisticsLoading: boolean,
     verifyEmailCode: (email: string, code: string) => Promise<{status: number}>;
-    registartionApi: (UserData: IUserDataRegistration) => Promise<{status: number, data: { access_token: string; refresh_token: any; };}>
+    registartion: (UserData: IUserDataRegistration) => Promise<{status: number, data: { access_token: string; refresh_token: any; };}>
 
 }
 const AuthContext = createContext<AuthContextType>({
@@ -62,7 +55,7 @@ const AuthContext = createContext<AuthContextType>({
     statistics: [],
     statisticsLoading: true,
     verifyEmailCode: async () => ({status: 0}),
-    registartionApi: async () => ({status: 0, data: {access_token: "", refresh_token: ""}})
+    registartion: async () => ({status: 0, data: {access_token: "", refresh_token: ""}})
 })
 
 export function AuthProvider({children}: { children: React.ReactNode }) {
@@ -112,9 +105,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                 throw new Error("No valid token");
             }
 
-            const response = await axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
-                headers: {Authorization: `Bearer ${token}`},
-            });
+            const response = await getUserDataApi()
 
             if (response.data?.statistics) {
                 setStatistics(response.data.statistics)
@@ -137,24 +128,24 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
 
     }, [getToken]);
 
-    const refreshStatistics = () => {
-        getUserData()
+    const refreshStatistics = async () => {
+        await getUserData()
         const token = localStorage.getItem("access_token")
         if (token) {
           setStatisticsLoading(true)
-          axios.get(`https://api-gpt.energy-cerber.ru/user/self`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }).then((response) => {
-              if (response.data?.statistics) {
+
+          try{
+            const response = await getUserDataApi()
+            if (response.data?.statistics) {
                 setStatistics(response.data.statistics)
-              }
-              setStatisticsLoading(false)
-            })
-            .catch((error) => {
-              setStatisticsLoading(false)
-            })
+            }
+            setStatisticsLoading(false)
+          }
+          catch(error) {
+            setStatisticsLoading(false)
+          }
         }
-      }
+    }
 
     useEffect(() => {
         if (isAuthenticated && !authChecked) {
@@ -162,12 +153,10 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
         }
     }, [isAuthenticated, authChecked, getUserData]);
 
+
     const login = async (email: string, password: string) => {
         try {
-            const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/login`, {
-                email,
-                password
-            });
+            const response = await loginApi(email, password)
 
             if (response.data?.access_token) {
                 localStorage.setItem('access_token', response.data.access_token);
@@ -181,11 +170,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                 let welcomeChatId = "1"
                 if (!lastSavedChat) {
                     try {
-                        const chatResponse = await axios.get(`https://api-gpt.energy-cerber.ru/chat/all`, {
-                            headers: {
-                                Authorization: `Bearer ${response.data.access_token}`,
-                            },
-                        });
+                        const chatResponse = await getChatAllApi()
                         if (chatResponse.data)
                         {
                             welcomeChatId = chatResponse.data[0].id
@@ -214,11 +199,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
             const token = await getToken();
             if (!token) throw new Error("No valid token");
 
-            const response = await axios.post(
-                `https://api-gpt.energy-cerber.ru/user/edit_password?new_password=${newPassword}`,
-                {},
-                {headers: {Authorization: `Bearer ${token}`}}
-            );
+            const response = await updatePasswordApi(newPassword)
             localStorage.removeItem("new_password")
             if (response.data?.access_token) {
                 localStorage.setItem('access_token', response.data.access_token);
@@ -259,15 +240,15 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
 
     const verifyEmailCode = async (email: string, code: string) => {
         try {
-          return await axios.post(`https://api-gpt.energy-cerber.ru/user/register/verify_code?email=${email}&code=${code}`);
+          return await verifyEmailCodeApi(email, code);
         } catch (error) {
           throw error;
         }
-      };
+    };
     
-    const registartionApi = async (userData: IUserDataRegistration) => {
+    const registartion = async (userData: IUserDataRegistration) => {
         try {
-            const response = await axios.post(`https://api-gpt.energy-cerber.ru/user/register`, userData);
+            const response = await registartionApi(userData);
             localStorage.setItem('access_token', response.data.access_token);
             localStorage.setItem('refresh_token', response.data.refresh_token);
             return response;
@@ -294,7 +275,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                 statistics,
                 statisticsLoading,
                 verifyEmailCode,
-                registartionApi
+                registartion
             }}
         >
             {children}
