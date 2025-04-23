@@ -109,3 +109,12 @@ export const clearChatApi = async (id: string) => {
     return instance.delete(`chat/${id}/clear`);
 };
 
+//transactions API
+
+export const newPaymentApi = async (plan: string) => {
+    return instance.post(`transaction/new_payment?plan=${plan}`);
+};
+
+
+
+
