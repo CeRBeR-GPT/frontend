@@ -14,6 +14,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { NewChatDialog } from "@/components/new-chat-dialog"
 import { ChatOptionsMenu } from "@/components/chat-options-menu"
 import { Loader2 } from "lucide-react"
+import { useChats } from "@/hooks/use-chats"
 
 interface ChatHistory {
   id: string
@@ -24,16 +25,14 @@ interface ChatHistory {
 }
 
 interface ChatSidebarProps {
-  chatHistory: ChatHistory[];
   setChatHistory: (value: ChatHistory[] | ((prev: ChatHistory[]) => ChatHistory[])) => void;
   onChatDeleted?: (nextChatId: string | null) => void;
   onClearChat?: (id: string) => void;
-  renameChatTitle: (id: string, newTitle: string) => void;
   clearChatMessages: (id: string) => void
   deleteChat: (id: string) => void;
 }
 
-export function ChatSidebar({ chatHistory, renameChatTitle, clearChatMessages, deleteChat }: ChatSidebarProps) {
+export function ChatSidebar({ clearChatMessages, deleteChat }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
   const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false)
@@ -41,6 +40,7 @@ export function ChatSidebar({ chatHistory, renameChatTitle, clearChatMessages, d
   const pathname = usePathname()
   const router = useRouter()
   const currentChatId = pathname.split("/").pop() || ""
+  const { chatHistory } = useChats()
 
   useEffect(() => {
     if (pathname === "/chat") {
@@ -109,7 +109,6 @@ export function ChatSidebar({ chatHistory, renameChatTitle, clearChatMessages, d
                       chatTitle={chat.title}
                       onDelete={deleteChat}
                       onClear={clearChatMessages}
-                      onRename={renameChatTitle}
                     />
                   </CardContent>
                 </Card>
