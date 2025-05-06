@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { LogIn, Eye, EyeOff } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
-import { Header } from "@/components/Header"
+import { Header } from "@/widgets/header/header"
 import { AuthIcons } from "@/components/AuthIcons"
 import { ChoiceAuth } from "@/components/ChoiceAuth"
 
