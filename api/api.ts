@@ -55,10 +55,6 @@ export const handleSubmitFeedbackApi = async (name: string, message: string, for
     })
 }
 
-export const loginApi = async (email: string, password: string) => {
-    return instance.post(`user/login`, { email, password });
-};
-
 export const refreshApi = async (refresh_token: string | null) => {
     return refreshInstance.post(`user/refresh`, {}, {
         headers: {

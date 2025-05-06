@@ -3,8 +3,7 @@
 import {createContext, useContext, useState, useEffect, useCallback, useRef} from "react"
 import {getAccess} from "@/utils/tokens-utils";
 import type { DailyStatistic } from "@/components/statistics/activity-heatmap"
-import { getChatAllApi, getUserDataApi, registartionApi, updatePasswordApi, verifyEmailCodeApi } from "@/api/api";
-import { loginApi } from "@/features/auth/model/api";
+import { getChatAllApi, getUserDataApi, loginApi, registartionApi, updatePasswordApi, verifyEmailCodeApi } from "@/api/api";
 
 type UserData = {
     id: string,
@@ -34,8 +33,6 @@ type AuthContextType = {
     getToken: () => Promise<string | null>,
     success: () => { success: boolean },
     refreshStatistics: () => void;
-    statistics: DailyStatistic[];
-    statisticsLoading: boolean,
     verifyEmailCode: (email: string, code: string) => Promise<{status: number}>;
     registartion: (UserData: IUserDataRegistration) => Promise<{status: number, data: { access_token: string; refresh_token: any; };}>
 
@@ -46,17 +43,9 @@ const AuthContext = createContext<AuthContextType>({
     login: async () => ({success: false}),
     verifyCode: async () => ({success: false}),
     logout: () => {},
-    updatePassword: async () => ({success: false}),
     isLoading: false,
     Login: async () => ({success: false}),
-    getUserData: async () => {},
     getToken: async () => null,
-    success: () => ({success: false}),
-    refreshStatistics: () => {},
-    statistics: [],
-    statisticsLoading: true,
-    verifyEmailCode: async () => ({status: 0}),
-    registartion: async () => ({status: 0, data: {access_token: "", refresh_token: ""}})
 })
 
 export function AuthProvider({children}: { children: React.ReactNode }) {
@@ -93,72 +82,9 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
         return await getAccess(accessToken, refreshToken);
     }, []);
 
-    const isRequested = useRef(false)
-
-    const getUserData = useCallback(async (): Promise<void> => {
-        //if (typeof window === "undefined") return;
-        // if (isRequested.current) return
-        // isRequested.current = true
-        setStatisticsLoading(true)
-        try {
-            const token = await getToken();
-            if (!token) {
-                throw new Error("No valid token");
-            }
-
-            const response = await getUserDataApi()
-
-            if (response.data?.statistics) {
-                setStatistics(response.data.statistics)
-            }
-
-            setUserData(response.data);
-            setIsAuthenticated(true);
-            setAuthChecked(true);
-
-        } catch (error) {
-            setIsAuthenticated(false);
-            setAuthChecked(true);
-            localStorage.removeItem('isAuthenticated');
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-        }
-        finally{
-            setStatisticsLoading(false)
-        }
-
-    }, [getToken]);
-
-    const refreshStatistics = async () => {
-        await getUserData()
-        const token = localStorage.getItem("access_token")
-        if (token) {
-          setStatisticsLoading(true)
-
-          try{
-            const response = await getUserDataApi()
-            if (response.data?.statistics) {
-                setStatistics(response.data.statistics)
-            }
-            setStatisticsLoading(false)
-          }
-          catch(error) {
-            setStatisticsLoading(false)
-          }
-        }
-    }
-
-    useEffect(() => {
-        if (isAuthenticated && !authChecked) {
-            getUserData();
-        }
-    }, [isAuthenticated, authChecked, getUserData]);
-
-
     const login = async (email: string, password: string) => {
         try {
             const response = await loginApi(email, password)
-            console.log("Привет")
 
             if (response.data?.access_token) {
                 localStorage.setItem('access_token', response.data.access_token);
@@ -166,7 +92,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
                 localStorage.setItem('isAuthenticated', 'true');
 
                 setIsAuthenticated(true);
-                await getUserData();
 
                 const lastSavedChat = localStorage.getItem("lastSavedChat")
                 let welcomeChatId = "1"
@@ -196,41 +121,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
         }
     };
 
-    const updatePassword = async (newPassword: string) => {
-        try {
-            const token = await getToken();
-            if (!token) throw new Error("No valid token");
-
-            const response = await updatePasswordApi(newPassword)
-            localStorage.removeItem("new_password")
-            if (response.data?.access_token) {
-                localStorage.setItem('access_token', response.data.access_token);
-                localStorage.setItem('refresh_token', response.data.refresh_token);
-                setIsAuthenticated(true);
-                localStorage.setItem('isAuthenticated', 'true');
-                return {success: true};
-            }
-            return {success: false};
-        } catch (error) {
-            return {success: false};
-        }
-    };
-
-    const success = () => {
-        setIsAuthenticated(true)
-        localStorage.setItem('isAuthenticated', 'true')
-        return {success: true, lastChatId: "1"}
-    }
-
-    const verifyCode = async (email: string, code: string, password: string) => {
-        if (code.length === 5 && /^\d+$/.test(code)) {
-            localStorage.setItem('isAuthenticated', 'true')
-            setIsAuthenticated(true)
-            return {success: true, lastChatId: "1"}
-        }
-        return {success: false}
-    }
-
     const logout = () => {
         localStorage.removeItem('isAuthenticated');
         localStorage.removeItem('access_token');
@@ -240,44 +130,15 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
         setAuthChecked(false);
     };
 
-    const verifyEmailCode = async (email: string, code: string) => {
-        try {
-          return await verifyEmailCodeApi(email, code);
-        } catch (error) {
-          throw error;
-        }
-    };
-    
-    const registartion = async (userData: IUserDataRegistration) => {
-        try {
-            const response = await registartionApi(userData);
-            localStorage.setItem('access_token', response.data.access_token);
-            localStorage.setItem('refresh_token', response.data.refresh_token);
-            return response;
-        } catch (error) {
-            throw error;
-        }
-    }
-
     return (
         <AuthContext.Provider
             value={{
-                userData,
-                getUserData,
                 isAuthenticated,
                 isLoading: isLoading || !authChecked,
                 login,
-                verifyCode,
                 logout,
-                updatePassword,
                 Login: login,
                 getToken,
-                success,
-                refreshStatistics,
-                statistics,
-                statisticsLoading,
-                verifyEmailCode,
-                registartion
             }}
         >
             {children}
