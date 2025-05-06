@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Mail } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
-import { Header } from "@/components/Header"
+import { Header } from "@/widgets/header/header"
 import { getChatAllApi } from "@/api/api"
 
 const formSchema = z.object({

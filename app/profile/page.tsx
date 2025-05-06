@@ -2,7 +2,7 @@
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Bot } from "lucide-react"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { ThemeToggle } from "@/shared/ui/theme-toggle"
 import { useAuth } from "@/hooks/use-auth"
 import { UserMenu } from "@/components/user-menu"
 import { NavLinks } from "@/components/nav-links"
