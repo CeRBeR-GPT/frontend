@@ -1,7 +1,6 @@
 
 import axios from 'axios';
 
-// Базовый клиент
 export const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://api-gpt.energy-cerber.ru/',
   headers: {
@@ -9,10 +8,17 @@ export const apiClient = axios.create({
   }
 });
 
-// Клиент для refresh-токенов (без автоматического добавления auth-заголовков)
 export const refreshClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://api-gpt.energy-cerber.ru/',
   headers: {
     'Content-Type': 'application/json'
   }
+});
+
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem("access_token");
+  if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });

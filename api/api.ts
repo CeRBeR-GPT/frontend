@@ -75,9 +75,9 @@ export const VerifyPasswordCodeApi = async (email: string | undefined, code: str
     return instance.post(`user/secure_verify_code?email=${email}&code=${code}`);
 };
 
-export const getUserDataApi = async () => {
-    return instance.get(`user/self`);
-};
+// export const getUserDataApi = async () => {
+//     return instance.get(`user/self`);
+// };
 
 // chat API
 

@@ -1,9 +1,7 @@
-// src/features/auth/ui/AuthForm.tsx
 'use client'
-import { Card } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Header } from "@/widgets/header/header"
 
- // Клиентский компонент
 
 export function AuthForm() {
   if (isLoading) {
@@ -111,9 +109,4 @@ export function AuthForm() {
       </main>
     </div>
   )
-}
-
-// src/features/auth/model/useAuth.ts
-export function useAuth() {
-  // Логика авторизации
 }

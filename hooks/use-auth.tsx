@@ -3,7 +3,8 @@
 import {createContext, useContext, useState, useEffect, useCallback, useRef} from "react"
 import {getAccess} from "@/utils/tokens-utils";
 import type { DailyStatistic } from "@/components/statistics/activity-heatmap"
-import { getChatAllApi, getUserDataApi, registartionApi, updatePasswordApi, verifyEmailCodeApi } from "@/api/api";
+import { getChatAllApi, registartionApi, updatePasswordApi, verifyEmailCodeApi } from "@/api/api";
+import { getUserDataApi } from "@/features/user/model/api";
 import { loginApi } from "@/features/auth/model/api";
 
 type UserData = {

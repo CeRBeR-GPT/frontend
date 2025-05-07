@@ -6,7 +6,6 @@ import {NavLinks} from "@/components/nav-links"
 
 export const Header = () => {
 
-  
     return(
         <header className="border-b">
           <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
