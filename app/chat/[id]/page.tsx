@@ -73,8 +73,8 @@ export default function ChatPage() {
   const router = useRouter()
   const chatId = params.id as string
   const { getToken } = useAuth1()
-  const {isAuthenticated, isLoading: isAuthLoading} = useAuth()
-  const { userData } = useUserData()
+  const {isAuthenticated, isLoading: isAuthLoading, userData} = useAuth()
+  //const { userData } = useUserData()
   const [input, setInput] = useState<string>("")
   const [messages, dispatchMessages] = useReducer(messagesReducer, [])
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -96,19 +96,19 @@ export default function ChatPage() {
   
 
   useEffect(() => {
-    // if (isAuthLoading) return
-    // if (!isAuthenticated) {
-    //   router.push("/auth/login")
-    //   return
-    // }
+    if (isAuthLoading) return
+    if (!isAuthenticated) {
+      router.push("/auth/login")
+      return
+    }
   
-    // // Для "пустого" чата показываем приветствие и скрываем поле ввода
-    // if (chatId === "1") {
-    //   dispatchMessages({ type: "CLEAR" })
-    //   setIsTestMessageShown(true)
-    //   setChatTitle("Новый чат")
-    //   return
-    // }
+    // Для "пустого" чата показываем приветствие и скрываем поле ввода
+    if (chatId === "1") {
+      dispatchMessages({ type: "CLEAR" })
+      setIsTestMessageShown(true)
+      setChatTitle("Новый чат")
+      return
+    }
   
     // Загрузка обычного чата
     const loadData = async () => {

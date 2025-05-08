@@ -35,6 +35,8 @@ export const useUserData = () => {
 
       const response = await getUserDataApi();
       setUserData(response.data);
+      setIsAuthenticated(true);
+      setAuthChecked(true);
       return response.data;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';

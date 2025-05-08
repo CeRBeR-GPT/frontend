@@ -8,10 +8,11 @@ import { Badge } from "./ui/badge"
 import { formatExpireDate } from "@/utils/other"
 import { newPaymentApi } from "@/api/api"
 import { useUserData } from "@/features/user/model/use-user"
+import { useAuth } from "@/features/auth/model/use-auth"
 
 const Tarifs = () => {
   const router = useRouter()
-  const { userData } = useUserData()
+  const { userData } = useAuth()
 
   const plan =
       userData?.plan === "default"

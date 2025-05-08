@@ -1,15 +1,61 @@
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { loginApi } from './api';
-import { useUserData } from '@/features/user/model/use-user';
 import { getChatAllApi } from '@/api/api';
+import { ApiError, UserData } from './types';
+import { getAccess } from '@/utils/tokens-utils';
+import { getUserDataApi } from '@/features/user/model/api';
 
 export const useAuth = () => {
 
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [authChecked, setAuthChecked] = useState(false);
     const [isLoading, setIsLoading] = useState(true)
-    const { fetchUserData} = useUserData()
+    const [userData, setUserData] = useState<UserData | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    
+    const getToken = useCallback(async (): Promise<string | null> => {
+        if (typeof window === 'undefined') return null;
+        
+        const accessToken = localStorage.getItem('access_token');
+        const refreshToken = localStorage.getItem('refresh_token');
+        if (!accessToken || !refreshToken) return null;
+
+        try {
+            return await getAccess(accessToken, refreshToken);
+        } catch (e) {
+            return null;
+        }
+    }, []);
+    
+    const fetchUserData = useCallback(async (): Promise<UserData | null> => {
+    setLoading(true);
+    setError(null);
+
+    try {
+        const token = await getToken();
+        if (!token) {
+        throw new Error('No valid token');
+        }
+
+        const response = await getUserDataApi();
+        setUserData(response.data);
+        setIsAuthenticated(true);
+        setAuthChecked(true);
+        return response.data;
+    } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        setIsAuthenticated(false);
+        setAuthChecked(true);
+        localStorage.removeItem('isAuthenticated');
+        setError(message);
+        setUserData(null);
+        return null;
+    } finally {
+        setLoading(false);
+    }
+    }, [getToken]);
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -60,15 +106,23 @@ export const useAuth = () => {
                 return {success: true, lastChatId: lastSavedChat || welcomeChatId};
             }
             return {success: false};
-        } catch (error) {
-            if (error.response.status === 401) {
+        } catch (error: unknown) {
+            const apiError = error as ApiError;
+            
+            if (apiError.response?.status === 401) {
                 throw new Error("Неверный логин или пароль. Пожалуйста, попробуйте снова!");
-            }
-            else {
+            } else {
                 throw new Error("Произошла ошибка при входе. Пожалуйста, попробуйте снова!");
             }
         }
     };
 
-  return { login, isAuthenticated, setIsAuthenticated, authChecked, setAuthChecked, isLoading: isLoading || !authChecked };
+  return { login, isAuthenticated, setIsAuthenticated, authChecked, setAuthChecked, isLoading: isLoading || !authChecked,
+    userData,
+    loading,
+    error,
+    fetchUserData,
+    getToken,
+    setUserData
+   };
 };

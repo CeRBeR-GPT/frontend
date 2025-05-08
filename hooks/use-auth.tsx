@@ -69,7 +69,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     const logout = useLogout()
     const value = {
         ...auth,
-        ...user,
         ...logout
       };
 

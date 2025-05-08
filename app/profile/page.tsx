@@ -17,8 +17,8 @@ import { useAuth } from "@/features/auth/model/use-auth"
 import { useUserData } from "@/features/user/model/use-user"
 
 export default function ProfilePage() {
-  const { isAuthenticated } = useAuth()
-  const { fetchUserData } = useUserData()
+  const { isAuthenticated, fetchUserData } = useAuth()
+  //const { fetchUserData } = useUserData()
   useEffect(() => {
     const getToken = () => localStorage.getItem("access_token")
     const token = getToken()

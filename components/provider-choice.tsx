@@ -5,10 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import getProviderIcon, { getProviderDescription, getProviderName } from "@/utils/providers-utils"
 import { useEffect, useState } from "react";
 import { providersByPlan } from "@/const/providers"
-import { useUserData } from "@/features/user/model/use-user";
+//import { useUserData } from "@/features/user/model/use-user";
+import { useAuth } from "@/features/auth/model/use-auth";
 
 const ProviderChoice = () => {
-    const { userData } = useUserData()
+    const { userData } = useAuth()
     const [selectedProvider, setSelectedProvider] = useState<string>("default")
     const [availableProviders, setAvailableProviders] = useState<string[]>([])
 

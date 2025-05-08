@@ -4,7 +4,7 @@ import { useAuth } from '@/features/auth/model/use-auth';
 export const useLogout = () => {
 
     const { setIsAuthenticated, setAuthChecked} = useAuth()
-    const { setUserData } = useUserData()
+    const { setUserData } = useAuth()
 
     const logout = () => {
         localStorage.removeItem('isAuthenticated');

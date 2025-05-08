@@ -41,7 +41,7 @@ export const useLoginForm = () => {
         console.log(lastSavedChat)
         router.push(`/chat/${lastSavedChat}`);
       } else {
-        setError(result.error || "Неверный email или пароль");
+        setError("Неверный email или пароль");
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : "Неизвестная ошибка");
