@@ -6,7 +6,9 @@ import type { DailyStatistic } from "@/components/statistics/activity-heatmap"
 import { getChatAllApi, registartionApi, updatePasswordApi, verifyEmailCodeApi } from "@/api/api";
 import { getUserDataApi } from "@/features/user/model/api";
 import { loginApi } from "@/features/auth/model/api";
-
+import { useUserData } from "@/features/user/model/use-user";
+import { useAuth } from "@/features/auth/model/use-auth";
+import { useLogout } from "@/features/logout/model/use-logout";
 type UserData = {
     id: string,
     email: string,
@@ -26,61 +28,71 @@ type AuthContextType = {
     userData: UserData
     isAuthenticated: boolean
     login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string, error?: string; }>
-    verifyCode: (email: string, code: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
+    // verifyCode: (email: string, code: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
     logout: () => void
-    updatePassword: (newPassword: string) => Promise<{ success: boolean } | undefined>
+    // updatePassword: (newPassword: string) => Promise<{ success: boolean } | undefined>
     isLoading: boolean
-    Login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
-    getUserData: () => Promise<void>
+    // Login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
+    // getUserData: () => Promise<void>
     getToken: () => Promise<string | null>,
-    success: () => { success: boolean },
-    refreshStatistics: () => void;
-    statistics: DailyStatistic[];
-    statisticsLoading: boolean,
-    verifyEmailCode: (email: string, code: string) => Promise<{status: number}>;
-    registartion: (UserData: IUserDataRegistration) => Promise<{status: number, data: { access_token: string; refresh_token: any; };}>
+    // success: () => { success: boolean },
+    // refreshStatistics: () => void;
+    // statistics: DailyStatistic[];
+    // statisticsLoading: boolean,
+    // verifyEmailCode: (email: string, code: string) => Promise<{status: number}>;
+    // registartion: (UserData: IUserDataRegistration) => Promise<{status: number, data: { access_token: string; refresh_token: any; };}>
 
 }
 const AuthContext = createContext<AuthContextType>({
     userData: null,
     isAuthenticated: false,
     login: async () => ({success: false}),
-    verifyCode: async () => ({success: false}),
+    // verifyCode: async () => ({success: false}),
     logout: () => {},
-    updatePassword: async () => ({success: false}),
+    // updatePassword: async () => ({success: false}),
     isLoading: false,
-    Login: async () => ({success: false}),
-    getUserData: async () => {},
+    // Login: async () => ({success: false}),
+    // getUserData: async () => {},
     getToken: async () => null,
-    success: () => ({success: false}),
-    refreshStatistics: () => {},
-    statistics: [],
-    statisticsLoading: true,
-    verifyEmailCode: async () => ({status: 0}),
-    registartion: async () => ({status: 0, data: {access_token: "", refresh_token: ""}})
+    // success: () => ({success: false}),
+    // refreshStatistics: () => {},
+    // statistics: [],
+    // statisticsLoading: true,
+    // verifyEmailCode: async () => ({status: 0}),
+    // registartion: async () => ({status: 0, data: {access_token: "", refresh_token: ""}})
 })
 
 export function AuthProvider({children}: { children: React.ReactNode }) {
-    const [userData, setUserData] = useState<UserData | null>(null)
+
+    const auth = useAuth()
+    const user = useUserData()
+    const logout = useLogout()
+    const value = {
+        ...auth,
+        ...user,
+        ...logout
+      };
+
+    //const [userData, setUserData] = useState<UserData | null>(null)
     const [isAuthenticated, setIsAuthenticated] = useState(false)
-    const [isLoading, setIsLoading] = useState(true)
-    const [authChecked, setAuthChecked] = useState(false);
+    // const [isLoading, setIsLoading] = useState(true)
+    // const [authChecked, setAuthChecked] = useState(false);
     const [statistics, setStatistics] = useState<DailyStatistic[]>([])
     const [statisticsLoading, setStatisticsLoading] = useState(true)
 
-    useEffect(() => {
-        const checkAuth = async () => {
-            if (typeof window !== "undefined") {
-                const storedIsAuthenticated = localStorage.getItem('isAuthenticated')
-                if (storedIsAuthenticated === 'true') {
-                    setIsAuthenticated(true)
-                }
-                setIsLoading(false)
-            }
-        }
+    // useEffect(() => {
+    //     const checkAuth = async () => {
+    //         if (typeof window !== "undefined") {
+    //             const storedIsAuthenticated = localStorage.getItem('isAuthenticated')
+    //             if (storedIsAuthenticated === 'true') {
+    //                 setIsAuthenticated(true)
+    //             }
+    //             setIsLoading(false)
+    //         }
+    //     }
 
-        checkAuth()
-    }, [])
+    //     checkAuth()
+    // }, [])
 
 
     const getToken = useCallback(async (): Promise<string | null> => {
@@ -96,42 +108,42 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
 
     const isRequested = useRef(false)
 
-    const getUserData = useCallback(async (): Promise<void> => {
-        //if (typeof window === "undefined") return;
-        // if (isRequested.current) return
-        // isRequested.current = true
-        setStatisticsLoading(true)
-        try {
-            const token = await getToken();
-            if (!token) {
-                throw new Error("No valid token");
-            }
+    // const getUserData = useCallback(async (): Promise<void> => {
+    //     //if (typeof window === "undefined") return;
+    //     // if (isRequested.current) return
+    //     // isRequested.current = true
+    //     setStatisticsLoading(true)
+    //     try {
+    //         const token = await getToken();
+    //         if (!token) {
+    //             throw new Error("No valid token");
+    //         }
 
-            const response = await getUserDataApi()
+    //         const response = await getUserDataApi()
 
-            if (response.data?.statistics) {
-                setStatistics(response.data.statistics)
-            }
+    //         if (response.data?.statistics) {
+    //             setStatistics(response.data.statistics)
+    //         }
 
-            setUserData(response.data);
-            setIsAuthenticated(true);
-            setAuthChecked(true);
+    //         setUserData(response.data);
+    //         setIsAuthenticated(true);
+    //         setAuthChecked(true);
 
-        } catch (error) {
-            setIsAuthenticated(false);
-            setAuthChecked(true);
-            localStorage.removeItem('isAuthenticated');
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-        }
-        finally{
-            setStatisticsLoading(false)
-        }
+    //     } catch (error) {
+    //         setIsAuthenticated(false);
+    //         setAuthChecked(true);
+    //         localStorage.removeItem('isAuthenticated');
+    //         localStorage.removeItem('access_token');
+    //         localStorage.removeItem('refresh_token');
+    //     }
+    //     finally{
+    //         setStatisticsLoading(false)
+    //     }
 
-    }, [getToken]);
+    // }, [getToken]);
 
     const refreshStatistics = async () => {
-        await getUserData()
+        //await getUserData()
         const token = localStorage.getItem("access_token")
         if (token) {
           setStatisticsLoading(true)
@@ -149,53 +161,53 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
         }
     }
 
-    useEffect(() => {
-        if (isAuthenticated && !authChecked) {
-            getUserData();
-        }
-    }, [isAuthenticated, authChecked, getUserData]);
+    // useEffect(() => {
+    //     if (isAuthenticated && !authChecked) {
+    //         getUserData();
+    //     }
+    // }, [isAuthenticated, authChecked, getUserData]);
 
 
-    const login = async (email: string, password: string) => {
-        try {
-            const response = await loginApi(email, password)
-            console.log("Привет")
+    // const login = async (email: string, password: string) => {
+    //     try {
+    //         const response = await loginApi(email, password)
+    //         console.log("Привет")
 
-            if (response.data?.access_token) {
-                localStorage.setItem('access_token', response.data.access_token);
-                localStorage.setItem('refresh_token', response.data.refresh_token);
-                localStorage.setItem('isAuthenticated', 'true');
+    //         if (response.data?.access_token) {
+    //             localStorage.setItem('access_token', response.data.access_token);
+    //             localStorage.setItem('refresh_token', response.data.refresh_token);
+    //             localStorage.setItem('isAuthenticated', 'true');
 
-                setIsAuthenticated(true);
-                await getUserData();
+    //             setIsAuthenticated(true);
+    //             await getUserData();
 
-                const lastSavedChat = localStorage.getItem("lastSavedChat")
-                let welcomeChatId = "1"
-                if (!lastSavedChat) {
-                    try {
-                        const chatResponse = await getChatAllApi()
-                        if (chatResponse.data)
-                        {
-                            welcomeChatId = chatResponse.data[0].id
-                            localStorage.setItem("lastSavedChat", chatResponse.data[0].id);
-                        }
-                    } catch (error) {
-                    }
-                }
+    //             const lastSavedChat = localStorage.getItem("lastSavedChat")
+    //             let welcomeChatId = "1"
+    //             if (!lastSavedChat) {
+    //                 try {
+    //                     const chatResponse = await getChatAllApi()
+    //                     if (chatResponse.data)
+    //                     {
+    //                         welcomeChatId = chatResponse.data[0].id
+    //                         localStorage.setItem("lastSavedChat", chatResponse.data[0].id);
+    //                     }
+    //                 } catch (error) {
+    //                 }
+    //             }
 
-                return {success: true, lastChatId: lastSavedChat || welcomeChatId};
-            }
-            return {success: false};
-        } catch (error) {
-            // @ts-ignore
-            if (error.response.status === 401) {
-                throw new Error("Неверный логин или пароль. Пожалуйста, попробуйте снова!");
-            }
-            else {
-                throw new Error("Произошла ошибка при входе. Пожалуйста, попробуйте снова!");
-            }
-        }
-    };
+    //             return {success: true, lastChatId: lastSavedChat || welcomeChatId};
+    //         }
+    //         return {success: false};
+    //     } catch (error) {
+    //         // @ts-ignore
+    //         if (error.response.status === 401) {
+    //             throw new Error("Неверный логин или пароль. Пожалуйста, попробуйте снова!");
+    //         }
+    //         else {
+    //             throw new Error("Произошла ошибка при входе. Пожалуйста, попробуйте снова!");
+    //         }
+    //     }
+    // };
 
     const updatePassword = async (newPassword: string) => {
         try {
@@ -232,14 +244,14 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
         return {success: false}
     }
 
-    const logout = () => {
-        localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        setUserData(null);
-        setIsAuthenticated(false);
-        setAuthChecked(false);
-    };
+    // const logout = () => {
+    //     localStorage.removeItem('isAuthenticated');
+    //     localStorage.removeItem('access_token');
+    //     localStorage.removeItem('refresh_token');
+    //     setUserData(null);
+    //     setIsAuthenticated(false);
+    //     setAuthChecked(false);
+    // };
 
     const verifyEmailCode = async (email: string, code: string) => {
         try {
@@ -261,31 +273,13 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     }
 
     return (
-        <AuthContext.Provider
-            value={{
-                userData,
-                getUserData,
-                isAuthenticated,
-                isLoading: isLoading || !authChecked,
-                login,
-                verifyCode,
-                logout,
-                updatePassword,
-                Login: login,
-                getToken,
-                success,
-                refreshStatistics,
-                statistics,
-                statisticsLoading,
-                verifyEmailCode,
-                registartion
-            }}
+        <AuthContext.Provider value={value}
         >
             {children}
         </AuthContext.Provider>
     );
 }
 
-export const useAuth = () => useContext(AuthContext)
+export const useAuth1 = () => useContext(AuthContext)
 
 

@@ -2,11 +2,11 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth1 } from "@/hooks/use-auth"
 import { useEffect, useState } from "react"
 
 export const NavLinks = () => {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated } = useAuth1()
   const pathname = usePathname()
   const [isAuth, setIsAuth] = useState(false)
   const [chat, setChat] = useState(() => {

@@ -8,20 +8,19 @@ import { MoreVertical, Pencil, Trash2, Eraser, AlertTriangle } from "lucide-reac
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
          AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { EditChatDialog } from "@/components/edit-chat-dialog"
-import { useChats } from "@/hooks/use-chats"
 
 interface ChatOptionsMenuProps {
   chatId: string
   chatTitle: string
   onDelete: (chatId: string) => void
   onClear: (chatId: string) => void
+  onRename: (chatId: string, newTitle: string) => void
 }
 
-export function ChatOptionsMenu({ chatId, chatTitle, onDelete, onClear }: ChatOptionsMenuProps) {
+export function ChatOptionsMenu({ chatId, chatTitle, onDelete, onClear, onRename }: ChatOptionsMenuProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isClearDialogOpen, setIsClearDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const {renameChatTitle } = useChats()
 
   const handleDelete = () => {
     onDelete(chatId)
@@ -34,7 +33,7 @@ export function ChatOptionsMenu({ chatId, chatTitle, onDelete, onClear }: ChatOp
   }
 
   const handleRename = (newTitle: string) => {
-    renameChatTitle(chatId, newTitle)
+    onRename(chatId, newTitle)
     setIsEditDialogOpen(false)
   }
 
@@ -119,4 +118,3 @@ export function ChatOptionsMenu({ chatId, chatTitle, onDelete, onClear }: ChatOp
     </>
   )
 }
-

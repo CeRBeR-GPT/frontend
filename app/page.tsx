@@ -11,8 +11,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowRight, Bot, Send, Lock, MessageSquarePlus, CheckCircle, Upload, FileUp, Info } from "lucide-react"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
-import { UserMenu } from "@/components/user-menu"
-import { useAuth } from "@/hooks/use-auth"
+import { UserMenu } from "@/widgets/user-menu/user-menu"
+import { useAuth1 } from "@/hooks/use-auth"
 import { NavLinks } from "@/components/nav-links"
 import { useToast } from "@/hooks/use-toast"
 import { Label } from "@/components/ui/label"
@@ -20,7 +20,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { handleSubmitFeedbackApi } from "@/api/api"
 
 export default function Home() {
-  const { isAuthenticated, getToken } = useAuth()
+  const { isAuthenticated, getToken } = useAuth1()
   const [isAuth, setIsAuth] = useState(false)
   const [name, setName] = useState("")
   const [message, setMessage] = useState("")

@@ -3,10 +3,10 @@
 import type React from "react"
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth1 } from "@/hooks/use-auth"
 
 export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated } = useAuth1()
   const router = useRouter()
 
   useEffect(() => {

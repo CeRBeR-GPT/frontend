@@ -1,14 +1,15 @@
 
-
 import { useEffect, useState } from 'react';
 import { loginApi } from './api';
-import { getUserData } from '@/features/user/model/use-user';
+import { useUserData } from '@/features/user/model/use-user';
+import { getChatAllApi } from '@/api/api';
 
 export const useAuth = () => {
 
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [authChecked, setAuthChecked] = useState(false);
     const [isLoading, setIsLoading] = useState(true)
+    const { fetchUserData} = useUserData()
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -24,6 +25,12 @@ export const useAuth = () => {
         checkAuth()
     }, [])
 
+    useEffect(() => {
+        if (isAuthenticated && !authChecked) {
+            fetchUserData();
+        }
+    }, [isAuthenticated, authChecked, fetchUserData]);
+
     const login = async (email: string, password: string) => {
         try {
             const response = await loginApi(email, password)
@@ -34,23 +41,23 @@ export const useAuth = () => {
                 localStorage.setItem('isAuthenticated', 'true');
 
                 setIsAuthenticated(true);
-                await getUserData();
+                await fetchUserData();
 
                 const lastSavedChat = localStorage.getItem("lastSavedChat")
                 let welcomeChatId = "1"
-                // if (!lastSavedChat) {
-                //     try {
-                //         const chatResponse = await getChatAllApi()
-                //         if (chatResponse.data)
-                //         {
-                //             welcomeChatId = chatResponse.data[0].id
-                //             localStorage.setItem("lastSavedChat", chatResponse.data[0].id);
-                //         }
-                //     } catch (error) {
-                //     }
-                // }
+                if (!lastSavedChat) {
+                    try {
+                        const chatResponse = await getChatAllApi()
+                        if (chatResponse.data)
+                        {
+                            welcomeChatId = chatResponse.data[0].id
+                            localStorage.setItem("lastSavedChat", chatResponse.data[0].id);
+                        }
+                    } catch (error) {
+                    }
+                }
 
-                return {success: true, lastChatId: lastSavedChat || welcomeChatId, isLoading: isLoading || !authChecked};
+                return {success: true, lastChatId: lastSavedChat || welcomeChatId};
             }
             return {success: false};
         } catch (error) {
@@ -63,5 +70,5 @@ export const useAuth = () => {
         }
     };
 
-  return { login, isAuthenticated, setIsAuthenticated, authChecked, setAuthChecked };
+  return { login, isAuthenticated, setIsAuthenticated, authChecked, setAuthChecked, isLoading: isLoading || !authChecked };
 };

@@ -4,25 +4,26 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, 
   DropdownMenuTrigger} from "@/components/ui/dropdown-menu"
-import { useAuth } from "@/hooks/use-auth"
+import { Logout } from "@/features/logout/ui/logout"
+import { useAuth1 } from "@/hooks/use-auth"
 import { LogOut, User } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
 export function UserMenu() {
-  const { userData, isAuthenticated, logout } = useAuth()
-  const router = useRouter()
+  const { userData, isAuthenticated } = useAuth1()
+  //const router = useRouter()
   const [isAuth, setIsAuth] = useState(false)
 
   useEffect(() => {
     setIsAuth(isAuthenticated)
   }, [isAuthenticated])
 
-  const handleLogout = () => {
-    logout()
-    router.push("/")
-  }
+  // const handleLogout = () => {
+  //   logout()
+  //   router.push("/")
+  // }
 
   if (!isAuth) {
     return (
@@ -53,10 +54,13 @@ export function UserMenu() {
         <DropdownMenuItem asChild>
           <Link href="/profile" className="cursor-pointer">Профиль</Link>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
+
+        <Logout/>
+        {/* <DropdownMenuItem className="text-red-600 cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           <span>Выйти</span>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
+
       </DropdownMenuContent>
     </DropdownMenu>
   )

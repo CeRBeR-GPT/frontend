@@ -3,8 +3,8 @@ import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Bot } from "lucide-react"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
-import { useAuth } from "@/hooks/use-auth"
-import { UserMenu } from "@/components/user-menu"
+// import { useAuth } from "@/hooks/use-auth"
+import { UserMenu } from "@/widgets/user-menu/user-menu"
 import { NavLinks } from "@/components/nav-links"
 import { useEffect } from "react"
 import WithoutAuth from "@/components/WithoutAuth"
@@ -13,14 +13,17 @@ import ProfileSettings from "@/components/profile-settings"
 import Subscription from "@/components/subscription"
 import ProviderChoice from "@/components/provider-choice"
 import Tarifs from "@/components/tarifs"
+import { useAuth } from "@/features/auth/model/use-auth"
+import { useUserData } from "@/features/user/model/use-user"
 
 export default function ProfilePage() {
-  const { isAuthenticated, getUserData } = useAuth()
+  const { isAuthenticated } = useAuth()
+  const { fetchUserData } = useUserData()
   useEffect(() => {
     const getToken = () => localStorage.getItem("access_token")
     const token = getToken()
     if (token) {
-      getUserData()
+      fetchUserData()
     }
   }, [])
 
@@ -52,7 +55,7 @@ export default function ProfilePage() {
           <h2 className="text-xl font-bold mb-4">Статистика использования</h2>
           <Card className="w-full">
             <CardContent className="pt-6 px-2 sm:px-4 md:px-6">
-              <StatisticsDashboard/>
+              {/* <StatisticsDashboard/> */}
             </CardContent>
           </Card>
         </div>

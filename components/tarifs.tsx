@@ -4,14 +4,14 @@ import { Check, X, Zap, Calendar } from "lucide-react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card"
 import { Button } from "./ui/button"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/hooks/use-auth"
 import { Badge } from "./ui/badge"
 import { formatExpireDate } from "@/utils/other"
 import { newPaymentApi } from "@/api/api"
+import { useUserData } from "@/features/user/model/use-user"
 
 const Tarifs = () => {
   const router = useRouter()
-  const { userData } = useAuth()
+  const { userData } = useUserData()
 
   const plan =
       userData?.plan === "default"

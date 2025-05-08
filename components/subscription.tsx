@@ -1,9 +1,9 @@
+import { useUserData } from "@/features/user/model/use-user"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
-import { useAuth } from "@/hooks/use-auth"
 
 const Subscription = () => {
-    const {userData} = useAuth()
+    const {userData} = useUserData()
 
     const plan = userData?.plan === "default" ? "Базовый" : userData?.plan === "premium" ? "Премиум"
         : userData?.plan === "business" ? "Бизнес"  : ""

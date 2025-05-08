@@ -5,11 +5,13 @@ import { User, LogOut, Lock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/hooks/use-auth"
+import { useLogout } from "@/features/logout/model/use-logout"
+import { useUserData } from "@/features/user/model/use-user"
 
 const ProfileSettings = () => {
     const router = useRouter()
-    const { logout, userData} = useAuth()
+    const { userData } = useUserData()
+    const { logout } = useLogout()
     
     const handleLogout = () => {
         logout()
