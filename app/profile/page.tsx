@@ -3,7 +3,6 @@ import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Bot } from "lucide-react"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
-// import { useAuth } from "@/hooks/use-auth"
 import { UserMenu } from "@/widgets/user-menu/user-menu"
 import { NavLinks } from "@/components/nav-links"
 import { useEffect } from "react"
@@ -53,7 +52,7 @@ export default function ProfilePage() {
           <h2 className="text-xl font-bold mb-4">Статистика использования</h2>
           <Card className="w-full">
             <CardContent className="pt-6 px-2 sm:px-4 md:px-6">
-              {/* <StatisticsDashboard/> */}
+              <StatisticsDashboard/>
             </CardContent>
           </Card>
         </div>

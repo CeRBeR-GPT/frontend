@@ -5,6 +5,7 @@ import { getChatAllApi } from '@/api/api';
 import { ApiError, UserData } from './types';
 import { getAccess } from '@/utils/tokens-utils';
 import { getUserDataApi } from '@/features/user/model/api';
+import { useStatistics } from '@/features/statistics/model/use-statistics';
 
 export const useAuth = () => {
 
@@ -14,6 +15,7 @@ export const useAuth = () => {
     const [userData, setUserData] = useState<UserData | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    // const { setStatistics } = useStatistics()
     
     const getToken = useCallback(async (): Promise<string | null> => {
         if (typeof window === 'undefined') return null;
@@ -40,7 +42,11 @@ export const useAuth = () => {
             }
 
             const response = await getUserDataApi();
+
             setUserData(response.data);
+            // if (response.data?.statistics) {
+            //     setStatistics(response.data.statistics)
+            // }
             setIsAuthenticated(true);
             setAuthChecked(true);
             return response.data;

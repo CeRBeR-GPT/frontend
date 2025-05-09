@@ -1,5 +1,4 @@
 
-import { useUserData } from '@/features/user/model/use-user';
 import { useAuth } from '@/features/auth/model/use-auth';
 export const useLogout = () => {
 
