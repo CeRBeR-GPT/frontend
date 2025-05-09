@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ActivityHeatmap } from "./activity-heatmap"
+import { ActivityHeatmap } from "../../../widgets/statistics/activity-heatmap"
 import { Button } from "@/components/ui/button"
 import { RefreshCw } from "lucide-react"
 import { useStatistics } from "@/features/statistics/model/use-statistics"

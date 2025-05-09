@@ -1,13 +1,10 @@
 import { BarChart, ChevronUp } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
-import type { ProviderStatistic } from "./activity-heatmap"
 import getProviderIcon, { getProviderName } from "@/utils/providers-utils"
+import { ProviderStatistic } from "@/shared/types/statistics/statistics"
 
-interface ProviderStatsProps {
-  providers: ProviderStatistic[]
-}
+export function ProviderStats( { providers } : {providers: ProviderStatistic[]}) {
 
-export function ProviderStats({ providers }: ProviderStatsProps) {
   if (!providers.length) return null
 
   const sortedProviders = [...providers].sort((a, b) => b.messages_sent - a.messages_sent)

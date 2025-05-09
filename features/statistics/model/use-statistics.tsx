@@ -1,8 +1,8 @@
 
 import { useAuth } from '@/features/auth/model/use-auth';
 import { useState } from 'react';
-import { DailyStatistic } from './types';
 import { getUserDataApi } from '@/features/user/model/api';
+import { DailyStatistic } from '@/shared/types/statistics/statistics';
 
 export const useStatistics = () => {
     const [statistics, setStatistics] = useState<DailyStatistic[]>([])

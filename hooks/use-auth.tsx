@@ -2,21 +2,12 @@
 
 import {createContext, useContext, useState, useCallback, useRef} from "react"
 import {getAccess} from "@/utils/tokens-utils";
-import type { DailyStatistic } from "@/components/statistics/activity-heatmap"
 import { registartionApi, updatePasswordApi, verifyEmailCodeApi } from "@/api/api";
 import { getUserDataApi } from "@/features/user/model/api";
 import { useAuth } from "@/features/auth/model/use-auth";
 import { useLogout } from "@/features/logout/model/use-logout";
 import { useStatistics } from "@/features/statistics/model/use-statistics";
-type UserData = {
-    id: string,
-    email: string,
-    plan: string,
-    plan_expire_date: Date,
-    available_message_count: number,
-    message_length_limit: number,
-    message_count_limit: number
-} | null
+
 
 interface IUserDataRegistration {
     email: string;
@@ -24,35 +15,25 @@ interface IUserDataRegistration {
   }
 
 type AuthContextType = {
-    userData: UserData
     isAuthenticated: boolean
     login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string, error?: string; }>
     // verifyCode: (email: string, code: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
-    logout: () => void
     // updatePassword: (newPassword: string) => Promise<{ success: boolean } | undefined>
     isLoading: boolean
     getToken: () => Promise<string | null>,
     // success: () => { success: boolean },
-    // refreshStatistics: () => void;
-    // statistics: DailyStatistic[];
-    // statisticsLoading: boolean,
     // verifyEmailCode: (email: string, code: string) => Promise<{status: number}>;
     // registartion: (UserData: IUserDataRegistration) => Promise<{status: number, data: { access_token: string; refresh_token: any; };}>
 
 }
 const AuthContext = createContext<AuthContextType>({
-    userData: null,
     isAuthenticated: false,
     login: async () => ({success: false}),
     // verifyCode: async () => ({success: false}),
-    logout: () => {},
     // updatePassword: async () => ({success: false}),
     isLoading: false,
     getToken: async () => null,
     // success: () => ({success: false}),
-    // refreshStatistics: () => {},
-    // statistics: [],
-    // statisticsLoading: true,
     // verifyEmailCode: async () => ({status: 0}),
     // registartion: async () => ({status: 0, data: {access_token: "", refresh_token: ""}})
 })
@@ -69,8 +50,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
       };
 
     const [isAuthenticated, setIsAuthenticated] = useState(false)
-    //const [statistics, setStatistics] = useState<DailyStatistic[]>([])
-    const [statisticsLoading, setStatisticsLoading] = useState(true)
 
     const getToken = useCallback(async (): Promise<string | null> => {
         if (typeof window === "undefined") return null;
@@ -118,25 +97,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     //     }
 
     // }, [getToken]);
-
-    const refreshStatistics = async () => {
-        //await getUserData()
-        const token = localStorage.getItem("access_token")
-        if (token) {
-          setStatisticsLoading(true)
-
-          try{
-            const response = await getUserDataApi()
-            if (response.data?.statistics) {
-                //setStatistics(response.data.statistics)
-            }
-            setStatisticsLoading(false)
-          }
-          catch(error) {
-            setStatisticsLoading(false)
-          }
-        }
-    }
 
     const updatePassword = async (newPassword: string) => {
         try {

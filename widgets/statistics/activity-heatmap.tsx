@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { format, parseISO, startOfWeek, addDays, subYears, isSameMonth, eachMonthOfInterval } from "date-fns"
+import { format, parseISO, addDays, subYears } from "date-fns"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
@@ -9,77 +9,27 @@ import { ru } from "date-fns/locale"
 import { ProviderStats } from "./provider-stats"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { getProviderName } from "@/utils/providers-utils"
+import { DailyStatistic } from "@/shared/types/statistics/statistics"
+import { generateMonthlyGrid } from "./ui/generateMonthlyGrid"
+import { getColorIntensity } from "@/shared/utils/statistics/generateMonthlyGrid"
+import { calculateViewTotals } from "@/shared/utils/statistics/calculateViewTotals"
+import { scrollToRight } from "@/shared/utils/statistics/scrollToRight"
 
-export interface ProviderStatistic {
-  provider_name: string
-  messages_sent: number
-  last_activity: string
-}
-
-export interface DailyStatistic {
-  day: string
-  providers: ProviderStatistic[]
-}
-
-interface ActivityHeatmapProps {
-  statistics: DailyStatistic[]
-}
-
-export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
+export function ActivityHeatmap({ statistics }: {statistics: DailyStatistic[]}) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<"year" | "month" | "day">("year")
-  const maxMessages = statistics.reduce((max, stat) => {
-    const totalMessages = stat.providers.reduce((sum, provider) => sum + provider.messages_sent, 0)
-    return totalMessages > max ? totalMessages : max
-  }, 0)
 
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const scrollToRight = () => {
-    if (containerRef.current) {
-      const scrollContainer = containerRef.current.querySelector(
-          '[data-radix-scroll-area-viewport]'
-      ) as HTMLElement
-
-      if (scrollContainer) {
-        const scrollWidth = scrollContainer.scrollWidth
-        const clientWidth = scrollContainer.clientWidth
-
-        if (scrollWidth > clientWidth) {
-          scrollContainer.scrollLeft = scrollWidth - clientWidth
-        }
-      }
-    }
-  }
-
   useEffect(() => {
-    const timer = setTimeout(scrollToRight, 100)
+    const timer = setTimeout(() => scrollToRight(containerRef), 100)
     return () => clearTimeout(timer)
   }, [viewMode, statistics])
-
-  const getColorIntensity = (count: number) => {
-    if (count === 0) return "bg-gray-100 dark:bg-gray-800"
-
-    const intensity = Math.min(Math.ceil((count / maxMessages) * 4), 4)
-
-    switch (intensity) {
-      case 1:
-        return "bg-green-100 dark:bg-green-900"
-      case 2:
-        return "bg-green-300 dark:bg-green-700"
-      case 3:
-        return "bg-green-500 dark:bg-green-500"
-      case 4:
-        return "bg-green-700 dark:bg-green-300"
-      default:
-        return "bg-gray-100 dark:bg-gray-800"
-    }
-  }
 
   const generateYearlyGrid = () => {
     const today = new Date()
     const oneYearAgo = subYears(today, 1)
-    const startDate = oneYearAgo // Исправлено: используем ровно дату год назад
+    const startDate = oneYearAgo
     const weeks = []
     const dayLabels = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
 
@@ -147,7 +97,7 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
             <HoverCard key={dateStr} openDelay={300} closeDelay={100}>
               <HoverCardTrigger asChild>
                 <div
-                    className={`w-3 h-3 m-0.5 rounded-sm cursor-pointer ${getColorIntensity(totalMessages)} ${
+                    className={`w-3 h-3 m-0.5 rounded-sm cursor-pointer ${getColorIntensity(statistics, totalMessages)} ${
                         selectedDate === dateStr ? "ring-2 ring-primary" : ""
                     }`}
                     onClick={() => {
@@ -202,109 +152,12 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
     )
   }
 
-  const generateMonthlyGrid = () => {
-    const today = new Date()
-    const currentMonth = today.getMonth()
-    const currentYear = today.getFullYear()
-    const daysInMonth = []
-    for (let day = 1; day <= 31; day++) {
-      const date = new Date(currentYear, currentMonth, day)
-      if (date.getMonth() !== currentMonth) break
-
-      const dateStr = format(date, "yyyy-MM-dd")
-      const stat = statistics.find((s) => s.day === dateStr)
-      const totalMessages = stat ? stat.providers.reduce((sum, p) => sum + p.messages_sent, 0) : 0
-
-      daysInMonth.push({ date, dateStr, day, totalMessages, stat })
-    }
-
-    return (
-      <div className="grid grid-cols-7 gap-1 my-4">
-        {["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map((day) => (
-          <div key={day} className="text-center text-xs text-muted-foreground">
-            {day}
-          </div>
-        ))}
-
-        {Array.from({ length: daysInMonth[0].date.getDay() || 7 }).map((_, i) => (
-          <div key={`empty-start-${i}`} className="h-10" />
-        ))}
-
-        {daysInMonth.map(({ dateStr, day, totalMessages, stat }) => (
-          <HoverCard key={dateStr} openDelay={300} closeDelay={100}>
-            <HoverCardTrigger asChild>
-              <div
-                className={`h-10 rounded flex items-center justify-center ${getColorIntensity(totalMessages)} cursor-pointer
-                  ${selectedDate === dateStr ? "ring-2 ring-primary" : ""}
-                `}
-                onClick={() => {
-                  setSelectedDate(dateStr)
-                  setViewMode("day")
-                }}
-              >
-                <span className="text-xs font-medium">{day}</span>
-              </div>
-            </HoverCardTrigger>
-            <HoverCardContent className="w-56">
-              <div className="text-sm">
-                <div className="font-medium">{format(parseISO(dateStr), "PPP", { locale: ru })}</div>
-                <div>{totalMessages} сообщений</div>
-                {stat &&
-                  stat.providers.map((p) => (
-                    <div key={p.provider_name} className="text-xs mt-1">
-                      {getProviderName(p.provider_name)}: {p.messages_sent} сообщений
-                    </div>
-                  ))}
-              </div>
-            </HoverCardContent>
-          </HoverCard>
-        ))}
-      </div>
-    )
-  }
-
   const getSelectedDayStats = () => {
     if (!selectedDate) return null
     return statistics.find((s) => s.day === selectedDate) || null
   }
 
-  const calculateViewTotals = () => {
-    const today = new Date()
-
-    return statistics.reduce(
-      (totals, stat) => {
-        const date = parseISO(stat.day)
-        let isInCurrentView = false
-
-        switch (viewMode) {
-          case "year":
-            isInCurrentView = date >= subYears(today, 1)
-            break
-          case "month":
-            isInCurrentView = isSameMonth(date, today)
-            break
-          case "day":
-            isInCurrentView = selectedDate === stat.day
-            break
-        }
-
-        if (isInCurrentView) {
-          stat.providers.forEach((p) => {
-            if (!totals.byProvider[p.provider_name]) {
-              totals.byProvider[p.provider_name] = 0
-            }
-            totals.byProvider[p.provider_name] += p.messages_sent
-            totals.total += p.messages_sent
-          })
-        }
-
-        return totals
-      },
-      { total: 0, byProvider: {} as Record<string, number> },
-    )
-  }
-
-  const viewTotals = calculateViewTotals()
+  const viewTotals = calculateViewTotals(statistics, viewMode, selectedDate)
   const selectedDayStats = getSelectedDayStats()
 
   return (
@@ -369,7 +222,7 @@ export function ActivityHeatmap({ statistics }: ActivityHeatmapProps) {
                   <strong>{viewTotals.total}</strong>
                 </p>
               </div>
-              {generateMonthlyGrid()}
+              {generateMonthlyGrid({statistics, selectedDate, setSelectedDate, setViewMode})}
               <ScrollBar orientation="horizontal" />
             </ScrollArea>
           </TabsContent>
