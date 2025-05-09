@@ -4,15 +4,15 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, 
   DropdownMenuTrigger} from "@/components/ui/dropdown-menu"
+import { useAuth } from "@/features/auth/model/use-auth"
 import { Logout } from "@/features/logout/ui/logout"
-import { useAuth1 } from "@/hooks/use-auth"
 import { LogOut, User } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
 export function UserMenu() {
-  const { userData, isAuthenticated } = useAuth1()
+  const { userData, isAuthenticated, authChecked } = useAuth()
   //const router = useRouter()
   const [isAuth, setIsAuth] = useState(false)
 

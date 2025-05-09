@@ -4,7 +4,6 @@ import type React from "react"
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import axios from "axios"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -18,9 +17,11 @@ import { useToast } from "@/hooks/use-toast"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { handleSubmitFeedbackApi } from "@/api/api"
+import { useAuth } from "@/features/auth/model/use-auth"
 
 export default function Home() {
-  const { isAuthenticated, getToken } = useAuth1()
+  const { getToken } = useAuth1()
+  const { isAuthenticated } = useAuth()
   const [isAuth, setIsAuth] = useState(false)
   const [name, setName] = useState("")
   const [message, setMessage] = useState("")

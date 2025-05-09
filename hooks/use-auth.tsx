@@ -1,12 +1,10 @@
 "use client"
 
-import {createContext, useContext, useState, useEffect, useCallback, useRef} from "react"
+import {createContext, useContext, useState, useCallback, useRef} from "react"
 import {getAccess} from "@/utils/tokens-utils";
 import type { DailyStatistic } from "@/components/statistics/activity-heatmap"
-import { getChatAllApi, registartionApi, updatePasswordApi, verifyEmailCodeApi } from "@/api/api";
+import { registartionApi, updatePasswordApi, verifyEmailCodeApi } from "@/api/api";
 import { getUserDataApi } from "@/features/user/model/api";
-import { loginApi } from "@/features/auth/model/api";
-import { useUserData } from "@/features/user/model/use-user";
 import { useAuth } from "@/features/auth/model/use-auth";
 import { useLogout } from "@/features/logout/model/use-logout";
 type UserData = {
@@ -65,7 +63,6 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({children}: { children: React.ReactNode }) {
 
     const auth = useAuth()
-    const user = useUserData()
     const logout = useLogout()
     const value = {
         ...auth,
@@ -218,7 +215,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
             if (response.data?.access_token) {
                 localStorage.setItem('access_token', response.data.access_token);
                 localStorage.setItem('refresh_token', response.data.refresh_token);
-                setIsAuthenticated(true);
+                //setIsAuthenticated(true);
                 localStorage.setItem('isAuthenticated', 'true');
                 return {success: true};
             }
@@ -229,7 +226,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     };
 
     const success = () => {
-        setIsAuthenticated(true)
+        //setIsAuthenticated(true)
         localStorage.setItem('isAuthenticated', 'true')
         return {success: true, lastChatId: "1"}
     }

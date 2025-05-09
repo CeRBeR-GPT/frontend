@@ -30,31 +30,33 @@ export const useAuth = () => {
     }, []);
     
     const fetchUserData = useCallback(async (): Promise<UserData | null> => {
-    setLoading(true);
-    setError(null);
+        setLoading(true);
+        setError(null);
 
-    try {
-        const token = await getToken();
-        if (!token) {
-        throw new Error('No valid token');
+        try {
+            const token = await getToken();
+            if (!token) {
+            throw new Error('No valid token');
+            }
+
+            const response = await getUserDataApi();
+            setUserData(response.data);
+            setIsAuthenticated(true);
+            setAuthChecked(true);
+            return response.data;
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Unknown error';
+            setIsAuthenticated(false);
+            setAuthChecked(true);
+            localStorage.removeItem('isAuthenticated');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            setError(message);
+            setUserData(null);
+            return null;
+        } finally {
+            setLoading(false);
         }
-
-        const response = await getUserDataApi();
-        setUserData(response.data);
-        setIsAuthenticated(true);
-        setAuthChecked(true);
-        return response.data;
-    } catch (err) {
-        const message = err instanceof Error ? err.message : 'Unknown error';
-        setIsAuthenticated(false);
-        setAuthChecked(true);
-        localStorage.removeItem('isAuthenticated');
-        setError(message);
-        setUserData(null);
-        return null;
-    } finally {
-        setLoading(false);
-    }
     }, [getToken]);
 
     useEffect(() => {
@@ -117,7 +119,13 @@ export const useAuth = () => {
         }
     };
 
-  return { login, isAuthenticated, setIsAuthenticated, authChecked, setAuthChecked, isLoading: isLoading || !authChecked,
+  return { 
+    login, 
+    isAuthenticated, 
+    setIsAuthenticated, 
+    authChecked, 
+    setAuthChecked, 
+    isLoading: isLoading || !authChecked,
     userData,
     loading,
     error,

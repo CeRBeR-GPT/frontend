@@ -14,11 +14,9 @@ import Subscription from "@/components/subscription"
 import ProviderChoice from "@/components/provider-choice"
 import Tarifs from "@/components/tarifs"
 import { useAuth } from "@/features/auth/model/use-auth"
-import { useUserData } from "@/features/user/model/use-user"
 
 export default function ProfilePage() {
   const { isAuthenticated, fetchUserData } = useAuth()
-  //const { fetchUserData } = useUserData()
   useEffect(() => {
     const getToken = () => localStorage.getItem("access_token")
     const token = getToken()

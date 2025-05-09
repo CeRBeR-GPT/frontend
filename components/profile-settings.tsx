@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useLogout } from "@/features/logout/model/use-logout"
-//import { useUserData } from "@/features/user/model/use-user"
 import { useAuth } from "@/features/auth/model/use-auth"
 
 const ProfileSettings = () => {

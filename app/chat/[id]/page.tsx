@@ -593,7 +593,7 @@ export default function ChatPage() {
     [chatId, initializeWebSocket],
   )
 
-  // if (isAuthLoading || !isAuthenticated) { return null }
+  if (isAuthLoading || !isAuthenticated) { return null }
 
   return (
     <div key={`root-${rootKey}`} className="flex flex-col min-h-screen">
