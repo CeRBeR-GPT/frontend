@@ -2,12 +2,11 @@
 
 import {createContext, useContext, useState, useCallback, useRef} from "react"
 import {getAccess} from "@/utils/tokens-utils";
-import { registartionApi, updatePasswordApi, verifyEmailCodeApi } from "@/api/api";
+import { registartionApi, verifyEmailCodeApi } from "@/api/api";
 import { useAuth } from "@/features/auth/model/use-auth";
 import { useLogout } from "@/features/logout/model/use-logout";
 import { useStatistics } from "@/features/statistics/model/use-statistics";
 import { useUserData } from "@/entities/user/model/use-user";
-
 
 interface IUserDataRegistration {
     email: string;
@@ -18,7 +17,6 @@ type AuthContextType = {
     isAuthenticated: boolean
     login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string, error?: string; }>
     // verifyCode: (email: string, code: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
-    // updatePassword: (newPassword: string) => Promise<{ success: boolean } | undefined>
     getToken: () => Promise<string | null>,
     // success: () => { success: boolean },
     // verifyEmailCode: (email: string, code: string) => Promise<{status: number}>;
@@ -29,7 +27,6 @@ const AuthContext = createContext<AuthContextType>({
     isAuthenticated: false,
     login: async () => ({success: false}),
     // verifyCode: async () => ({success: false}),
-    // updatePassword: async () => ({success: false}),
     getToken: async () => null,
     // success: () => ({success: false}),
     // verifyEmailCode: async () => ({status: 0}),
@@ -47,7 +44,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
         ...logout,
         ...statistics,
         ...user
-      };
+    };
 
     const [isAuthenticated, setIsAuthenticated] = useState(false)
 
@@ -97,26 +94,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     //     }
 
     // }, [getToken]);
-
-    const updatePassword = async (newPassword: string) => {
-        try {
-            const token = await getToken();
-            if (!token) throw new Error("No valid token");
-
-            const response = await updatePasswordApi(newPassword)
-            localStorage.removeItem("new_password")
-            if (response.data?.access_token) {
-                localStorage.setItem('access_token', response.data.access_token);
-                localStorage.setItem('refresh_token', response.data.refresh_token);
-                setIsAuthenticated(true);
-                localStorage.setItem('isAuthenticated', 'true');
-                return {success: true};
-            }
-            return {success: false};
-        } catch (error) {
-            return {success: false};
-        }
-    };
 
     const success = () => {
         setIsAuthenticated(true)
