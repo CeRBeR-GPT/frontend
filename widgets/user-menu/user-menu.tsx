@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, 
   DropdownMenuTrigger} from "@/components/ui/dropdown-menu"
+import { useUserData } from "@/entities/user/model/use-user"
 import { useAuth } from "@/features/auth/model/use-auth"
 import { Logout } from "@/features/logout/ui/logout"
 import { LogOut, User } from "lucide-react"
@@ -12,7 +13,8 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
 export function UserMenu() {
-  const { userData, isAuthenticated, authChecked } = useAuth()
+  const { isAuthenticated, authChecked } = useAuth()
+  const { userData } = useUserData()
   //const router = useRouter()
   const [isAuth, setIsAuth] = useState(false)
 

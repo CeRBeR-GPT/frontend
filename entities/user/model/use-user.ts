@@ -1,3 +1,4 @@
+
 // features/user/model/use-user.ts
 import { useState, useCallback, useEffect } from 'react';
 import { getUserDataApi } from './api';
@@ -35,8 +36,7 @@ export const useUserData = () => {
 
       const response = await getUserDataApi();
       setUserData(response.data);
-      setIsAuthenticated(true);
-      setAuthChecked(true);
+      console.log("Data", response.data);
       return response.data;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
@@ -47,6 +47,10 @@ export const useUserData = () => {
       setLoading(false);
     }
   }, [getToken]);
+
+  useEffect(() => {
+      fetchUserData(); // Загружаем данные при монтировании
+    }, [fetchUserData]);
 
   // Возвращаем только необходимые данные и методы
   return {

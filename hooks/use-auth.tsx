@@ -3,10 +3,10 @@
 import {createContext, useContext, useState, useCallback, useRef} from "react"
 import {getAccess} from "@/utils/tokens-utils";
 import { registartionApi, updatePasswordApi, verifyEmailCodeApi } from "@/api/api";
-import { getUserDataApi } from "@/features/user/model/api";
 import { useAuth } from "@/features/auth/model/use-auth";
 import { useLogout } from "@/features/logout/model/use-logout";
 import { useStatistics } from "@/features/statistics/model/use-statistics";
+import { useUserData } from "@/entities/user/model/use-user";
 
 
 interface IUserDataRegistration {
@@ -19,7 +19,6 @@ type AuthContextType = {
     login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string, error?: string; }>
     // verifyCode: (email: string, code: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
     // updatePassword: (newPassword: string) => Promise<{ success: boolean } | undefined>
-    isLoading: boolean
     getToken: () => Promise<string | null>,
     // success: () => { success: boolean },
     // verifyEmailCode: (email: string, code: string) => Promise<{status: number}>;
@@ -31,7 +30,6 @@ const AuthContext = createContext<AuthContextType>({
     login: async () => ({success: false}),
     // verifyCode: async () => ({success: false}),
     // updatePassword: async () => ({success: false}),
-    isLoading: false,
     getToken: async () => null,
     // success: () => ({success: false}),
     // verifyEmailCode: async () => ({status: 0}),
@@ -43,10 +41,12 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     const auth = useAuth()
     const logout = useLogout()
     const statistics = useStatistics()
+    const user = useUserData()
     const value = {
         ...auth,
         ...logout,
-        ...statistics
+        ...statistics,
+        ...user
       };
 
     const [isAuthenticated, setIsAuthenticated] = useState(false)

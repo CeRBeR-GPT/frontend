@@ -1,14 +1,13 @@
-
-import { useAuth } from '@/features/auth/model/use-auth';
-import { useState } from 'react';
-import { getUserDataApi } from '@/features/user/model/api';
+import { useEffect, useState } from 'react';
 import { DailyStatistic } from '@/shared/types/statistics/statistics';
+import { useUserData } from '@/entities/user/model/use-user';
+import { getUserDataApi } from '@/entities/user/model/api';
 
 export const useStatistics = () => {
     const [statistics, setStatistics] = useState<DailyStatistic[]>([])
     const [statisticsLoading, setStatisticsLoading] = useState(true)
 
-    const { fetchUserData} = useAuth()
+    const { fetchUserData } = useUserData()
 
     const refreshStatistics = async () => {
             await fetchUserData()

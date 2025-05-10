@@ -7,12 +7,12 @@ import { useRouter } from "next/navigation"
 import { Badge } from "./ui/badge"
 import { formatExpireDate } from "@/utils/other"
 import { newPaymentApi } from "@/api/api"
-import { useUserData } from "@/features/user/model/use-user"
 import { useAuth } from "@/features/auth/model/use-auth"
+import { useUserData } from "@/entities/user/model/use-user"
 
 const Tarifs = () => {
   const router = useRouter()
-  const { userData } = useAuth()
+  const { userData } = useUserData()
 
   const plan =
       userData?.plan === "default"

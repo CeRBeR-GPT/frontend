@@ -7,9 +7,10 @@ import { useEffect, useState } from "react";
 import { providersByPlan } from "@/const/providers"
 //import { useUserData } from "@/features/user/model/use-user";
 import { useAuth } from "@/features/auth/model/use-auth";
+import { useUserData } from "@/entities/user/model/use-user";
 
 const ProviderChoice = () => {
-    const { userData } = useAuth()
+    const { userData } = useUserData()
     const [selectedProvider, setSelectedProvider] = useState<string>("default")
     const [availableProviders, setAvailableProviders] = useState<string[]>([])
 

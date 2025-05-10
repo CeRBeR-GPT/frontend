@@ -4,18 +4,16 @@ import { loginApi } from './api';
 import { getChatAllApi } from '@/api/api';
 import { ApiError, UserData } from './types';
 import { getAccess } from '@/utils/tokens-utils';
-import { getUserDataApi } from '@/features/user/model/api';
 import { useStatistics } from '@/features/statistics/model/use-statistics';
+import { useUserData } from '@/entities/user/model/use-user';
 
 export const useAuth = () => {
 
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [authChecked, setAuthChecked] = useState(false);
     const [isLoading, setIsLoading] = useState(true)
-    const [userData, setUserData] = useState<UserData | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     // const { setStatistics } = useStatistics()
+    const { fetchUserData } = useUserData()
     
     const getToken = useCallback(async (): Promise<string | null> => {
         if (typeof window === 'undefined') return null;
@@ -31,39 +29,39 @@ export const useAuth = () => {
         }
     }, []);
     
-    const fetchUserData = useCallback(async (): Promise<UserData | null> => {
-        setLoading(true);
-        setError(null);
+    // const fetchUserData = useCallback(async (): Promise<UserData | null> => {
+    //     setLoading(true);
+    //     setError(null);
 
-        try {
-            const token = await getToken();
-            if (!token) {
-            throw new Error('No valid token');
-            }
+    //     try {
+    //         const token = await getToken();
+    //         if (!token) {
+    //         throw new Error('No valid token');
+    //         }
 
-            const response = await getUserDataApi();
+    //         const response = await getUserDataApi();
 
-            setUserData(response.data);
-            // if (response.data?.statistics) {
-            //     setStatistics(response.data.statistics)
-            // }
-            setIsAuthenticated(true);
-            setAuthChecked(true);
-            return response.data;
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Unknown error';
-            setIsAuthenticated(false);
-            setAuthChecked(true);
-            localStorage.removeItem('isAuthenticated');
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-            setError(message);
-            setUserData(null);
-            return null;
-        } finally {
-            setLoading(false);
-        }
-    }, [getToken]);
+    //         setUserData(response.data);
+    //         // if (response.data?.statistics) {
+    //         //     setStatistics(response.data.statistics)
+    //         // }
+    //         setIsAuthenticated(true);
+    //         setAuthChecked(true);
+    //         return response.data;
+    //     } catch (err) {
+    //         const message = err instanceof Error ? err.message : 'Unknown error';
+    //         setIsAuthenticated(false);
+    //         setAuthChecked(true);
+    //         localStorage.removeItem('isAuthenticated');
+    //         localStorage.removeItem('access_token');
+    //         localStorage.removeItem('refresh_token');
+    //         setError(message);
+    //         setUserData(null);
+    //         return null;
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // }, [getToken]);
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -81,7 +79,10 @@ export const useAuth = () => {
 
     useEffect(() => {
         if (isAuthenticated && !authChecked) {
-            fetchUserData();
+            fetchUserData().then(() => {
+                setAuthChecked(true)
+                setIsAuthenticated(true)
+            })
         }
     }, [isAuthenticated, authChecked, fetchUserData]);
 
@@ -102,8 +103,7 @@ export const useAuth = () => {
                 if (!lastSavedChat) {
                     try {
                         const chatResponse = await getChatAllApi()
-                        if (chatResponse.data)
-                        {
+                        if (chatResponse.data){
                             welcomeChatId = chatResponse.data[0].id
                             localStorage.setItem("lastSavedChat", chatResponse.data[0].id);
                         }
@@ -132,11 +132,6 @@ export const useAuth = () => {
     authChecked, 
     setAuthChecked, 
     isLoading: isLoading || !authChecked,
-    userData,
-    loading,
-    error,
-    fetchUserData,
-    getToken,
-    setUserData
+    getToken
    };
 };

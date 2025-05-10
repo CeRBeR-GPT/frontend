@@ -20,8 +20,8 @@ import { throttle } from "lodash-es"
 import MessageItem from "@/components/MessageItem"
 import MessageInput from "@/components/MessageInput"
 import { clearChatApi, deleteChatApi, editChatNameApi, getChatAllApi, getChatByIdApi } from "@/api/api"
-import { useUserData } from "@/features/user/model/use-user"
 import { useAuth } from "@/features/auth/model/use-auth"
+import { useUserData } from "@/entities/user/model/use-user"
 
 declare global {
   interface Window {
@@ -73,8 +73,8 @@ export default function ChatPage() {
   const router = useRouter()
   const chatId = params.id as string
   const { getToken } = useAuth1()
-  const {isAuthenticated, isLoading: isAuthLoading, userData} = useAuth()
-  //const { userData } = useUserData()
+  const {isAuthenticated, isLoading: isAuthLoading } = useAuth()
+  const { userData } = useUserData()
   const [input, setInput] = useState<string>("")
   const [messages, dispatchMessages] = useReducer(messagesReducer, [])
   const [isLoading, setIsLoading] = useState<boolean>(false)
