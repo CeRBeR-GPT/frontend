@@ -2,9 +2,9 @@
 
 import { Check, Lock } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
-import getProviderIcon, { getProviderDescription, getProviderName } from "@/utils/providers-utils"
+import getProviderIcon, { getProviderDescription, getProviderName } from "@/shared/utils/providers-utils"
 import { useEffect, useState } from "react";
-import { providersByPlan } from "@/const/providers"
+import { providersByPlan } from "@/shared/const/providers"
 //import { useUserData } from "@/features/user/model/use-user";
 import { useAuth } from "@/features/auth/model/use-auth";
 import { useUserData } from "@/entities/user/model/use-user";

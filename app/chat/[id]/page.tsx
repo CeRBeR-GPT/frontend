@@ -6,7 +6,7 @@ import Link from "next/link"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { Bot, ArrowDown } from "lucide-react"
-//import { ThemeToggle } from "@/components/theme-toggle"
+import { ThemeToggle } from "../../../shared/ui/theme-toggle"
 import { UserMenu } from "../../../widgets/user-menu/user-menu"
 import { ChatSidebar } from "@/components/chat-sidebar"
 import { useAuth1 } from "@/hooks/use-auth"
@@ -614,7 +614,7 @@ export default function ChatPage() {
       </div>
       <nav className="flex items-center gap-4">
         <NavLinks />
-        {/* <ThemeToggle /> */}
+        <ThemeToggle />
         <UserMenu />
       </nav>
     </div>

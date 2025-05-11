@@ -1,7 +1,6 @@
 "use client"
 
-import {createContext, useContext, useState, useCallback, useRef} from "react"
-import {getAccess} from "@/utils/tokens-utils";
+import {createContext, useContext, useState, useRef} from "react"
 import { useAuth } from "@/features/auth/model/use-auth";
 import { useLogout } from "@/features/logout/model/use-logout";
 import { useStatistics } from "@/features/statistics/model/use-statistics";
@@ -10,13 +9,11 @@ import { useUserData } from "@/entities/user/model/use-user";
 type AuthContextType = {
     isAuthenticated: boolean
     getToken: () => Promise<string | null>,
-    // success: () => { success: boolean },
 }
 
 const AuthContext = createContext<AuthContextType>({
     isAuthenticated: false,
     getToken: async () => null,
-    // success: () => ({success: false}),
 })
 
 export function AuthProvider({children}: { children: React.ReactNode }) {
@@ -33,17 +30,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     };
 
     const [isAuthenticated, setIsAuthenticated] = useState(false)
-
-    const getToken = useCallback(async (): Promise<string | null> => {
-        if (typeof window === "undefined") return null;
-
-        const accessToken = localStorage.getItem('access_token');
-        const refreshToken = localStorage.getItem('refresh_token');
-
-        if (!accessToken || !refreshToken) return null;
-
-        return await getAccess(accessToken, refreshToken);
-    }, []);
 
     const isRequested = useRef(false)
 
@@ -80,12 +66,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     //     }
 
     // }, [getToken]);
-
-    // const success = () => {
-    //     setIsAuthenticated(true)
-    //     localStorage.setItem('isAuthenticated', 'true')
-    //     return {success: true, lastChatId: "1"}
-    // }
 
     return (
         <AuthContext.Provider value={value}>

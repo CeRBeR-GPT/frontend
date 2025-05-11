@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { loginApi } from './api';
 import { getChatAllApi } from '@/api/api';
 import { ApiError, UserData } from './types';
-import { getAccess } from '@/utils/tokens-utils';
+import { getAccess } from '@/shared/utils/tokens-utils';
 import { useStatistics } from '@/features/statistics/model/use-statistics';
 import { useUserData } from '@/entities/user/model/use-user';
 

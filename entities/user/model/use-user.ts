@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { getUserDataApi } from './api';
 import { UserData } from './types';
-import { getAccess } from "../../../utils/tokens-utils";
+import { getAccess } from "../../../shared/utils/tokens-utils";
 
 export const useUserData = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
