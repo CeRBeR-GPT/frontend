@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "./ui/button"
 import { useRouter } from "next/navigation"
 import { Badge } from "./ui/badge"
-import { formatExpireDate } from "@/utils/other"
+import { formatExpireDate } from "../shared/utils/other"
 import { newPaymentApi } from "@/api/api"
 import { useAuth } from "@/features/auth/model/use-auth"
 import { useUserData } from "@/entities/user/model/use-user"
