@@ -5,13 +5,13 @@ import { GoogleIcon } from "./ui/GoogleIcon";
 import { YandexIcon } from "./ui/YandexIcon";
 import { GitHubIcon } from "./ui/GitHubIcon";
 
-export const AuthIcons = (props: { setError: (arg0: string) => void; disabled?: boolean; }) => {
+export const AuthIcons = () => {
 
     const handleSocialLogin = async (provider: "google" | "yandex" | "github") => {
         try {
           window.location.href = `https://api-gpt.energy-cerber.ru/auth/${provider}`;
         } catch (error) {
-          props.setError(`Произошла ошибка при входе через ${provider}. Пожалуйста, попробуйте снова.`);
+          // setError(`Произошла ошибка при входе через ${provider}. Пожалуйста, попробуйте снова.`);
         }
     };
 

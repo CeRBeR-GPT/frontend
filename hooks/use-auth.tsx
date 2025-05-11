@@ -2,35 +2,23 @@
 
 import {createContext, useContext, useState, useCallback, useRef} from "react"
 import {getAccess} from "@/utils/tokens-utils";
-import { registartionApi, verifyEmailCodeApi } from "@/api/api";
 import { useAuth } from "@/features/auth/model/use-auth";
 import { useLogout } from "@/features/logout/model/use-logout";
 import { useStatistics } from "@/features/statistics/model/use-statistics";
 import { useUserData } from "@/entities/user/model/use-user";
 
-interface IUserDataRegistration {
-    email: string;
-    password: string;
-  }
-
 type AuthContextType = {
     isAuthenticated: boolean
-    login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string, error?: string; }>
     // verifyCode: (email: string, code: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
     getToken: () => Promise<string | null>,
     // success: () => { success: boolean },
-    // verifyEmailCode: (email: string, code: string) => Promise<{status: number}>;
-    // registartion: (UserData: IUserDataRegistration) => Promise<{status: number, data: { access_token: string; refresh_token: any; };}>
-
 }
+
 const AuthContext = createContext<AuthContextType>({
     isAuthenticated: false,
-    login: async () => ({success: false}),
     // verifyCode: async () => ({success: false}),
     getToken: async () => null,
     // success: () => ({success: false}),
-    // verifyEmailCode: async () => ({status: 0}),
-    // registartion: async () => ({status: 0, data: {access_token: "", refresh_token: ""}})
 })
 
 export function AuthProvider({children}: { children: React.ReactNode }) {
@@ -101,33 +89,14 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
         return {success: true, lastChatId: "1"}
     }
 
-    const verifyCode = async (email: string, code: string, password: string) => {
-        if (code.length === 5 && /^\d+$/.test(code)) {
-            localStorage.setItem('isAuthenticated', 'true')
-            setIsAuthenticated(true)
-            return {success: true, lastChatId: "1"}
-        }
-        return {success: false}
-    }
-
-    const verifyEmailCode = async (email: string, code: string) => {
-        try {
-          return await verifyEmailCodeApi(email, code);
-        } catch (error) {
-          throw error;
-        }
-    };
-    
-    const registartion = async (userData: IUserDataRegistration) => {
-        try {
-            const response = await registartionApi(userData);
-            localStorage.setItem('access_token', response.data.access_token);
-            localStorage.setItem('refresh_token', response.data.refresh_token);
-            return response;
-        } catch (error) {
-            throw error;
-        }
-    }
+    // const verifyCode = async (email: string, code: string, password: string) => {
+    //     if (code.length === 5 && /^\d+$/.test(code)) {
+    //         localStorage.setItem('isAuthenticated', 'true')
+    //         setIsAuthenticated(true)
+    //         return {success: true, lastChatId: "1"}
+    //     }
+    //     return {success: false}
+    // }
 
     return (
         <AuthContext.Provider value={value}

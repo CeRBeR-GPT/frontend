@@ -39,7 +39,7 @@ export default function LoginPage() {
             <FORM/>
 
             <ChoiceAuth text="Или войти через" />
-            <AuthIcons setError={setError} disabled={isSubmitting} />
+            <AuthIcons/>
           </CardContent>
 
           <CardFooter className="flex justify-center">
