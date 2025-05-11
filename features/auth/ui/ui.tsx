@@ -5,7 +5,7 @@ import { useAuth } from "../model/use-auth"
 import { FORM } from "./form"
 import Link from "next/link"
 import { ChoiceAuth } from "@/components/ChoiceAuth"
-import { AuthIcons } from "@/components/AuthIcons"
+import { AuthIcons } from "@/features/oAuth/ui/AuthIcons"
 import { useLoginForm } from "../model/use-login-form"
 
 

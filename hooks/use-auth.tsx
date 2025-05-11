@@ -9,14 +9,12 @@ import { useUserData } from "@/entities/user/model/use-user";
 
 type AuthContextType = {
     isAuthenticated: boolean
-    // verifyCode: (email: string, code: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>
     getToken: () => Promise<string | null>,
     // success: () => { success: boolean },
 }
 
 const AuthContext = createContext<AuthContextType>({
     isAuthenticated: false,
-    // verifyCode: async () => ({success: false}),
     getToken: async () => null,
     // success: () => ({success: false}),
 })
@@ -83,29 +81,17 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
 
     // }, [getToken]);
 
-    const success = () => {
-        setIsAuthenticated(true)
-        localStorage.setItem('isAuthenticated', 'true')
-        return {success: true, lastChatId: "1"}
-    }
-
-    // const verifyCode = async (email: string, code: string, password: string) => {
-    //     if (code.length === 5 && /^\d+$/.test(code)) {
-    //         localStorage.setItem('isAuthenticated', 'true')
-    //         setIsAuthenticated(true)
-    //         return {success: true, lastChatId: "1"}
-    //     }
-    //     return {success: false}
+    // const success = () => {
+    //     setIsAuthenticated(true)
+    //     localStorage.setItem('isAuthenticated', 'true')
+    //     return {success: true, lastChatId: "1"}
     // }
 
     return (
-        <AuthContext.Provider value={value}
-        >
+        <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
     );
 }
 
 export const useAuth1 = () => useContext(AuthContext)
-
-

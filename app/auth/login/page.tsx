@@ -5,7 +5,7 @@ import { useLoginForm } from "@/features/auth/model/use-login-form"
 import { Header } from "@/widgets/header/header"
 import { FORM } from "@/features/auth/ui/form"
 import { ChoiceAuth } from "@/components/ChoiceAuth"
-import { AuthIcons } from "@/components/AuthIcons"
+import { AuthIcons } from "@/features/oAuth/ui/AuthIcons"
 import Link from "next/link"
 
 
@@ -37,7 +37,6 @@ export default function LoginPage() {
 
           <CardContent>
             <FORM/>
-
             <ChoiceAuth text="Или войти через" />
             <AuthIcons/>
           </CardContent>

@@ -1,19 +1,13 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { GoogleIcon } from "./ui/GoogleIcon";
-import { YandexIcon } from "./ui/YandexIcon";
-import { GitHubIcon } from "./ui/GitHubIcon";
+import { GoogleIcon } from "../../../components/ui/GoogleIcon";
+import { YandexIcon } from "../../../components/ui/YandexIcon";
+import { GitHubIcon } from "../../../components/ui/GitHubIcon";
+import { useOAuth } from "@/features/oAuth/model/use-oAuth";
 
 export const AuthIcons = () => {
-
-    const handleSocialLogin = async (provider: "google" | "yandex" | "github") => {
-        try {
-          window.location.href = `https://api-gpt.energy-cerber.ru/auth/${provider}`;
-        } catch (error) {
-          // setError(`Произошла ошибка при входе через ${provider}. Пожалуйста, попробуйте снова.`);
-        }
-    };
+    const { handleSocialLogin } = useOAuth()
 
     return(
         <div className="grid grid-cols-3 gap-2">
