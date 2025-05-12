@@ -8,7 +8,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import { ru } from "date-fns/locale"
 import { ProviderStats } from "./provider-stats"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
-import { getProviderName } from "@/utils/providers-utils"
+import { getProviderName } from "@/shared/utils/providers-utils"
 import { DailyStatistic } from "@/shared/types/statistics/statistics"
 import { generateMonthlyGrid } from "./ui/generateMonthlyGrid"
 import { getColorIntensity } from "@/shared/utils/statistics/generateMonthlyGrid"

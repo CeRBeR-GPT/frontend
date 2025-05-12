@@ -1,7 +1,7 @@
 import { format, parseISO } from "date-fns"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { ru } from "date-fns/locale"
-import { getProviderName } from "@/utils/providers-utils"
+import { getProviderName } from "@/shared/utils/providers-utils"
 import { DailyStatistic } from "@/shared/types/statistics/statistics"
 import { getColorIntensity } from "@/shared/utils/statistics/generateMonthlyGrid"
 

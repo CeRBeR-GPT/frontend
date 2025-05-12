@@ -1,15 +1,14 @@
 "use client"
 import React from "react"
-import { useState, useEffect, useRef, useReducer, useCallback, useMemo } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { Bot, ArrowDown } from "lucide-react"
-import { ThemeToggle } from "../../../shared/ui/theme-toggle"
+// import { ThemeToggle } from "@/components/theme-toggle"
 import { UserMenu } from "../../../widgets/user-menu/user-menu"
 import { ChatSidebar } from "@/components/chat-sidebar"
-import { useAuth1 } from "@/hooks/use-auth"
 import { NavLinks } from "@/components/nav-links"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
@@ -19,9 +18,11 @@ import  Markdown from "@/components/markdown-with-latex"
 import { throttle } from "lodash-es"
 import MessageItem from "@/components/MessageItem"
 import MessageInput from "@/components/MessageInput"
-import { clearChatApi, deleteChatApi, editChatNameApi, getChatAllApi, getChatByIdApi } from "@/api/api"
+import { clearChatApi, deleteChatApi, editChatNameApi,getChatByIdApi } from "@/api/api"
 import { useAuth } from "@/features/auth/model/use-auth"
 import { useUserData } from "@/entities/user/model/use-user"
+import { useChats } from "@/entities/chat/model/use-chats"
+import { useMessage } from "@/entities/message/model/use-message"
 
 declare global {
   interface Window {
@@ -54,36 +55,20 @@ const providersByPlan = {
 MessageItem.displayName = "MessageItem"
 MessageInput.displayName = "MessageInput"
 
-function messagesReducer(state: Message[], action: { type: string; payload?: any }) {
-  switch (action.type) {
-    case "ADD":
-      return [...state, action.payload]
-    case "SET":
-      return action.payload
-    case "CLEAR":
-      return []
-    default:
-      return state
-  }
-}
-
 export default function ChatPage() {
+  const { chatId, updateChatHistory, setChatHistory, chatHistory, checkChatValidity, isValidChat,
+    setIsValidChat, isCheckingChat, updateSidebar, sidebarVersion, chatTitle, setChatTitle, fetchChats
+   } = useChats()
+  const { messages, dispatchMessages} = useMessage()
   const { theme } = useTheme()
-  const params = useParams()
   const router = useRouter()
-  const chatId = params.id as string
-  const { getToken } = useAuth1()
-  const {isAuthenticated, isLoading: isAuthLoading } = useAuth()
-  const { userData } = useUserData()
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
+  const {userData, getToken } = useUserData()
   const [input, setInput] = useState<string>("")
-  const [messages, dispatchMessages] = useReducer(messagesReducer, [])
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(false)
-  const [chatTitle, setChatTitle] = useState<string>("")
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [isTestMessageShown, setIsTestMessageShown] = useState<boolean>(true)
-  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
-  const [sidebarVersion, setSidebarVersion] = useState<number>(0)
   const [selectedProvider, setSelectedProvider] = useState<string>("default")
   const [availableProviders, setAvailableProviders] = useState<string[]>([])
   const [showScrollToBottom, setShowScrollToBottom] = useState<boolean>(false)
@@ -91,9 +76,6 @@ export default function ChatPage() {
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const [rootKey, setRootKey] = useState<number>(0);
   const [CopiedText,setCopiedText] = useState<string | null>(null)
-  const [isValidChat, setIsValidChat] = useState<boolean>(true)
-  const [isCheckingChat, setIsCheckingChat] = useState<boolean>(true)
-  
 
   useEffect(() => {
     if (isAuthLoading) return
@@ -102,7 +84,6 @@ export default function ChatPage() {
       return
     }
   
-    // Для "пустого" чата показываем приветствие и скрываем поле ввода
     if (chatId === "1") {
       dispatchMessages({ type: "CLEAR" })
       setIsTestMessageShown(true)
@@ -110,7 +91,6 @@ export default function ChatPage() {
       return
     }
   
-    // Загрузка обычного чата
     const loadData = async () => {
       await loadChatHistory(chatId)
       await initializeWebSocket(chatId)
@@ -215,44 +195,6 @@ export default function ChatPage() {
   const ws = useRef<WebSocket | null>(null)
   const isRequested = useRef(false)
 
-  const updateSidebar = useCallback(() => {
-    setSidebarVersion((v) => v + 1)
-  }, [])
-
-  const updateChatHistory = useCallback(async () => {
-    try {
-      const token = await getToken()
-      if (!token) return
-
-      const response = await getChatAllApi()
-
-      const updatedChats = response.data.map((chat: any) => {
-        const lastMessageDate =
-          chat.messages.length > 0
-            ? new Date(chat.messages[chat.messages.length - 1].created_at)
-            : new Date(chat.created_at)
-        lastMessageDate.setHours(lastMessageDate.getHours() + 3)
-
-        return {
-          id: chat.id,
-          title: chat.name,
-          preview: chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].content : "Нет сообщений",
-          date: lastMessageDate,
-          messages: chat.messages.length,
-        }
-      })
-
-      const sortedChats = updatedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
-
-      setChatHistory(sortedChats)
-
-      if (sortedChats.length > 0) {
-        localStorage.setItem("lastSavedChat", sortedChats[0].id)
-      }
-    } catch (error) {
-    }
-  }, [getToken])
-
   const loadChatHistory = useCallback(
     async (chatId: string) => {
       if (isRequested.current) return
@@ -265,9 +207,7 @@ export default function ChatPage() {
         if (!token) return
 
         const idChat = localStorage.getItem("lastDeletedChat")
-        if (chatId === idChat) {
-          return
-        }
+        if (chatId === idChat) return
 
         const response = await getChatByIdApi(chatId)
 
@@ -308,32 +248,12 @@ export default function ChatPage() {
   )
 
   useEffect(() => {
-    const checkChatValidity = () => {
-      if (chatId === "1") {
-        setIsValidChat(true);
-        setIsCheckingChat(false);
-        return;
-      }
-  
-      if (chatHistory.length === 0) {
-        setIsValidChat(false);
-        setIsCheckingChat(false);
-        return;
-      }
-  
-      const exists = chatHistory.some(chat => chat.id === chatId);
-      setIsValidChat(exists);
-      setIsCheckingChat(false);
-    };
-  
-    // Запускаем проверку при каждом изменении истории или ID чата
     checkChatValidity();
   }, [chatHistory, chatId]);
 
   const initializeWebSocket = useCallback(
     async (chatId: string) => {
       if (chatId === "1") return
-
 
       try {
         const token = await getToken()
@@ -370,14 +290,6 @@ export default function ChatPage() {
           }, 50) 
         }
 
-        ws.current.onerror = (error) => {
-        }
-
-        ws.current.onclose = (event) => {
-          if (event.code !== 1000) {
-            //setTimeout(() => initializeWebSocket(chatId), 5000)
-          }
-        }
       } catch (error) {
       }
     },
@@ -420,46 +332,6 @@ export default function ChatPage() {
   )
 
   const isRequested1 = useRef(false)
-
-  const fetchChats = useCallback(async () => {
-    try {
-      const token = await getToken()
-      if (!token) return
-      if (isRequested1.current) return
-      isRequested1.current = true
-      const response = await getChatAllApi()
-
-      const formattedChats = response.data.map((chat: any) => {
-        const lastMessageDate =
-          chat.messages.length > 0
-            ? new Date(chat.messages[chat.messages.length - 1].created_at)
-            : new Date(chat.created_at)
-        lastMessageDate.setHours(lastMessageDate.getHours() + 3)
-
-        return {
-          id: chat.id,
-          title: chat.name,
-          preview: chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].content : "Нет сообщений",
-          date: lastMessageDate,
-          messages: chat.messages.length,
-        }
-      })
-
-      const sortedChats = formattedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
-      setChatHistory(sortedChats)
-
-      const chatExists = sortedChats.some((chat: ChatHistory) => chat.id === chatId)
-      setIsValidChat(chatExists || chatId === "1")
-      setIsCheckingChat(false)
-
-      if (sortedChats.length > 0) {
-        localStorage.setItem("lastSavedChat", sortedChats[0].id)
-      } else {
-        localStorage.removeItem("lastSavedChat")
-      }
-    } catch (error) {
-    }
-  }, [getToken])
 
   const handleChatDeleted = useCallback(
     (nextChatId: string | null) => {
@@ -516,8 +388,6 @@ export default function ChatPage() {
   const shouldShowInput = useMemo(() => {
     return isValidChat && !isCheckingChat && (messages.length > 0 || isTestMessageShown)
   }, [isValidChat, isCheckingChat, messages.length, isTestMessageShown])
-
-  
 
   const handleCopyCode = useCallback((code: string) => {
     navigator.clipboard.writeText(code)
@@ -614,7 +484,7 @@ export default function ChatPage() {
       </div>
       <nav className="flex items-center gap-4">
         <NavLinks />
-        <ThemeToggle />
+        {/* <ThemeToggle /> */}
         <UserMenu />
       </nav>
     </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { DailyStatistic } from '@/shared/types/statistics/statistics';
 import { useUserData } from '@/entities/user/model/use-user';
 import { getUserDataApi } from '@/entities/user/model/api';

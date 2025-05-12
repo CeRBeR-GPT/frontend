@@ -1,6 +1,5 @@
-import { apiClient } from '@/shared/api/client'; // Общий HTTP-клиент
+import { apiClient } from '@/shared/api/client';
 
 export const loginApi = async (email: string, password: string) => {
-    console.log("Привет")
     return apiClient.post(`user/login`, { email, password });
 };

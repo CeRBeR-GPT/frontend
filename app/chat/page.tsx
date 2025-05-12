@@ -4,7 +4,6 @@ import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/features/auth/model/use-auth"
 
-
 export default function ChatRedirect() {
   const router = useRouter()
   const { isAuthenticated } = useAuth()

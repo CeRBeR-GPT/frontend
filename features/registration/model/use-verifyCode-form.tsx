@@ -14,8 +14,6 @@ const formSchema = z.object({
 export const useVerifyCodeForm = () => {
     const [error, setError] = useState("")
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [showPassword, setShowPassword] = useState(false)
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const router = useRouter()
