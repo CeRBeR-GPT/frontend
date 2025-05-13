@@ -18,11 +18,13 @@ import  Markdown from "@/components/markdown-with-latex"
 import { throttle } from "lodash-es"
 import MessageItem from "@/components/MessageItem"
 import MessageInput from "@/components/MessageInput"
-import { clearChatApi, deleteChatApi, editChatNameApi,getChatByIdApi } from "@/api/api"
+import { clearChatApi, deleteChatApi, getChatByIdApi } from "@/api/api"
 import { useAuth } from "@/features/auth/model/use-auth"
 import { useUserData } from "@/entities/user/model/use-user"
 import { useChats } from "@/entities/chat/model/use-chats"
 import { useMessage } from "@/entities/message/model/use-message"
+import { useRenameChat } from "@/features/rename_chat/model/use-clearChat"
+import { useDeleteChat } from "@/features/delete-chat/model/use-deleteChat"
 
 declare global {
   interface Window {
@@ -57,14 +59,16 @@ MessageInput.displayName = "MessageInput"
 
 export default function ChatPage() {
   const { chatId, updateChatHistory, setChatHistory, chatHistory, checkChatValidity, isValidChat,
-    setIsValidChat, isCheckingChat, updateSidebar, sidebarVersion, chatTitle, setChatTitle, fetchChats
-   } = useChats()
-  const { messages, dispatchMessages} = useMessage()
+    isCheckingChat, updateSidebar, sidebarVersion, chatTitle, setChatTitle, fetchChats, ws, initializeWebSocket
+  } = useChats()
+
+  const { messages, dispatchMessages, messagesContainerRef, input, setInput, handleInputChange} = useMessage()
+  const { renameChatTitle } = useRenameChat()
+  const { deleteChat } = useDeleteChat()
   const { theme } = useTheme()
   const router = useRouter()
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
   const {userData, getToken } = useUserData()
-  const [input, setInput] = useState<string>("")
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(false)
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
@@ -73,32 +77,6 @@ export default function ChatPage() {
   const [availableProviders, setAvailableProviders] = useState<string[]>([])
   const [showScrollToBottom, setShowScrollToBottom] = useState<boolean>(false)
   const { toast } = useToast()
-  const messagesContainerRef = useRef<HTMLDivElement>(null)
-  const [rootKey, setRootKey] = useState<number>(0);
-  const [CopiedText,setCopiedText] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (isAuthLoading) return
-    if (!isAuthenticated) {
-      router.push("/auth/login")
-      return
-    }
-  
-    if (chatId === "1") {
-      dispatchMessages({ type: "CLEAR" })
-      setIsTestMessageShown(true)
-      setChatTitle("Новый чат")
-      return
-    }
-  
-    const loadData = async () => {
-      await loadChatHistory(chatId)
-      await initializeWebSocket(chatId)
-      await fetchChats()
-    }
-    
-    loadData()
-  }, [chatId, isAuthenticated, isAuthLoading, router])
 
   useEffect(() => {
     const container = messagesContainerRef.current
@@ -179,20 +157,6 @@ export default function ChatPage() {
     }
   }, [userData])
 
-  const renameChatTitle = async (id: string, newTitle: string) => {
-    const token = await getToken()
-    try {
-      await editChatNameApi(id, newTitle)
-
-      setChatHistory((prev: ChatHistory[]) =>
-        prev.map((chat) => (chat.id === id ? { ...chat, title: newTitle } : chat)),
-      )
-      setChatTitle(newTitle)
-    } catch (error) {
-    }
-  }
-
-  const ws = useRef<WebSocket | null>(null)
   const isRequested = useRef(false)
 
   const loadChatHistory = useCallback(
@@ -251,87 +215,6 @@ export default function ChatPage() {
     checkChatValidity();
   }, [chatHistory, chatId]);
 
-  const initializeWebSocket = useCallback(
-    async (chatId: string) => {
-      if (chatId === "1") return
-
-      try {
-        const token = await getToken()
-        if (!token) return
-
-        const provider = localStorage.getItem("selectedProvider")
-        const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}&provider=${provider}`
-
-        const idChat = localStorage.getItem("lastDeletedChat")
-        if (chatId === idChat) { return }
-        if (!isValidChat) return
-
-        ws.current = new WebSocket(wsUrl)
-        ws.current.onmessage = (event) => {
-          dispatchMessages({
-            type: "ADD",
-            payload: {
-              id: Date.now(),
-              text: event.data,
-              message_belong: "assistant",
-              timestamp: new Date(),
-            },
-          })
-
-          setIsLoading(false)
-          updateSidebar()
-          updateChatHistory().then(() => updateSidebar())
-
-          setTimeout(() => {
-            messagesContainerRef.current?.scrollTo({
-              top: messagesContainerRef.current.scrollHeight,
-              behavior: "smooth",
-            })
-          }, 50) 
-        }
-
-      } catch (error) {
-      }
-    },
-    [getToken, updateSidebar, updateChatHistory],
-  )
-
-  const deleteChat = useCallback(
-    async (id: string) => {
-      const token = await getToken()
-      router.push(`/chat/${id}`)
-      try {
-        setIsLoading(true)
-
-        await deleteChatApi(id)
-        localStorage.setItem("lastDeletedChat", id || "")
-        const remainingChats = chatHistory.filter((chat) => chat.id !== id)
-        setChatHistory(remainingChats)
-        const lastSavedChat = localStorage.getItem("lastSavedChat")
-        if (lastSavedChat === id) {
-          localStorage.setItem("lastSavedChat", remainingChats.length > 0 ? remainingChats[0].id : "1")
-        }
-
-        if (id === chatId) {
-          const nextChatId = remainingChats.length > 0 ? remainingChats[0].id : "1"
-          if (ws.current) {
-            ws.current.close(1000, "Chat deleted")
-            ws.current = null
-          }
-
-          router.push(`/chat/${nextChatId}`)
-        }
-
-        updateSidebar()
-      } catch (error) {
-      } finally {
-        setIsLoading(false)
-      }
-    },
-    [chatId, chatHistory, getToken, router, updateSidebar],
-  )
-
-  const isRequested1 = useRef(false)
 
   const handleChatDeleted = useCallback(
     (nextChatId: string | null) => {
@@ -344,9 +227,9 @@ export default function ChatPage() {
     [router],
   )
 
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(e.target.value)
-  }, [])
+  // const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  //   setInput(e.target.value)
+  // }, [])
 
   const throttledSubmit = useMemo(
     () =>
@@ -377,14 +260,6 @@ export default function ChatPage() {
     [input, throttledSubmit],
   )
 
-  useEffect(() => {
-    if (chatHistory.length > 0 && chatId !== "1") {
-      const exists = chatHistory.some(chat => chat.id === chatId)
-      setIsValidChat(exists)
-    }
-  }, [chatHistory, chatId])
-
-  // Обновленное условие отображения поля ввода
   const shouldShowInput = useMemo(() => {
     return isValidChat && !isCheckingChat && (messages.length > 0 || isTestMessageShown)
   }, [isValidChat, isCheckingChat, messages.length, isTestMessageShown])
@@ -401,12 +276,10 @@ export default function ChatPage() {
 
   const handleCopyTextMarkdown = useCallback((code: string) => {
     navigator.clipboard.writeText(code)
-    setCopiedText(code)
     toast({
       title: "Текст скопирован",
       description: "Текст скопирован в буфер обмена.",
     })
-    setTimeout(() => setCopiedText(null), 2000)
   }, [])
 
   useEffect(() => {
@@ -466,7 +339,7 @@ export default function ChatPage() {
   if (isAuthLoading || !isAuthenticated) { return null }
 
   return (
-    <div key={`root-${rootKey}`} className="flex flex-col min-h-screen">
+    <div  className="flex flex-col min-h-screen">
   <Toaster />
   <header className="border-b sticky top-0 z-10 bg-background">
     <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">

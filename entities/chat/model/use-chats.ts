@@ -1,11 +1,12 @@
 
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getChatAllApi, getChatByIdApi } from './api';
 import { useUserData } from '@/entities/user/model/use-user';
 import { ChatHistory } from './types';
 import { useMessage } from '@/entities/message/model/use-message';
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
+import { useAuth } from '@/features/auth/model/use-auth';
 
 export const useChats = () => {
     const { getToken } = useUserData()
@@ -16,12 +17,35 @@ export const useChats = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [isValidChat, setIsValidChat] = useState<boolean>(true)
     const [isCheckingChat, setIsCheckingChat] = useState<boolean>(true)
+    const { messagesContainerRef, ws } = useMessage()
 
     const { dispatchMessages, setIsTestMessageShown } = useMessage()
-    const ws = useRef<WebSocket | null>(null)
     const params = useParams()
     const chatId = params.id as string
-    console.log(chatId)
+    const router = useRouter()
+    const { isLoading: isAuthLoading, isAuthenticated} = useAuth()
+
+    useEffect(() => {
+        if (isAuthLoading) return
+        if (!isAuthenticated) {
+          router.push("/auth/login")
+          return
+        }
+      
+        if (chatId === "1") {
+          dispatchMessages({ type: "CLEAR" })
+          setIsTestMessageShown(true)
+          setChatTitle("Новый чат")
+          return
+        }
+      
+        const loadData = async () => {
+          await loadChatHistory(chatId)
+          await initializeWebSocket(chatId)
+          await fetchChats()
+        }
+        loadData()
+      }, [chatId, isAuthenticated, isAuthLoading, router])
 
     const updateSidebar = useCallback(() => {
         setSidebarVersion((v) => v + 1)
@@ -51,7 +75,6 @@ export const useChats = () => {
             })
         
             const sortedChats = updatedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
-            console.log(sortedChats, "data")
         
             setChatHistory(sortedChats)
 
@@ -65,6 +88,7 @@ export const useChats = () => {
     const loadChatHistory = useCallback( async (chatId: string) => {
         //   if (isRequested.current) return
         //   isRequested.current = true
+        console.log("Привет")
     
         if (chatId === "1") return
 
@@ -92,6 +116,7 @@ export const useChats = () => {
     },[getToken])
 
     const initializeWebSocket = useCallback( async (chatId: string) => {
+        console.log("Hereee")
           if (chatId === "1") return
     
           try {
@@ -121,13 +146,25 @@ export const useChats = () => {
                 updateSidebar()
                 updateChatHistory().then(() => updateSidebar())
         
-                // setTimeout(() => {
-                //     messagesContainerRef.current?.scrollTo({
-                //     top: messagesContainerRef.current.scrollHeight,
-                //     behavior: "smooth",
-                //     })
-                // }, 50) 
+                setTimeout(() => {
+                    messagesContainerRef.current?.scrollTo({
+                    top: messagesContainerRef.current.scrollHeight,
+                    behavior: "smooth",
+                })
+                }, 50) 
             }
+
+            ws.current.onopen = () => {
+                console.log('WebSocket connected');
+            };
+
+            ws.current.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+
+            ws.current.onclose = () => {
+                console.log('WebSocket disconnected');
+            };
     
           } catch (error) {
           }
@@ -179,7 +216,6 @@ export const useChats = () => {
         
             const sortedChats = formattedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
             setChatHistory(sortedChats)
-            console.log(sortedChats, "chats")
         
             const chatExists = sortedChats.some((chat: ChatHistory) => chat.id === chatId)
             setIsValidChat(chatExists || chatId === "1")
@@ -196,6 +232,6 @@ export const useChats = () => {
 
     return { loadChatHistory, updateSidebar, updateChatHistory,  initializeWebSocket, isLoadingHistory, chatTitle,
         chatId, chatHistory, sidebarVersion, setChatTitle, fetchChats, setChatHistory, isValidChat, checkChatValidity,
-        isCheckingChat, setIsValidChat, isLoading, setIsLoading
+        isCheckingChat, setIsValidChat, isLoading, setIsLoading, ws
     };
 };
