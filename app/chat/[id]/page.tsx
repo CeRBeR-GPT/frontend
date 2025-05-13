@@ -25,6 +25,7 @@ import { useChats } from "@/entities/chat/model/use-chats"
 import { useMessage } from "@/entities/message/model/use-message"
 import { useRenameChat } from "@/features/rename_chat/model/use-clearChat"
 import { useDeleteChat } from "@/features/delete-chat/model/use-deleteChat"
+import { useChangeProvider } from "@/features/change-provider/model/use-changeProvider"
 
 declare global {
   interface Window {
@@ -59,8 +60,8 @@ MessageInput.displayName = "MessageInput"
 
 export default function ChatPage() {
   const { chatId, updateChatHistory, setChatHistory, chatHistory, checkChatValidity, isValidChat,
-    isCheckingChat, updateSidebar, sidebarVersion, chatTitle, setChatTitle, fetchChats, ws, initializeWebSocket
-  } = useChats()
+    isCheckingChat, updateSidebar, sidebarVersion, chatTitle, setChatTitle, fetchChats, ws, initializeWebSocket,
+    shouldShowInput} = useChats()
 
   const { messages, dispatchMessages, messagesContainerRef, input, setInput, handleInputChange} = useMessage()
   const { renameChatTitle } = useRenameChat()
@@ -68,15 +69,14 @@ export default function ChatPage() {
   const { theme } = useTheme()
   const router = useRouter()
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
-  const {userData, getToken } = useUserData()
+  const { getToken } = useUserData()
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(false)
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [isTestMessageShown, setIsTestMessageShown] = useState<boolean>(true)
-  const [selectedProvider, setSelectedProvider] = useState<string>("default")
-  const [availableProviders, setAvailableProviders] = useState<string[]>([])
   const [showScrollToBottom, setShowScrollToBottom] = useState<boolean>(false)
   const { toast } = useToast()
+  const { handleProviderChange, selectedProvider, availableProviders } = useChangeProvider()
 
   useEffect(() => {
     const container = messagesContainerRef.current
@@ -142,20 +142,6 @@ export default function ChatPage() {
       document.documentElement.classList.remove("overflow-hidden")
     }
   }, [])
-
-  useEffect(() => {
-    if (userData) {
-      const providers = providersByPlan[userData.plan as keyof typeof providersByPlan] || providersByPlan.default
-      setAvailableProviders(providers)
-      const savedProvider = localStorage.getItem("selectedProvider")
-      if (savedProvider && providers.includes(savedProvider)) {
-        setSelectedProvider(savedProvider)
-      } else {
-        setSelectedProvider(providers[0])
-        localStorage.setItem("selectedProvider", providers[0])
-      }
-    }
-  }, [userData])
 
   const isRequested = useRef(false)
 
@@ -227,10 +213,6 @@ export default function ChatPage() {
     [router],
   )
 
-  // const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-  //   setInput(e.target.value)
-  // }, [])
-
   const throttledSubmit = useMemo(
     () =>
       throttle((input: string) => {
@@ -259,10 +241,6 @@ export default function ChatPage() {
     },
     [input, throttledSubmit],
   )
-
-  const shouldShowInput = useMemo(() => {
-    return isValidChat && !isCheckingChat && (messages.length > 0 || isTestMessageShown)
-  }, [isValidChat, isCheckingChat, messages.length, isTestMessageShown])
 
   const handleCopyCode = useCallback((code: string) => {
     navigator.clipboard.writeText(code)
@@ -326,14 +304,6 @@ export default function ChatPage() {
         <MessageItem key={`${message.id}`} handleCopyTextMarkdown = {handleCopyTextMarkdown} message={message} theme={theme} onCopy={handleCopyCode} copiedCode={copiedCode} />
       )),
     [messages, theme, copiedCode, handleCopyCode],
-  )
-
-  const handleProviderChange = useCallback( (provider: string) => {
-      setSelectedProvider(provider)
-      localStorage.setItem("selectedProvider", provider)
-      initializeWebSocket(chatId)
-    },
-    [chatId, initializeWebSocket],
   )
 
   if (isAuthLoading || !isAuthenticated) { return null }

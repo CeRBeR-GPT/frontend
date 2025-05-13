@@ -1,6 +1,6 @@
 
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getChatAllApi, getChatByIdApi } from './api';
 import { useUserData } from '@/entities/user/model/use-user';
 import { ChatHistory } from './types';
@@ -19,11 +19,15 @@ export const useChats = () => {
     const [isCheckingChat, setIsCheckingChat] = useState<boolean>(true)
     const { messagesContainerRef, ws } = useMessage()
 
-    const { dispatchMessages, setIsTestMessageShown } = useMessage()
+    const { dispatchMessages, setIsTestMessageShown, messages, isTestMessageShown } = useMessage()
     const params = useParams()
     const chatId = params.id as string
     const router = useRouter()
     const { isLoading: isAuthLoading, isAuthenticated} = useAuth()
+
+    const shouldShowInput = useMemo(() => {
+        return isValidChat && !isCheckingChat && (messages.length > 0 || isTestMessageShown)
+      }, [isValidChat, isCheckingChat, messages.length, isTestMessageShown])
 
     useEffect(() => {
         if (isAuthLoading) return
@@ -232,6 +236,6 @@ export const useChats = () => {
 
     return { loadChatHistory, updateSidebar, updateChatHistory,  initializeWebSocket, isLoadingHistory, chatTitle,
         chatId, chatHistory, sidebarVersion, setChatTitle, fetchChats, setChatHistory, isValidChat, checkChatValidity,
-        isCheckingChat, setIsValidChat, isLoading, setIsLoading, ws
+        isCheckingChat, setIsValidChat, isLoading, setIsLoading, ws, shouldShowInput
     };
 };
