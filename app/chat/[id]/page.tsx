@@ -17,7 +17,6 @@ import  Markdown from "@/components/markdown-with-latex"
 import { throttle } from "lodash-es"
 import MessageItem from "@/components/MessageItem"
 import MessageInput from "@/components/MessageInput"
-import { clearChatApi, deleteChatApi } from "@/api/api"
 import { useAuth } from "@/features/auth/model/use-auth"
 import { useUserData } from "@/entities/user/model/use-user"
 import { useChats } from "@/entities/chat/model/use-chats"
@@ -54,7 +53,6 @@ export default function ChatPage() {
   const { theme } = useTheme()
   const router = useRouter()
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
-  const { getToken } = useUserData()
 
   const [showScrollToBottom, setShowScrollToBottom] = useState<boolean>(false)
 
@@ -127,8 +125,7 @@ export default function ChatPage() {
     [router],
   )
 
-  const throttledSubmit = useMemo(
-    () =>
+  const throttledSubmit = useMemo(() =>
       throttle((input: string) => {
         if (!input.trim() || isLoading) return
 
