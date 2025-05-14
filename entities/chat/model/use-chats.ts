@@ -88,36 +88,31 @@ export const useChats = () => {
         } catch (error) {
         }
     }, [getToken])
-
-    const loadChatHistory = useCallback( async (chatId: string) => {
-        //   if (isRequested.current) return
-        //   isRequested.current = true
-        console.log("Привет")
-    
+  
+    const loadChatHistory = useCallback(async (chatId: string) => {
         if (chatId === "1") return
-
+        
+        setIsLoadingHistory(true)
         try {
             const token = await getToken()
             if (!token) return
 
             const idChat = localStorage.getItem("lastDeletedChat")
-            if (chatId === idChat) {
-                return
-            }
+            if (chatId === idChat) return
 
             const response = await getChatByIdApi(chatId)
-
-            const history = response.data.messages
-            dispatchMessages({ type: "SET", payload: history })
-            setChatTitle(response.data.name)
-            setIsTestMessageShown(history.length === 0)
-            setIsLoadingHistory(false)
+            return {
+                messages: response.data.messages,
+                title: response.data.name,
+                isEmpty: response.data.messages.length === 0
+            }
         } catch (error) {
-
+            console.error("Failed to load chat history:", error)
+            return null
         } finally {
             setIsLoadingHistory(false)
         }
-    },[getToken])
+    }, [getToken])
 
     const initializeWebSocket = useCallback( async (chatId: string) => {
         console.log("Hereee")
@@ -236,6 +231,6 @@ export const useChats = () => {
 
     return { loadChatHistory, updateSidebar, updateChatHistory,  initializeWebSocket, isLoadingHistory, chatTitle,
         chatId, chatHistory, sidebarVersion, setChatTitle, fetchChats, setChatHistory, isValidChat, checkChatValidity,
-        isCheckingChat, setIsValidChat, isLoading, setIsLoading, ws, shouldShowInput
+        isCheckingChat, setIsValidChat, isLoading, setIsLoading, ws, shouldShowInput, setIsLoadingHistory
     };
 };

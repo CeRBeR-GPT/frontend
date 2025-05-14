@@ -56,19 +56,22 @@ MessageInput.displayName = "MessageInput"
 export default function ChatPage() {
   const { chatId, updateChatHistory, setChatHistory, chatHistory, checkChatValidity, isValidChat,
     isCheckingChat, updateSidebar, sidebarVersion, chatTitle, setChatTitle, fetchChats, ws, initializeWebSocket,
-    shouldShowInput} = useChats()
+    shouldShowInput, isLoadingHistory, setIsLoadingHistory, loadChatHistory, isLoading, setIsLoading} = useChats()
 
-  const { messages, dispatchMessages, messagesContainerRef, input, setInput, handleInputChange, renderedMessages} = useMessage()
+  const { messages, dispatchMessages, messagesContainerRef, input, setInput, handleInputChange, renderedMessages,
+    isTestMessageShown, setIsTestMessageShown
+  } = useMessage()
   const { renameChatTitle } = useRenameChat()
   const { deleteChat } = useDeleteChat()
   const { theme } = useTheme()
   const router = useRouter()
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
   const { getToken } = useUserData()
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(false)
-  const [isTestMessageShown, setIsTestMessageShown] = useState<boolean>(true)
+
+  // const [isLoading, setIsLoading] = useState<boolean>(false)
+
   const [showScrollToBottom, setShowScrollToBottom] = useState<boolean>(false)
+
   const { handleProviderChange, selectedProvider, availableProviders } = useChangeProvider()
   const { handleCopyCode, handleCopyTextMarkdown, copiedCode } = useCopyMessage()
 
@@ -136,37 +139,6 @@ export default function ChatPage() {
       document.documentElement.classList.remove("overflow-hidden")
     }
   }, [])
-
-  const isRequested = useRef(false)
-
-  const loadChatHistory = useCallback(
-    async (chatId: string) => {
-      if (isRequested.current) return
-      isRequested.current = true
-
-      if (chatId === "1") return
-
-      try {
-        const token = await getToken()
-        if (!token) return
-
-        const idChat = localStorage.getItem("lastDeletedChat")
-        if (chatId === idChat) return
-
-        const response = await getChatByIdApi(chatId)
-
-        const history = response.data.messages
-        dispatchMessages({ type: "SET", payload: history })
-        setChatTitle(response.data.name)
-        setIsTestMessageShown(history.length === 0)
-        setIsLoadingHistory(false)
-      } catch (error) {
-      } finally {
-        setIsLoadingHistory(false)
-      }
-    },
-    [getToken],
-  )
 
   const clearChatMessages = useCallback(
     async (id: string) => {
@@ -257,30 +229,29 @@ export default function ChatPage() {
       return
     }
 
-    dispatchMessages({ type: "CLEAR" })
-    setChatTitle("Новый чат")
-
-    const fetchData = async () => {
-      await loadChatHistory(chatId)
+    const initializeChat = async () => {
+      dispatchMessages({ type: "CLEAR" })
+      setChatTitle("Новый чат")
+      
+      const history = await loadChatHistory(chatId)
+      if (history) {
+        dispatchMessages({ type: "SET", payload: history.messages })
+        setChatTitle(history.title)
+        setIsTestMessageShown(history.isEmpty)
+      }
+      
       await initializeWebSocket(chatId)
       await fetchChats()
     }
 
-    fetchData()
+    initializeChat()
 
     return () => {
       if (ws.current) {
         ws.current.close()
       }
     }
-  }, [chatId, isAuthenticated, isAuthLoading, router, loadChatHistory, initializeWebSocket, fetchChats])
-
-  // const renderedMessages = useMemo(() =>
-  //     messages.map((message) => (
-  //       <MessageItem key={`${message.id}`} handleCopyTextMarkdown = {handleCopyTextMarkdown} message={message} theme={theme} onCopy={handleCopyCode} copiedCode={copiedCode} />
-  //     )),
-  //   [messages, theme, copiedCode, handleCopyCode],
-  // )
+  }, [chatId, isAuthenticated, isAuthLoading])
 
   if (isAuthLoading || !isAuthenticated) { return null }
 
