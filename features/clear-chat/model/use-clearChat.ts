@@ -10,6 +10,7 @@ export const useClearChat = () => {
     const { getToken } = useUserData()
     const { setChatHistory, chatId} = useChats()
     const { dispatchMessages, setIsTestMessageShown} = useMessage()
+    const { loadChatHistory } = useChats()
     
     const clearChatMessages = useCallback( async (id: string) => {
           try {
@@ -26,7 +27,7 @@ export const useClearChat = () => {
                 setIsTestMessageShown(true)
             }
     
-            // await loadChatHistory(chatId)
+            await loadChatHistory(chatId)
           } catch (error) {
           }
         },

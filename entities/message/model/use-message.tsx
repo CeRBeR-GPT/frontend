@@ -11,7 +11,7 @@ export const useMessage = () => {
     const [isTestMessageShown, setIsTestMessageShown] = useState<boolean>(true);
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [input, setInput] = useState<string>("")
-    const messagesContainerRef = useRef<HTMLDivElement>(null)
+    const messagesContainerRef = useRef<HTMLDivElement | null>(null)
     const ws = useRef<WebSocket | null>(null)
     const { handleCopyCode, handleCopyTextMarkdown, copiedCode} = useCopyMessage()
     const { theme } = useTheme()

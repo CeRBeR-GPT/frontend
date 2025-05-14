@@ -17,7 +17,7 @@ import  Markdown from "@/components/markdown-with-latex"
 import { throttle } from "lodash-es"
 import MessageItem from "@/components/MessageItem"
 import MessageInput from "@/components/MessageInput"
-import { clearChatApi, deleteChatApi, getChatByIdApi } from "@/api/api"
+import { clearChatApi, deleteChatApi } from "@/api/api"
 import { useAuth } from "@/features/auth/model/use-auth"
 import { useUserData } from "@/entities/user/model/use-user"
 import { useChats } from "@/entities/chat/model/use-chats"
@@ -27,13 +27,8 @@ import { useDeleteChat } from "@/features/delete-chat/model/use-deleteChat"
 import { useChangeProvider } from "@/features/change-provider/model/use-changeProvider"
 import { useCopyMessage } from "@/features/copy-message/model/use-copyMessage"
 import { useMessage } from "@/entities/message/model/use-message"
-
-declare global {
-  interface Window {
-    webkitSpeechRecognition: any
-    SpeechRecognition: any
-  }
-}
+import { scrollToBottom } from "@/shared/utils/scrollToButton"
+import { useClearChat } from "@/features/clear-chat/model/use-clearChat"
 
 interface Message {
   id: number
@@ -42,21 +37,14 @@ interface Message {
   timestamp: Date
 }
 
-interface ChatHistory {
-  id: string
-  title: string
-  preview: string
-  date: Date
-  messages: number
-}
-
 MessageItem.displayName = "MessageItem"
 MessageInput.displayName = "MessageInput"
 
 export default function ChatPage() {
   const { chatId, updateChatHistory, setChatHistory, chatHistory, checkChatValidity, isValidChat,
     isCheckingChat, updateSidebar, sidebarVersion, chatTitle, setChatTitle, fetchChats, ws, initializeWebSocket,
-    shouldShowInput, isLoadingHistory, setIsLoadingHistory, loadChatHistory, isLoading, setIsLoading} = useChats()
+    shouldShowInput, isLoadingHistory, loadChatHistory, isLoading, setIsLoading} = useChats()
+  const { clearChatMessages } = useClearChat()
 
   const { messages, dispatchMessages, messagesContainerRef, input, setInput, handleInputChange, renderedMessages,
     isTestMessageShown, setIsTestMessageShown
@@ -67,8 +55,6 @@ export default function ChatPage() {
   const router = useRouter()
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
   const { getToken } = useUserData()
-
-  // const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const [showScrollToBottom, setShowScrollToBottom] = useState<boolean>(false)
 
@@ -96,25 +82,10 @@ export default function ChatPage() {
     }
   }, [messagesContainerRef.current, messages.length])
 
-  const scrollToBottom = useCallback(() => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTo({
-        top: messagesContainerRef.current.scrollHeight,
-        behavior: "smooth",
-      })
-    }
-  }, [])
-
   useEffect(() => {
     if (!messagesContainerRef.current || isLoadingHistory) return
-    const scrollToBottom = () => {
-      messagesContainerRef.current?.scrollTo({
-        top: messagesContainerRef.current.scrollHeight,
-        behavior: "smooth",
-      })
-    }
 
-    const timer = setTimeout(scrollToBottom, 100)
+    const timer = setTimeout(() => scrollToBottom(messagesContainerRef), 100)
     return () => clearTimeout(timer)
   }, [messages, isLoadingHistory])
 
@@ -139,29 +110,6 @@ export default function ChatPage() {
       document.documentElement.classList.remove("overflow-hidden")
     }
   }, [])
-
-  const clearChatMessages = useCallback(
-    async (id: string) => {
-      try {
-        await clearChatApi(id)
-
-        setChatHistory((prev: ChatHistory[]) =>
-          prev.map((chat) =>
-            chat.id === id ? { ...chat, messages: 0, preview: "Нет сообщений", date: new Date() } : chat,
-          )
-        )
-
-        if (id === chatId) {
-          dispatchMessages({ type: "CLEAR" })
-          setIsTestMessageShown(true)
-        }
-
-        await loadChatHistory(chatId)
-      } catch (error) {
-      }
-    },
-    [chatId, getToken, loadChatHistory],
-  )
 
   useEffect(() => {
     checkChatValidity();
@@ -211,15 +159,9 @@ export default function ChatPage() {
   useEffect(() => {
     if (!messagesContainerRef.current || isLoadingHistory) return
 
-    const scrollToBottom = () => {
-      messagesContainerRef.current?.scrollTo({
-        top: messagesContainerRef.current.scrollHeight,
-        behavior: "smooth",
-      })
-    }
-
-    const timer = setTimeout(scrollToBottom, 100)
+    const timer = setTimeout( ()=>scrollToBottom(messagesContainerRef), 100)
     return () => clearTimeout(timer)
+
   }, [messages, isLoadingHistory])
 
   useEffect(() => {
@@ -325,7 +267,7 @@ export default function ChatPage() {
                 >
                   {showScrollToBottom && (
                     <button
-                      onClick={scrollToBottom}
+                      onClick={() => scrollToBottom(messagesContainerRef)}
                       className="fixed right-4 bottom-24 md:right-14 lg:right-24 z-10 p-2 rounded-full bg-background border shadow-lg hover:bg-muted transition-colors"
                       aria-label="Прокрутить вниз"
                     >
