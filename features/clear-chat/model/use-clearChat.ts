@@ -5,7 +5,6 @@ import { useUserData } from "@/entities/user/model/use-user";
 import { useChats } from "@/entities/chat/model/use-chats";
 import { useMessage } from "@/entities/message/model/use-message";
 
-
 export const useClearChat = () => {
 
     const { getToken } = useUserData()

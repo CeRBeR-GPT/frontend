@@ -10,7 +10,6 @@ import { Bot, ArrowDown } from "lucide-react"
 import { UserMenu } from "../../../widgets/user-menu/user-menu"
 import { ChatSidebar } from "@/components/chat-sidebar"
 import { NavLinks } from "@/components/nav-links"
-import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { useTheme } from "next-themes"
 import "katex/dist/katex.min.css"
@@ -22,10 +21,12 @@ import { clearChatApi, deleteChatApi, getChatByIdApi } from "@/api/api"
 import { useAuth } from "@/features/auth/model/use-auth"
 import { useUserData } from "@/entities/user/model/use-user"
 import { useChats } from "@/entities/chat/model/use-chats"
-import { useMessage } from "@/entities/message/model/use-message"
+
 import { useRenameChat } from "@/features/rename_chat/model/use-clearChat"
 import { useDeleteChat } from "@/features/delete-chat/model/use-deleteChat"
 import { useChangeProvider } from "@/features/change-provider/model/use-changeProvider"
+import { useCopyMessage } from "@/features/copy-message/model/use-copyMessage"
+import { useMessage } from "@/entities/message/model/use-message"
 
 declare global {
   interface Window {
@@ -49,12 +50,6 @@ interface ChatHistory {
   messages: number
 }
 
-const providersByPlan = {
-  default: ["default", "deepseek"],
-  premium: ["default", "deepseek", "gpt_4o_mini"],
-  business: ["default", "deepseek", "gpt_4o_mini", "gpt_4o", "gpt_4"],
-}
-
 MessageItem.displayName = "MessageItem"
 MessageInput.displayName = "MessageInput"
 
@@ -63,7 +58,7 @@ export default function ChatPage() {
     isCheckingChat, updateSidebar, sidebarVersion, chatTitle, setChatTitle, fetchChats, ws, initializeWebSocket,
     shouldShowInput} = useChats()
 
-  const { messages, dispatchMessages, messagesContainerRef, input, setInput, handleInputChange} = useMessage()
+  const { messages, dispatchMessages, messagesContainerRef, input, setInput, handleInputChange, renderedMessages} = useMessage()
   const { renameChatTitle } = useRenameChat()
   const { deleteChat } = useDeleteChat()
   const { theme } = useTheme()
@@ -72,11 +67,10 @@ export default function ChatPage() {
   const { getToken } = useUserData()
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(false)
-  const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [isTestMessageShown, setIsTestMessageShown] = useState<boolean>(true)
   const [showScrollToBottom, setShowScrollToBottom] = useState<boolean>(false)
-  const { toast } = useToast()
   const { handleProviderChange, selectedProvider, availableProviders } = useChangeProvider()
+  const { handleCopyCode, handleCopyTextMarkdown, copiedCode } = useCopyMessage()
 
   useEffect(() => {
     const container = messagesContainerRef.current
@@ -242,24 +236,6 @@ export default function ChatPage() {
     [input, throttledSubmit],
   )
 
-  const handleCopyCode = useCallback((code: string) => {
-    navigator.clipboard.writeText(code)
-    setCopiedCode(code)
-    toast({
-      title: "Код скопирован",
-      description: "Код был успешно скопирован в буфер обмена.",
-    })
-    setTimeout(() => setCopiedCode(null), 2000)
-  }, [])
-
-  const handleCopyTextMarkdown = useCallback((code: string) => {
-    navigator.clipboard.writeText(code)
-    toast({
-      title: "Текст скопирован",
-      description: "Текст скопирован в буфер обмена.",
-    })
-  }, [])
-
   useEffect(() => {
     if (!messagesContainerRef.current || isLoadingHistory) return
 
@@ -299,12 +275,12 @@ export default function ChatPage() {
     }
   }, [chatId, isAuthenticated, isAuthLoading, router, loadChatHistory, initializeWebSocket, fetchChats])
 
-  const renderedMessages = useMemo(() =>
-      messages.map((message) => (
-        <MessageItem key={`${message.id}`} handleCopyTextMarkdown = {handleCopyTextMarkdown} message={message} theme={theme} onCopy={handleCopyCode} copiedCode={copiedCode} />
-      )),
-    [messages, theme, copiedCode, handleCopyCode],
-  )
+  // const renderedMessages = useMemo(() =>
+  //     messages.map((message) => (
+  //       <MessageItem key={`${message.id}`} handleCopyTextMarkdown = {handleCopyTextMarkdown} message={message} theme={theme} onCopy={handleCopyCode} copiedCode={copiedCode} />
+  //     )),
+  //   [messages, theme, copiedCode, handleCopyCode],
+  // )
 
   if (isAuthLoading || !isAuthenticated) { return null }
 
