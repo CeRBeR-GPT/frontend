@@ -1,4 +1,4 @@
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/shared/hooks/use-toast";
 import { useState } from "react";
 import { handleSubmitFeedbackApi } from "./api";
 import { useUserData } from "@/entities/user/model/use-user";

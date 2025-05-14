@@ -1,4 +1,3 @@
-
 // features/chat-init/model/use-chat-init.ts
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -6,9 +5,10 @@ import { useAuth } from '@/features/auth/model/use-auth';
 import { useChats } from '@/entities/chat/model/use-chats';
 import { useMessage } from '@/entities/message/model/use-message';
 
-export const useChatInit = async () => {
+export const useChatInitialization = () => {
   const router = useRouter();
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  
   const {
     chatId,
     loadChatHistory,
@@ -16,10 +16,13 @@ export const useChatInit = async () => {
     fetchChats,
     ws,
     setChatTitle,
+    isCheckingChat
   } = useChats();
+  
   const {
     dispatchMessages,
     setIsTestMessageShown,
+    renderedMessages // Добавляем renderedMessages в возвращаемые значения
   } = useMessage();
 
   useEffect(() => {
@@ -52,4 +55,9 @@ export const useChatInit = async () => {
       }
     };
   }, [chatId, isAuthenticated, isAuthLoading]);
+
+  return {
+    isCheckingChat,
+    renderedMessages // Возвращаем подготовленные сообщения для рендеринга
+  };
 };

@@ -1,7 +1,5 @@
 "use client"
 import React from "react"
-import { useState, useEffect, useCallback, useMemo } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
@@ -14,7 +12,6 @@ import { Toaster } from "@/components/ui/toaster"
 import { useTheme } from "next-themes"
 import "katex/dist/katex.min.css"
 import  Markdown from "@/components/markdown-with-latex"
-import { throttle } from "lodash-es"
 import MessageItem from "@/components/MessageItem"
 import MessageInput from "@/components/MessageInput"
 import { useAuth } from "@/features/auth/model/use-auth"
@@ -30,99 +27,31 @@ import { useClearChat } from "@/features/clear-chat/model/use-clearChat"
 import { useAutoScroll } from "@/shared/hooks/useAutoScroll"
 import { useLockBodyScroll } from "@/shared/hooks/use-lock-body-scroll"
 import { useScrollVisibility } from "@/shared/hooks/useScrollVisibility"
-
-interface Message {
-  id: number
-  text: string
-  message_belong: "user" | "assistant"
-  timestamp: Date
-}
+import { useMessageSubmit } from "@/features/message-submit/model/use-message-submit"
+import { useChatInitialization } from "@/features/chat-init/model/use-chat-init"
+import { ThemeToggle } from "@/shared/ui/theme-toggle"
 
 MessageItem.displayName = "MessageItem"
 MessageInput.displayName = "MessageInput"
 
 export default function ChatPage() {
-  const { chatId, updateChatHistory, setChatHistory, chatHistory, checkChatValidity, isValidChat,
-    isCheckingChat, updateSidebar, sidebarVersion, chatTitle, setChatTitle, fetchChats, ws, initializeWebSocket,
-    shouldShowInput, isLoadingHistory, loadChatHistory, isLoading, setIsLoading} = useChats()
+  const { chatId, updateChatHistory, setChatHistory, chatHistory, isValidChat,updateSidebar, sidebarVersion, 
+    chatTitle, ws, shouldShowInput, isLoadingHistory, isLoading, setIsLoading} = useChats()
   const { clearChatMessages } = useClearChat()
 
-  const { messages, dispatchMessages, messagesContainerRef, input, setInput, handleInputChange, renderedMessages,
-    isTestMessageShown, setIsTestMessageShown
+  const { messages, dispatchMessages, messagesContainerRef, input, setInput, handleInputChange,isTestMessageShown
   } = useMessage()
   const { renameChatTitle } = useRenameChat()
   const { deleteChat, handleChatDeleted } = useDeleteChat()
   const { theme } = useTheme()
-  const router = useRouter()
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
-
-  // const [showScrollToBottom, setShowScrollToBottom] = useState<boolean>(false)
 
   const { handleProviderChange, selectedProvider, availableProviders } = useChangeProvider()
   const { handleCopyCode, handleCopyTextMarkdown, copiedCode } = useCopyMessage()
   useLockBodyScroll();
 
-  // useEffect(() => {
-  //   const container = messagesContainerRef.current
-  //   if (!container) return
-  
-  //   let lastScrollTop = container.scrollTop
-  
-  //   const handleScrollEvent = () => {
-  //     const { scrollTop, scrollHeight, clientHeight } = container
-  //     const isAtBottom = scrollHeight - (scrollTop + clientHeight) < 50
-  //     const isScrollingDown = scrollTop > lastScrollTop
-  //     lastScrollTop = scrollTop
-  //     const hasMoreContentBelow = scrollHeight > clientHeight + scrollTop
-  //     setShowScrollToBottom(isScrollingDown && hasMoreContentBelow && !isAtBottom)
-  //   }
-  
-  //   container.addEventListener("scroll", handleScrollEvent)
-  //   return () => {
-  //     container.removeEventListener("scroll", handleScrollEvent)
-  //   }
-  // }, [messagesContainerRef.current, messages.length])
-
-  const { showButton: showScrollToBottom } = useScrollVisibility(
-    messagesContainerRef,
-    [messages.length],
-    { 
-      showOffset: 50,
-      throttleDelay: 100 
-    }
-  );
-
-  useEffect(() => {
-    checkChatValidity();
-  }, [chatHistory, chatId]);
-
-  const throttledSubmit = useMemo(() =>
-      throttle((input: string) => {
-        if (!input.trim() || isLoading) return
-
-        const userMessage: Message = {
-          id: Date.now(),
-          text: input,
-          message_belong: "user",
-          timestamp: new Date(),
-        }
-
-        dispatchMessages({ type: "ADD", payload: userMessage })
-        setIsLoading(true)
-        setInput("")
-
-        if (ws.current) { ws.current.send(input) }
-      }, 500),
-    [isLoading],
-  )
-
-  const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault()
-      throttledSubmit(input)
-    },
-    [input, throttledSubmit],
-  )
+  const { showButton: showScrollToBottom } = useScrollVisibility( messagesContainerRef, [messages.length],
+    { showOffset: 50,throttleDelay: 100 } );
 
   useAutoScroll(messagesContainerRef, [messages, isLoadingHistory], { delay: 100, smooth: true });
 
@@ -131,36 +60,9 @@ export default function ChatPage() {
 
   useAutoScroll(messagesContainerRef, [chatId, isAuthenticated], { delay: 200, smooth: false });
 
-  useEffect(() => {
-    if (isAuthLoading) return
-    if (!isAuthenticated) {
-      router.push("/auth/login")
-      return
-    }
+  const { handleSubmit } = useMessageSubmit( input, setInput, isLoading, setIsLoading, dispatchMessages, ws );
 
-    const initializeChat = async () => {
-      dispatchMessages({ type: "CLEAR" })
-      setChatTitle("Новый чат")
-      
-      const history = await loadChatHistory(chatId)
-      if (history) {
-        dispatchMessages({ type: "SET", payload: history.messages })
-        setChatTitle(history.title)
-        setIsTestMessageShown(history.isEmpty)
-      }
-      
-      await initializeWebSocket(chatId)
-      await fetchChats()
-    }
-
-    initializeChat()
-
-    return () => {
-      if (ws.current) {
-        ws.current.close()
-      }
-    }
-  }, [chatId, isAuthenticated, isAuthLoading])
+  const { isCheckingChat, renderedMessages } = useChatInitialization();
 
   if (isAuthLoading || !isAuthenticated) { return null }
 
@@ -183,7 +85,7 @@ export default function ChatPage() {
       </div>
       <nav className="flex items-center gap-4">
         <NavLinks />
-        {/* <ThemeToggle /> */}
+        <ThemeToggle />
         <UserMenu />
       </nav>
     </div>

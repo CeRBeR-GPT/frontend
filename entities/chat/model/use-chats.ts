@@ -55,6 +55,10 @@ export const useChats = () => {
         setSidebarVersion((v) => v + 1)
     }, [])
 
+    useEffect(() => {
+        checkChatValidity();
+    }, [chatHistory, chatId]);
+
     const updateChatHistory = useCallback(async () => {
         try {
             const token = await getToken()
