@@ -57,7 +57,7 @@ export const useMessage = () => {
                 if (ws.current) { ws.current.send(input) }
             }, 500),
         [isLoading],
-      )
+    )
     
     const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setInput(e.target.value)

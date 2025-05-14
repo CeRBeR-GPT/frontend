@@ -42,7 +42,16 @@ export const useDeleteChat = () => {
         [chatId, chatHistory, getToken, router, updateSidebar],
     )
 
+    const handleChatDeleted = useCallback(
+        (nextChatId: string | null) => {
+          if (nextChatId) {
+            router.push(`/chat/${nextChatId}`)
+          } else {
+            router.push("/chat/1")
+          }
+        },
+        [router],
+    )
 
-
-    return { deleteChat };
+    return { deleteChat, handleChatDeleted };
 };

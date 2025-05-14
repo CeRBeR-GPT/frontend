@@ -1,6 +1,6 @@
 "use client"
 import React from "react"
-import { useState, useEffect, useRef, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -18,7 +18,6 @@ import { throttle } from "lodash-es"
 import MessageItem from "@/components/MessageItem"
 import MessageInput from "@/components/MessageInput"
 import { useAuth } from "@/features/auth/model/use-auth"
-import { useUserData } from "@/entities/user/model/use-user"
 import { useChats } from "@/entities/chat/model/use-chats"
 
 import { useRenameChat } from "@/features/rename_chat/model/use-clearChat"
@@ -28,6 +27,9 @@ import { useCopyMessage } from "@/features/copy-message/model/use-copyMessage"
 import { useMessage } from "@/entities/message/model/use-message"
 import { scrollToBottom } from "@/shared/utils/scrollToButton"
 import { useClearChat } from "@/features/clear-chat/model/use-clearChat"
+import { useAutoScroll } from "@/shared/hooks/useAutoScroll"
+import { useLockBodyScroll } from "@/shared/hooks/use-lock-body-scroll"
+import { useScrollVisibility } from "@/shared/hooks/useScrollVisibility"
 
 interface Message {
   id: number
@@ -49,81 +51,50 @@ export default function ChatPage() {
     isTestMessageShown, setIsTestMessageShown
   } = useMessage()
   const { renameChatTitle } = useRenameChat()
-  const { deleteChat } = useDeleteChat()
+  const { deleteChat, handleChatDeleted } = useDeleteChat()
   const { theme } = useTheme()
   const router = useRouter()
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
 
-  const [showScrollToBottom, setShowScrollToBottom] = useState<boolean>(false)
+  // const [showScrollToBottom, setShowScrollToBottom] = useState<boolean>(false)
 
   const { handleProviderChange, selectedProvider, availableProviders } = useChangeProvider()
   const { handleCopyCode, handleCopyTextMarkdown, copiedCode } = useCopyMessage()
+  useLockBodyScroll();
 
-  useEffect(() => {
-    const container = messagesContainerRef.current
-    if (!container) return
+  // useEffect(() => {
+  //   const container = messagesContainerRef.current
+  //   if (!container) return
   
-    let lastScrollTop = container.scrollTop
+  //   let lastScrollTop = container.scrollTop
   
-    const handleScrollEvent = () => {
-      const { scrollTop, scrollHeight, clientHeight } = container
-      const isAtBottom = scrollHeight - (scrollTop + clientHeight) < 50
-      const isScrollingDown = scrollTop > lastScrollTop
-      lastScrollTop = scrollTop
-      const hasMoreContentBelow = scrollHeight > clientHeight + scrollTop
-      setShowScrollToBottom(isScrollingDown && hasMoreContentBelow && !isAtBottom)
-    }
+  //   const handleScrollEvent = () => {
+  //     const { scrollTop, scrollHeight, clientHeight } = container
+  //     const isAtBottom = scrollHeight - (scrollTop + clientHeight) < 50
+  //     const isScrollingDown = scrollTop > lastScrollTop
+  //     lastScrollTop = scrollTop
+  //     const hasMoreContentBelow = scrollHeight > clientHeight + scrollTop
+  //     setShowScrollToBottom(isScrollingDown && hasMoreContentBelow && !isAtBottom)
+  //   }
   
-    container.addEventListener("scroll", handleScrollEvent)
-    return () => {
-      container.removeEventListener("scroll", handleScrollEvent)
+  //   container.addEventListener("scroll", handleScrollEvent)
+  //   return () => {
+  //     container.removeEventListener("scroll", handleScrollEvent)
+  //   }
+  // }, [messagesContainerRef.current, messages.length])
+
+  const { showButton: showScrollToBottom } = useScrollVisibility(
+    messagesContainerRef,
+    [messages.length],
+    { 
+      showOffset: 50,
+      throttleDelay: 100 
     }
-  }, [messagesContainerRef.current, messages.length])
-
-  useEffect(() => {
-    if (!messagesContainerRef.current || isLoadingHistory) return
-
-    const timer = setTimeout(() => scrollToBottom(messagesContainerRef), 100)
-    return () => clearTimeout(timer)
-  }, [messages, isLoadingHistory])
-
-  useEffect(() => {
-    if (!isLoadingHistory && messages.length > 0) {
-      const timer = setTimeout(() => {
-        if (messagesContainerRef.current) {
-          messagesContainerRef.current.scrollTo({
-            top: messagesContainerRef.current.scrollHeight,
-            behavior: "smooth",
-          })
-        }
-      }, 150)
-
-      return () => clearTimeout(timer)
-    }
-  }, [isLoadingHistory, messages.length, chatId])
-
-  useEffect(() => {
-    document.documentElement.classList.add("overflow-hidden")
-    return () => {
-      document.documentElement.classList.remove("overflow-hidden")
-    }
-  }, [])
+  );
 
   useEffect(() => {
     checkChatValidity();
   }, [chatHistory, chatId]);
-
-
-  const handleChatDeleted = useCallback(
-    (nextChatId: string | null) => {
-      if (nextChatId) {
-        router.push(`/chat/${nextChatId}`)
-      } else {
-        router.push("/chat/1")
-      }
-    },
-    [router],
-  )
 
   const throttledSubmit = useMemo(() =>
       throttle((input: string) => {
@@ -153,13 +124,12 @@ export default function ChatPage() {
     [input, throttledSubmit],
   )
 
-  useEffect(() => {
-    if (!messagesContainerRef.current || isLoadingHistory) return
+  useAutoScroll(messagesContainerRef, [messages, isLoadingHistory], { delay: 100, smooth: true });
 
-    const timer = setTimeout( ()=>scrollToBottom(messagesContainerRef), 100)
-    return () => clearTimeout(timer)
+  useAutoScroll(messagesContainerRef, [isLoadingHistory, messages.length], { delay: 150, smooth: true, 
+    onlyIfNotLoading: false });
 
-  }, [messages, isLoadingHistory])
+  useAutoScroll(messagesContainerRef, [chatId, isAuthenticated], { delay: 200, smooth: false });
 
   useEffect(() => {
     if (isAuthLoading) return

@@ -1,8 +1,19 @@
+// shared/utils/scrollToBottom.ts
+import { RefObject } from 'react';
 
-
-export const scrollToBottom = (messagesContainerRef: React.RefObject<HTMLDivElement | null>) => {
-      messagesContainerRef.current?.scrollTo({
-        top: messagesContainerRef.current.scrollHeight,
-        behavior: "smooth",
-      })
+interface ScrollOptions {
+  behavior?: 'auto' | 'smooth';
+  offset?: number;
 }
+
+export const scrollToBottom = (
+  containerRef: RefObject<HTMLDivElement | null>,
+  options: ScrollOptions = { behavior: 'smooth' }
+) => {
+  if (containerRef.current) {
+    containerRef.current.scrollTo({
+      top: containerRef.current.scrollHeight,
+      behavior: options.behavior,
+    });
+  }
+};
