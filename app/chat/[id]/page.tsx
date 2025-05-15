@@ -4,12 +4,10 @@ import Link from "next/link"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { Bot, ArrowDown } from "lucide-react"
-// import { ThemeToggle } from "@/components/theme-toggle"
 import { UserMenu } from "../../../widgets/user-menu/user-menu"
 import { ChatSidebar } from "@/components/chat-sidebar"
 import { NavLinks } from "@/components/nav-links"
 import { Toaster } from "@/components/ui/toaster"
-import { useTheme } from "next-themes"
 import "katex/dist/katex.min.css"
 import  Markdown from "@/components/markdown-with-latex"
 import MessageItem from "@/components/MessageItem"
@@ -17,13 +15,8 @@ import MessageInput from "@/components/MessageInput"
 import { useAuth } from "@/features/auth/model/use-auth"
 import { useChats } from "@/entities/chat/model/use-chats"
 
-import { useRenameChat } from "@/features/rename_chat/model/use-clearChat"
-import { useDeleteChat } from "@/features/delete-chat/model/use-deleteChat"
-import { useChangeProvider } from "@/features/change-provider/model/use-changeProvider"
-import { useCopyMessage } from "@/features/copy-message/model/use-copyMessage"
 import { useMessage } from "@/entities/message/model/use-message"
 import { scrollToBottom } from "@/shared/utils/scrollToButton"
-import { useClearChat } from "@/features/clear-chat/model/use-clearChat"
 import { useAutoScroll } from "@/shared/hooks/useAutoScroll"
 import { useLockBodyScroll } from "@/shared/hooks/use-lock-body-scroll"
 import { useScrollVisibility } from "@/shared/hooks/useScrollVisibility"
@@ -35,19 +28,11 @@ MessageItem.displayName = "MessageItem"
 MessageInput.displayName = "MessageInput"
 
 export default function ChatPage() {
-  const { chatId, updateChatHistory, setChatHistory, chatHistory, isValidChat,updateSidebar, sidebarVersion, 
-    chatTitle, ws, shouldShowInput, isLoadingHistory, isLoading, setIsLoading} = useChats()
-  const { clearChatMessages } = useClearChat()
-
-  const { messages, dispatchMessages, messagesContainerRef, input, setInput, handleInputChange,isTestMessageShown
+  const { chatId, isValidChat, sidebarVersion, chatTitle, ws, shouldShowInput, isLoadingHistory, isLoading, 
+    setIsLoading, chatHistory} = useChats()
+  const { messages, dispatchMessages, messagesContainerRef, input, setInput, isTestMessageShown
   } = useMessage()
-  const { renameChatTitle } = useRenameChat()
-  const { deleteChat, handleChatDeleted } = useDeleteChat()
-  const { theme } = useTheme()
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
-
-  const { handleProviderChange, selectedProvider, availableProviders } = useChangeProvider()
-  const { handleCopyCode, handleCopyTextMarkdown, copiedCode } = useCopyMessage()
   useLockBodyScroll();
 
   const { showButton: showScrollToBottom } = useScrollVisibility( messagesContainerRef, [messages.length],
@@ -92,15 +77,7 @@ export default function ChatPage() {
   </header>
 
   <div className="flex flex-1 overflow-hidden">
-    <ChatSidebar
-      key={`sidebar-${sidebarVersion}`}
-      chatHistory={chatHistory}
-      setChatHistory={setChatHistory}
-      onChatDeleted={handleChatDeleted}
-      renameChatTitle={renameChatTitle}
-      clearChatMessages={clearChatMessages}
-      deleteChat={deleteChat}
-    />
+    <ChatSidebar key={`sidebar-${sidebarVersion}`} chatHistory={chatHistory}/>
 
     {isCheckingChat ? (
       <div className="flex-1 flex items-center justify-center">
@@ -110,13 +87,7 @@ export default function ChatPage() {
       <div className="flex-1 flex items-center justify-center">
         <Card className="p-3 bg-muted">
             <div className="prose dark:prose-invert max-w-none">
-              <Markdown
-                handleCopyTextMarkdown={handleCopyTextMarkdown}
-                content="# Привет! Я ваш AI ассистент. Выберите чат или создайте новый!"
-                theme={theme}
-                onCopy={handleCopyCode}
-                copiedCode={copiedCode}
-              />
+              <Markdown content="# Привет! Я ваш AI ассистент. Выберите чат или создайте новый!"/>
             </div>
         </Card>
       </div>
@@ -154,13 +125,7 @@ export default function ChatPage() {
                         </Avatar>
                         <Card className="p-3 bg-muted">
                           <div className="prose dark:prose-invert max-w-none">
-                            <Markdown
-                              handleCopyTextMarkdown={handleCopyTextMarkdown}
-                              content="# Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?"
-                              theme={theme}
-                              onCopy={handleCopyCode}
-                              copiedCode={copiedCode}
-                            />
+                            <Markdown content="# Привет! Я ваш AI ассистент. Чем я могу вам помочь сегодня?"/>
                           </div>
                         </Card>
                       </div>
@@ -191,15 +156,7 @@ export default function ChatPage() {
 
                 {shouldShowInput && (
                   <div className="sticky bottom-0 bg-background border-t">
-                    <MessageInput
-                      value={input}
-                      onChange={handleInputChange}
-                      onSubmit={handleSubmit}
-                      isLoading={isLoading}
-                      selectedProvider={selectedProvider}
-                      availableProviders={availableProviders}
-                      onProviderChange={handleProviderChange}
-                    />
+                    <MessageInput onSubmit={handleSubmit}/>
                   </div>
                 )}
               </>

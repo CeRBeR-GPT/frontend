@@ -1,6 +1,6 @@
 
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getChatAllApi, getChatByIdApi } from './api';
 import { useUserData } from '@/entities/user/model/use-user';
 import { ChatHistory } from './types';

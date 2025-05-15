@@ -5,24 +5,15 @@ import { useToast } from "@/shared/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { ArrowUp } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
+import { useMessage } from "@/entities/message/model/use-message"
+import { useChangeProvider } from "@/features/change-provider/model/use-changeProvider"
+import { useChats } from "@/entities/chat/model/use-chats"
 
 const MessageInput = React.memo(
   ({
-    value,
-    onChange,
     onSubmit,
-    isLoading,
-    selectedProvider,
-    availableProviders,
-    onProviderChange,
   }: {
-    value: string
-    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
     onSubmit: (e: React.FormEvent) => void
-    isLoading: boolean
-    selectedProvider: string
-    availableProviders: string[]
-    onProviderChange: (provider: string) => void
   }) => {
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     const [isRecording, setIsRecording] = useState(false)
@@ -30,6 +21,12 @@ const MessageInput = React.memo(
     const recognitionRef = useRef<any>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const { toast } = useToast()
+    const { input, handleInputChange } = useMessage()
+    const {isLoading} = useChats()
+    const value = input
+    const onChange = handleInputChange
+    const {selectedProvider,availableProviders, handleProviderChange} = useChangeProvider()
+    const onProviderChange = handleProviderChange
 
     const isTextFile = (file: File): boolean => {
       const textMimeTypes = [
