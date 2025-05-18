@@ -94,6 +94,7 @@ export const useChats = () => {
     }, [getToken])
   
     const loadChatHistory = useCallback(async (chatId: string) => {
+        console.log("Работай!")
         if (chatId === "1") return
         
         setIsLoadingHistory(true)
@@ -105,11 +106,12 @@ export const useChats = () => {
             if (chatId === idChat) return
 
             const response = await getChatByIdApi(chatId)
-            return {
-                messages: response.data.messages,
-                title: response.data.name,
-                isEmpty: response.data.messages.length === 0
-            }
+            const history = response.data.messages
+            dispatchMessages({ type: "SET", payload: history })
+            setChatTitle(response.data.name)
+            console.log(history)
+            setIsTestMessageShown(history.length === 0)
+            setIsLoadingHistory(false)
         } catch (error) {
             console.error("Failed to load chat history:", error)
             return null
@@ -235,6 +237,6 @@ export const useChats = () => {
 
     return { loadChatHistory, updateSidebar, updateChatHistory,  initializeWebSocket, isLoadingHistory, chatTitle,
         chatId, chatHistory, sidebarVersion, setChatTitle, fetchChats, setChatHistory, isValidChat, checkChatValidity,
-        isCheckingChat, setIsValidChat, isLoading, setIsLoading, ws, shouldShowInput, setIsLoadingHistory
+        isCheckingChat, setIsValidChat, isLoading, setIsLoading, ws, shouldShowInput, setIsLoadingHistory, messages
     };
 };

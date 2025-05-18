@@ -18,6 +18,7 @@ const MessageItem = React.memo( ({ message, theme, onCopy, copiedCode, handleCop
     copiedCode: string | null
     handleCopyTextMarkdown: (text: string) => void
   }) => {
+    console.log("Messages", message.message_belong)
 
     const copyToClipboard = async () => {
       try {

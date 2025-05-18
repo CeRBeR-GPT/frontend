@@ -1,15 +1,15 @@
 // features/message-submit/model/use-message-submit.ts
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { throttle } from 'lodash-es';
 
 export const useMessageSubmit = (
-  input: string,
-  setInput: (value: string) => void,
   isLoading: boolean,
   setIsLoading: (value: boolean) => void,
   dispatchMessages: (action: any) => void,
   ws: React.MutableRefObject<WebSocket | null>
 ) => {
+  const [input, setInput] = useState<string>("")
+  
   const throttledSubmit = useMemo(() =>
     throttle((inputText: string) => {
       if (!inputText.trim() || isLoading) return;
@@ -40,5 +40,9 @@ export const useMessageSubmit = (
     [input, throttledSubmit]
   );
 
-  return { handleSubmit };
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setInput(e.target.value)
+  }, [])
+
+  return { handleSubmit, input, handleInputChange };
 };

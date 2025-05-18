@@ -28,10 +28,10 @@ MessageItem.displayName = "MessageItem"
 MessageInput.displayName = "MessageInput"
 
 export default function ChatPage() {
+  const { dispatchMessages, messagesContainerRef, isTestMessageShown } = useMessage()
+
   const { chatId, isValidChat, sidebarVersion, chatTitle, ws, shouldShowInput, isLoadingHistory, isLoading, 
-    setIsLoading, chatHistory} = useChats()
-  const { messages, dispatchMessages, messagesContainerRef, input, setInput, isTestMessageShown
-  } = useMessage()
+    setIsLoading, chatHistory, messages} = useChats()
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
   useLockBodyScroll();
 
@@ -45,9 +45,14 @@ export default function ChatPage() {
 
   useAutoScroll(messagesContainerRef, [chatId, isAuthenticated], { delay: 200, smooth: false });
 
-  const { handleSubmit } = useMessageSubmit( input, setInput, isLoading, setIsLoading, dispatchMessages, ws );
 
-  const { isCheckingChat, renderedMessages } = useChatInitialization();
+  const { isCheckingChat, renderedMessages, handleSubmit, input, handleInputChange } = useChatInitialization( messages, 
+    isLoading, setIsLoading, dispatchMessages, ws );
+
+
+
+
+  // const { handleSubmit, input, handleInputChange } = useMessageSubmit( isLoading, setIsLoading, dispatchMessages, ws );
 
   if (isAuthLoading || !isAuthenticated) { return null }
 
@@ -156,7 +161,7 @@ export default function ChatPage() {
 
                 {shouldShowInput && (
                   <div className="sticky bottom-0 bg-background border-t">
-                    <MessageInput onSubmit={handleSubmit}/>
+                    <MessageInput value = {input} onSubmit={handleSubmit} onChange = {handleInputChange}/>
                   </div>
                 )}
               </>

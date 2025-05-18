@@ -24,7 +24,11 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <MessageProvider>
+              {children}
+            </MessageProvider>
+          </AuthProvider>
           <Toaster />
         </ThemeProvider>
       </body>
@@ -35,6 +39,7 @@ export default function RootLayout({
 
 
 import './globals.css'
+import { MessageProvider } from "@/shared/contexts/MessageContext"
 
 
 
