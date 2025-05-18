@@ -1,3 +1,5 @@
+'use client'
+
 import { createContext, useContext, useReducer, ReactNode } from "react";
 // import { Message } from "../features/chat-init/types";
 

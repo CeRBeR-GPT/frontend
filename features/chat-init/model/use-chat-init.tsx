@@ -8,8 +8,10 @@ import MessageItem from "@/components/MessageItem";
 import { useCopyMessage } from '@/features/copy-message/model/use-copyMessage';
 import { useTheme } from 'next-themes';
 import { throttle } from 'lodash-es';
+import { useMessageContext } from '@/shared/contexts/MessageContext';
 
-export const useChatInitialization = (messages, isLoading, setIsLoading, dispatchMessages, ws) => {
+export const useChatInitialization = (isLoading, setIsLoading, ws) => {
+  const { messages, dispatchMessages } = useMessageContext();
   const router = useRouter();
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const { handleCopyCode, handleCopyTextMarkdown, copiedCode} = useCopyMessage()

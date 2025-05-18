@@ -3,6 +3,7 @@ import { Message } from "./types";
 import MessageItem from "@/components/MessageItem";
 import { useCopyMessage } from "@/features/copy-message/model/use-copyMessage";
 import { useTheme } from "next-themes";
+import { useMessageContext } from "@/shared/contexts/MessageContext";
 
 function messagesReducer(state: Message[], action: { type: string; payload?: any }): Message[] {
         switch (action.type) {
@@ -18,7 +19,7 @@ function messagesReducer(state: Message[], action: { type: string; payload?: any
     }
 
 export const useMessage = () => {
-    const [messages, dispatchMessages] = useReducer(messagesReducer, []);
+    const { messages, dispatchMessages } = useMessageContext();
     const [isTestMessageShown, setIsTestMessageShown] = useState<boolean>(true);
     const [input, setInput] = useState<string>("")
     const messagesContainerRef = useRef<HTMLDivElement>(null)

@@ -23,15 +23,17 @@ import { useScrollVisibility } from "@/shared/hooks/useScrollVisibility"
 import { useMessageSubmit } from "@/features/message-submit/model/use-message-submit"
 import { useChatInitialization } from "@/features/chat-init/model/use-chat-init"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
+import { useMessageContext } from "@/shared/contexts/MessageContext"
 
 MessageItem.displayName = "MessageItem"
 MessageInput.displayName = "MessageInput"
 
 export default function ChatPage() {
-  const { dispatchMessages, messagesContainerRef, isTestMessageShown } = useMessage()
+  const { messages } = useMessageContext();
+  const { messagesContainerRef, isTestMessageShown } = useMessage()
 
   const { chatId, isValidChat, sidebarVersion, chatTitle, ws, shouldShowInput, isLoadingHistory, isLoading, 
-    setIsLoading, chatHistory, messages} = useChats()
+    setIsLoading, chatHistory } = useChats()
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
   useLockBodyScroll();
 
@@ -46,8 +48,8 @@ export default function ChatPage() {
   useAutoScroll(messagesContainerRef, [chatId, isAuthenticated], { delay: 200, smooth: false });
 
 
-  const { isCheckingChat, renderedMessages, handleSubmit, input, handleInputChange } = useChatInitialization( messages, 
-    isLoading, setIsLoading, dispatchMessages, ws );
+  const { isCheckingChat, renderedMessages, handleSubmit, input, handleInputChange } = useChatInitialization(  
+    isLoading, setIsLoading, ws );
 
 
 
