@@ -5,7 +5,7 @@ import { getChatAllApi } from '@/api/api';
 import { ApiError, UserData } from './types';
 import { getAccess } from '@/shared/utils/tokens-utils';
 import { useStatistics } from '@/features/statistics/model/use-statistics';
-import { useUserData } from '@/entities/user/model/use-user';
+import { useUser } from '@/shared/contexts/user-context';
 
 export const useAuth = () => {
 
@@ -13,7 +13,7 @@ export const useAuth = () => {
     const [authChecked, setAuthChecked] = useState(false);
     const [isLoading, setIsLoading] = useState(true)
     // const { setStatistics } = useStatistics()
-    const { fetchUserData } = useUserData()
+    const { refreshUserData } = useUser()
     
     const getToken = useCallback(async (): Promise<string | null> => {
         if (typeof window === 'undefined') return null;
@@ -79,12 +79,12 @@ export const useAuth = () => {
 
     useEffect(() => {
         if (isAuthenticated && !authChecked) {
-            fetchUserData().then(() => {
+            refreshUserData().then(() => {
                 setAuthChecked(true)
                 setIsAuthenticated(true)
             })
         }
-    }, [isAuthenticated, authChecked, fetchUserData]);
+    }, [isAuthenticated, authChecked, refreshUserData]);
 
     const login = async (email: string, password: string) => {
         try {
@@ -96,7 +96,7 @@ export const useAuth = () => {
                 localStorage.setItem('isAuthenticated', 'true');
 
                 setIsAuthenticated(true);
-                await fetchUserData();
+                await refreshUserData();
 
                 const lastSavedChat = localStorage.getItem("lastSavedChat")
                 let welcomeChatId = "1"

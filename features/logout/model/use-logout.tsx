@@ -1,10 +1,10 @@
 
-import { useUserData } from '@/entities/user/model/use-user';
+import { useUser } from '@/shared/contexts/user-context';
 import { useAuth } from '@/features/auth/model/use-auth';
 export const useLogout = () => {
 
     const { setIsAuthenticated, setAuthChecked} = useAuth()
-    const { setUserData } = useUserData()
+    const { setUserData } = useUser()
 
     const logout = () => {
         localStorage.removeItem('isAuthenticated');

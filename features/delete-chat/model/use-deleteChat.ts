@@ -1,13 +1,13 @@
-import { useUserData } from "@/entities/user/model/use-user";
 import { useCallback } from "react";
 import { deleteChatApi } from "./api";
 import { useChats } from "@/entities/chat/model/use-chats";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/shared/contexts/user-context";
 
 export const useDeleteChat = () => {
     const router = useRouter()
 
-    const { getToken } = useUserData()
+    const { getToken } = useUser()
     const {setChatHistory, chatHistory, chatId, updateSidebar, setIsLoading, ws} = useChats()
     const deleteChat = useCallback( async (id: string) => {
         router.push(`/chat/${id}`)

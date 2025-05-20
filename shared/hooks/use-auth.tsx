@@ -4,7 +4,7 @@ import {createContext, useContext, useState, useRef} from "react"
 import { useAuth } from "@/features/auth/model/use-auth";
 import { useLogout } from "@/features/logout/model/use-logout";
 import { useStatistics } from "@/features/statistics/model/use-statistics";
-import { useUserData } from "@/entities/user/model/use-user";
+import { useUser } from "@/shared/contexts/user-context";
 
 type AuthContextType = {
     isAuthenticated: boolean
@@ -21,12 +21,10 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     const auth = useAuth()
     const logout = useLogout()
     const statistics = useStatistics()
-    const user = useUserData()
     const value = {
         ...auth,
         ...logout,
         ...statistics,
-        ...user
     };
 
     const [isAuthenticated, setIsAuthenticated] = useState(false)

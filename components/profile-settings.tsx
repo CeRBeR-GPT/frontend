@@ -6,16 +6,12 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useLogout } from "@/features/logout/model/use-logout"
-import { useAuth } from "@/features/auth/model/use-auth"
-import { useUserData } from "@/entities/user/model/use-user"
-import { useEffect } from "react"
+import { useUser } from "@/shared/contexts/user-context"
 
 const ProfileSettings = () => {
     const router = useRouter()
-    // const { userData } = useAuth()
-    const { userData, fetchUserData } = useUserData()
+    const { userData } = useUser()
     const { logout } = useLogout()
-    console.log(userData, "jhjh")
 
     // useEffect(() => {
     //   fetchUserData(); // Загружаем данные при монтировании

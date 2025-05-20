@@ -26,9 +26,6 @@ export const useChatInitialization = (isLoading, setIsLoading, ws) => {
     isCheckingChat
   } = useChats();
   
-  const {
-    setIsTestMessageShown,
-  } = useMessage();
 
   const [input, setInput] = useState<string>("")
     
@@ -77,41 +74,6 @@ export const useChatInitialization = (isLoading, setIsLoading, ws) => {
         }),
     [messages, theme, copiedCode, handleCopyCode, handleSubmit],
   );
-
-  useEffect(() => {
-    console.log("Messages updated:", messages);
-  }, [messages]);
-
-  useEffect(() => {
-    if (isAuthLoading) return;
-    if (!isAuthenticated) {
-      router.push("/auth/login");
-      return;
-    }
-
-    const initializeChat = async () => {
-      dispatchMessages({ type: "CLEAR" });
-      setChatTitle("Новый чат");
-      
-      const history = await loadChatHistory(chatId);
-      if (history) {
-        dispatchMessages({ type: "SET", payload: history.messages });
-        setChatTitle(history.title);
-        setIsTestMessageShown(history.isEmpty);
-      }
-      
-      await initializeWebSocket(chatId);
-      await fetchChats();
-    };
-
-    initializeChat();
-
-    return () => {
-      if (ws.current) {
-        ws.current.close();
-      }
-    };
-  }, [chatId, isAuthenticated, isAuthLoading]);
 
   return {
     isCheckingChat,

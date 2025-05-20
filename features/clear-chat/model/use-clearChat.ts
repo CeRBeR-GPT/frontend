@@ -1,13 +1,13 @@
 import { useCallback } from "react";
 import { clearChatApi } from "./api";
 import { ChatHistory } from "./types";
-import { useUserData } from "@/entities/user/model/use-user";
 import { useChats } from "@/entities/chat/model/use-chats";
 import { useMessage } from "@/entities/message/model/use-message";
+import { useUser } from "@/shared/contexts/user-context";
 
 export const useClearChat = () => {
 
-    const { getToken } = useUserData()
+    const { getToken } = useUser()
     const { setChatHistory, chatId} = useChats()
     const { dispatchMessages, setIsTestMessageShown} = useMessage()
     const { loadChatHistory } = useChats()

@@ -39,6 +39,7 @@ function messagesReducer(state: Message[], action: MessageAction): Message[] {
 // Провайдер контекста
 export const MessageProvider = ({ children }: { children: ReactNode }) => {
   const [messages, dispatchMessages] = useReducer(messagesReducer, []);
+  
 
   return (
     <MessageContext.Provider value={{ messages, dispatchMessages }}>

@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { DailyStatistic } from '@/shared/types/statistics/statistics';
-import { useUserData } from '@/entities/user/model/use-user';
 import { getUserDataApi } from '@/entities/user/model/api';
+import { useUser } from '@/shared/contexts/user-context';
 
 export const useStatistics = () => {
     const [statistics, setStatistics] = useState<DailyStatistic[]>([])
     const [statisticsLoading, setStatisticsLoading] = useState(true)
 
-    const { fetchUserData } = useUserData()
+    const { refreshUserData } = useUser()
 
     const refreshStatistics = async () => {
-            await fetchUserData()
+            await refreshUserData()
             const token = localStorage.getItem("access_token")
             if (token) {
               setStatisticsLoading(true)

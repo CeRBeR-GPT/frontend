@@ -1,11 +1,11 @@
 
 import { useAuth } from '@/features/auth/model/use-auth';
 import { updatePasswordApi } from './api';
-import { useUserData } from '@/entities/user/model/use-user';
+import { useUser } from '@/shared/contexts/user-context';
 export const useUpdatePassword = () => {
 
     const { setIsAuthenticated } = useAuth()
-    const { getToken } = useUserData()
+    const { getToken } = useUser()
 
     const updatePassword = async (newPassword: string) => {
             try {

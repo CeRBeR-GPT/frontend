@@ -1,8 +1,6 @@
 import { useChats } from "@/entities/chat/model/use-chats";
-import { useUserData } from "@/entities/user/model/use-user";
+import { useUser } from "@/shared/contexts/user-context";
 import { useCallback, useEffect, useState } from "react";
-
-
 
 export const useChangeProvider = () => {
 
@@ -15,7 +13,7 @@ export const useChangeProvider = () => {
     const [selectedProvider, setSelectedProvider] = useState<string>("default")
     const [availableProviders, setAvailableProviders] = useState<string[]>([])
     const { chatId, initializeWebSocket } = useChats()
-    const { userData } = useUserData()
+    const { userData } = useUser()
 
     useEffect(() => {
         if (userData) {

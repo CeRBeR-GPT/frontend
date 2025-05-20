@@ -20,7 +20,6 @@ import { scrollToBottom } from "@/shared/utils/scrollToButton"
 import { useAutoScroll } from "@/shared/hooks/useAutoScroll"
 import { useLockBodyScroll } from "@/shared/hooks/use-lock-body-scroll"
 import { useScrollVisibility } from "@/shared/hooks/useScrollVisibility"
-import { useMessageSubmit } from "@/features/message-submit/model/use-message-submit"
 import { useChatInitialization } from "@/features/chat-init/model/use-chat-init"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
 import { useMessageContext } from "@/shared/contexts/MessageContext"
@@ -50,11 +49,6 @@ export default function ChatPage() {
 
   const { isCheckingChat, renderedMessages, handleSubmit, input, handleInputChange } = useChatInitialization(  
     isLoading, setIsLoading, ws );
-
-
-
-
-  // const { handleSubmit, input, handleInputChange } = useMessageSubmit( isLoading, setIsLoading, dispatchMessages, ws );
 
   if (isAuthLoading || !isAuthenticated) { return null }
 

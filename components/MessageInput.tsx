@@ -4,11 +4,9 @@ import ProviderSelectorDropdown from "@/components/provider-selector-dropdown"
 import { Button } from "@/components/ui/button"
 import { ArrowUp } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
-import { useMessage } from "@/entities/message/model/use-message"
 import { useChangeProvider } from "@/features/change-provider/model/use-changeProvider"
 import { useChats } from "@/entities/chat/model/use-chats"
 import { useToast } from "@/shared/hooks/use-toast"
-import { useMessageSubmit } from "@/features/message-submit/model/use-message-submit"
 
 const MessageInput = React.memo(
   ({
@@ -26,13 +24,9 @@ const MessageInput = React.memo(
     const recognitionRef = useRef<any>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const { toast } = useToast()
-    // const { handleInputChange } = useMessageSubmit()
-    // const onChange = handleInputChange
     const { selectedProvider, availableProviders, handleProviderChange} = useChangeProvider()
     const onProviderChange = handleProviderChange
     const { isLoading } = useChats()
-    console.log("isLoading", isLoading)
-    // const isLoading = false
     const isTextFile = (file: File): boolean => {
       const textMimeTypes = [
         "text/plain",

@@ -1,8 +1,8 @@
 import { useToast } from "@/shared/hooks/use-toast";
 import { useState } from "react";
 import { handleSubmitFeedbackApi } from "./api";
-import { useUserData } from "@/entities/user/model/use-user";
 import { allowedFileTypes, blockedExtensions } from "@/shared/const/extensions";
+import { useUser } from "@/shared/contexts/user-context";
 
 export const useFeedback = () => {
 
@@ -11,7 +11,7 @@ export const useFeedback = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
     const { toast } = useToast()
-    const { getToken } = useUserData()
+    const { getToken } = useUser()
     const [file, setFile] = useState<File | null>(null)
     const [fileError, setFileError] = useState<string | null>(null)
 

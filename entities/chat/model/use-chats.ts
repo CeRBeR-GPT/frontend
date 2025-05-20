@@ -1,15 +1,15 @@
 
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getChatAllApi, getChatByIdApi } from './api';
-import { useUserData } from '@/entities/user/model/use-user';
+import { useUser } from '@/shared/contexts/user-context';
 import { ChatHistory } from './types';
 import { useParams, useRouter } from "next/navigation"
 import { useAuth } from '@/features/auth/model/use-auth';
 import { useMessage } from '@/entities/message/model/use-message';
 
 export const useChats = () => {
-    const { getToken } = useUserData()
+    const { getToken } = useUser()
     const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(false)
     const [chatTitle, setChatTitle] = useState<string>("")
     const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
@@ -94,7 +94,6 @@ export const useChats = () => {
     }, [getToken])
   
     const loadChatHistory = useCallback(async (chatId: string) => {
-        console.log("Работай!")
         if (chatId === "1") return
         
         setIsLoadingHistory(true)
@@ -121,7 +120,6 @@ export const useChats = () => {
     }, [getToken])
 
     const initializeWebSocket = useCallback( async (chatId: string) => {
-        console.log("Hereee")
           if (chatId === "1") return
     
           try {
@@ -194,13 +192,14 @@ export const useChats = () => {
       setIsValidChat(exists);
       setIsCheckingChat(false);
     };
+    const isRequested1 = useRef(false)
 
     const fetchChats = useCallback(async () => {
         try {
             const token = await getToken()
             if (!token) return
-            //   if (isRequested1.current) return
-            //   isRequested1.current = true
+            if (isRequested1.current) return
+            isRequested1.current = true
             const response = await getChatAllApi()
         
             const formattedChats = response.data.map((chat: any) => {

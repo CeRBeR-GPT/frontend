@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Mail } from "lucide-react"
 import { Header } from "@/widgets/header/header"
-import { useUserData } from "@/entities/user/model/use-user"
+
 import { ConfirmationForm } from "@/features/updatePassword/ui/confirmation-form"
+import { useUser } from "@/shared/contexts/user-context"
 
 export default function VerifyPage() {
   const router = useRouter()
-  const { getToken, userData } = useUserData()
+  const { getToken, userData } = useUser()
   const email = userData?.email
   const token = getToken()
 

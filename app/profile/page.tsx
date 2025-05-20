@@ -13,16 +13,16 @@ import Subscription from "@/components/subscription"
 import ProviderChoice from "@/components/provider-choice"
 import Tarifs from "@/components/tarifs"
 import { useAuth } from "@/features/auth/model/use-auth"
-import { useUserData } from "@/entities/user/model/use-user"
+import { useUser } from "@/shared/contexts/user-context"
 
 export default function ProfilePage() {
   const { isAuthenticated} = useAuth()
-  const { fetchUserData } = useUserData()
+  const { refreshUserData } = useUser()
   useEffect(() => {
     const getToken = () => localStorage.getItem("access_token")
     const token = getToken()
     if (token) {
-      fetchUserData()
+      refreshUserData()
     }
   }, [])
 

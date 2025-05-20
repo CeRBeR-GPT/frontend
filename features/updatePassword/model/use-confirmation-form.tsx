@@ -3,9 +3,9 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod";
 import { VerifyPasswordCodeApi } from "./api";
 import { useState } from "react";
-import { useUserData } from "@/entities/user/model/use-user";
 import { useUpdatePassword } from "./use-updatePassword";
 import { useRouter } from "next/navigation"
+import { useUser } from "@/shared/contexts/user-context";
 
 export const formSchema = z.object({
   code: z.string().min(5, { message: "Код должен содержать 5 цифр" }).max(5),
@@ -15,7 +15,7 @@ export const useConfirmationForm = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState("")
     const router = useRouter()
-    const { userData } = useUserData()
+    const { userData } = useUser()
     const { updatePassword } = useUpdatePassword()
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),

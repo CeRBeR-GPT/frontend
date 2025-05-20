@@ -4,8 +4,8 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRegistration } from "./use-registration";
 import { useRouter } from "next/navigation"
-import { useUserData } from "@/entities/user/model/use-user";
 import { getChatAllApi } from "@/api/api";
+import { useUser } from "@/shared/contexts/user-context";
 
 const formSchema = z.object({
   code: z.string().min(5, { message: "Код должен содержать 5 цифр" }).max(5),
@@ -18,7 +18,7 @@ export const useVerifyCodeForm = () => {
     const [password, setPassword] = useState("")
     const router = useRouter()
     const { verifyEmailCode, verifyCode, registartion} = useRegistration()
-    const { fetchUserData } = useUserData()
+    const { refreshUserData } = useUser()
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -69,7 +69,7 @@ export const useVerifyCodeForm = () => {
 
                     }
 
-                    await fetchUserData()
+                    await refreshUserData()
                     router.push(`/chat/${welcomeChatId}`);
 
                 } else {
