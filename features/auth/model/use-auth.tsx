@@ -28,40 +28,6 @@ export const useAuth = () => {
             return null;
         }
     }, []);
-    
-    // const fetchUserData = useCallback(async (): Promise<UserData | null> => {
-    //     setLoading(true);
-    //     setError(null);
-
-    //     try {
-    //         const token = await getToken();
-    //         if (!token) {
-    //         throw new Error('No valid token');
-    //         }
-
-    //         const response = await getUserDataApi();
-
-    //         setUserData(response.data);
-    //         // if (response.data?.statistics) {
-    //         //     setStatistics(response.data.statistics)
-    //         // }
-    //         setIsAuthenticated(true);
-    //         setAuthChecked(true);
-    //         return response.data;
-    //     } catch (err) {
-    //         const message = err instanceof Error ? err.message : 'Unknown error';
-    //         setIsAuthenticated(false);
-    //         setAuthChecked(true);
-    //         localStorage.removeItem('isAuthenticated');
-    //         localStorage.removeItem('access_token');
-    //         localStorage.removeItem('refresh_token');
-    //         setError(message);
-    //         setUserData(null);
-    //         return null;
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // }, [getToken]);
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -78,13 +44,12 @@ export const useAuth = () => {
     }, [])
 
     useEffect(() => {
-        if (isAuthenticated && !authChecked) {
+        if (isAuthenticated) {
             refreshUserData().then(() => {
-                setAuthChecked(true)
-                setIsAuthenticated(true)
-            })
+                setAuthChecked(true);
+            });
         }
-    }, [isAuthenticated, authChecked, refreshUserData]);
+    }, [isAuthenticated, refreshUserData]);
 
     const login = async (email: string, password: string) => {
         try {
@@ -97,6 +62,7 @@ export const useAuth = () => {
 
                 setIsAuthenticated(true);
                 await refreshUserData();
+                setAuthChecked(true);
 
                 const lastSavedChat = localStorage.getItem("lastSavedChat")
                 let welcomeChatId = "1"

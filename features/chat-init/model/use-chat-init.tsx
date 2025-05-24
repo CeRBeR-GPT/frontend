@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/model/use-auth';
 import { useChats } from '@/entities/chat/model/use-chats';
-import { useMessage } from '@/entities/message/model/use-message';
 import MessageItem from "@/components/MessageItem";
 import { useCopyMessage } from '@/features/copy-message/model/use-copyMessage';
 import { useTheme } from 'next-themes';
@@ -12,21 +11,10 @@ import { useMessageContext } from '@/shared/contexts/MessageContext';
 
 export const useChatInitialization = (isLoading, setIsLoading, ws) => {
   const { messages, dispatchMessages } = useMessageContext();
-  const router = useRouter();
-  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const { handleCopyCode, handleCopyTextMarkdown, copiedCode} = useCopyMessage()
   const { theme } = useTheme()
   
-  const {
-    chatId,
-    loadChatHistory,
-    initializeWebSocket,
-    fetchChats,
-    setChatTitle,
-    isCheckingChat
-  } = useChats();
-  
-
+  const { isCheckingChat } = useChats();
   const [input, setInput] = useState<string>("")
     
   const throttledSubmit = useMemo(() =>
@@ -65,7 +53,6 @@ export const useChatInitialization = (isLoading, setIsLoading, ws) => {
 
   const renderedMessages = useMemo(() =>
         messages.map((message) => {
-            console.log("message:", message); // Лог каждого message
             return (
                 <MessageItem key={`${message.id}`} handleCopyTextMarkdown = {handleCopyTextMarkdown}
                 message={message} theme={theme}

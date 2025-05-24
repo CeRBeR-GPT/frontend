@@ -6,9 +6,11 @@ import { ActivityHeatmap } from "./activity-heatmap"
 import { Button } from "@/components/ui/button"
 import { RefreshCw } from "lucide-react"
 import { useStatistics } from "@/features/statistics/model/use-statistics"
+import { useUser } from "@/shared/contexts/user-context"
 
 export function StatisticsDashboard() {
-  const { statistics, statisticsLoading, refreshStatistics} = useStatistics()
+  const { statisticsLoading, refreshStatistics} = useStatistics()
+  const {statistics} = useUser()
 //   if (statisticsLoading) {
 //     return (
 //       <Card className="w-full">

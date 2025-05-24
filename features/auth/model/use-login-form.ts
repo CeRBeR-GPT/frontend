@@ -36,9 +36,7 @@ export const useLoginForm = () => {
       const result = await login(values.email, values.password);
       
       if (result.success) {
-        console.log("Hereee")
         const lastSavedChat = localStorage.getItem("lastSavedChat") || "1";
-        console.log(lastSavedChat)
         router.push(`/chat/${lastSavedChat}`);
       } else {
         setError("Неверный email или пароль");

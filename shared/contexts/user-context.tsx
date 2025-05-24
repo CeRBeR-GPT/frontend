@@ -1,11 +1,12 @@
 // features/user/context/user-context.tsx
 
 'use client'
-import React, { createContext, useContext, useCallback, useEffect, useState } from 'react';
+import React, { createContext, useContext, useCallback, useEffect, useState, useRef } from 'react';
 
 import { getAccess } from "@/shared/utils/tokens-utils";
 import { UserData } from '../../entities/user/model/types';
 import { getUserDataApi } from '../../entities/user/model/api';
+import { DailyStatistic } from '../types/statistics/statistics';
 
 type UserContextType = {
   userData: UserData | null;
@@ -13,7 +14,8 @@ type UserContextType = {
   error: string | null;
   getToken: () => Promise<string | null>;
   refreshUserData: () => Promise<void>;
-  setUserData: React.Dispatch<React.SetStateAction<UserData>>
+  setUserData: React.Dispatch<React.SetStateAction<UserData>>;
+  statistics: DailyStatistic[]
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -22,6 +24,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [statistics, setStatistics] = useState<DailyStatistic[]>([])
 
   const getToken = useCallback(async (): Promise<string | null> => {
     if (typeof window === 'undefined') return null;
@@ -37,7 +40,10 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
+  const isRequested1 = useRef(false)
   const refreshUserData = useCallback(async () => {
+    if (isRequested1.current) return
+    isRequested1.current = true
     setLoading(true);
     setError(null);
 
@@ -49,6 +55,10 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
       const response = await getUserDataApi();
       setUserData(response.data);
+
+      if (response.data?.statistics) {
+          setStatistics(response.data.statistics)
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       setError(message);
@@ -58,10 +68,10 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [getToken]);
 
-  // Загружаем данные при инициализации
-  useEffect(() => {
-    refreshUserData();
-  }, [refreshUserData]);
+  // // Загружаем данные при инициализации
+  // useEffect(() => {
+  //   refreshUserData();
+  // }, [refreshUserData]);
 
   const value = {
     userData,
@@ -69,7 +79,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     error,
     getToken,
     refreshUserData,
-    setUserData
+    setUserData,
+    statistics
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
