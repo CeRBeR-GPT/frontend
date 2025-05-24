@@ -2,11 +2,11 @@
 
 import { useState } from "react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,DropdownMenuTrigger } 
-         from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
+         from "@/shared/ui/ui/dropdown-menu"
+import { Button } from "@/shared/ui/ui/button"
 import { MoreVertical, Pencil, Trash2, Eraser, AlertTriangle } from "lucide-react"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
-         AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
+         AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/shared/ui/ui/alert-dialog"
 import { EditChatDialog } from "@/components/edit-chat-dialog"
 
 interface ChatOptionsMenuProps {
@@ -33,6 +33,7 @@ export function ChatOptionsMenu({ chatId, chatTitle, onDelete, onClear, onRename
   }
 
   const handleRename = (newTitle: string) => {
+    console.log("Hi")
     onRename(chatId, newTitle)
     setIsEditDialogOpen(false)
   }

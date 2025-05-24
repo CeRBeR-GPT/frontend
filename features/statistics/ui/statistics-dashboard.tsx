@@ -1,9 +1,9 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/ui/card"
+import { Skeleton } from "@/shared/ui/ui/skeleton"
 import { ActivityHeatmap } from "../../../widgets/statistics/activity-heatmap"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/shared/ui/ui/button"
 import { RefreshCw } from "lucide-react"
 import { useStatistics } from "@/features/statistics/model/use-statistics"
 

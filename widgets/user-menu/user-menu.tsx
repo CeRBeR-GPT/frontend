@@ -1,9 +1,9 @@
 "use client"
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback } from "@/shared/ui/ui/avatar"
+import { Button } from "@/shared/ui/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, 
-  DropdownMenuTrigger} from "@/components/ui/dropdown-menu"
+  DropdownMenuTrigger} from "@/shared/ui/ui/dropdown-menu"
 import { useAuth } from "@/features/auth/model/use-auth"
 import { Logout } from "@/features/logout/ui/logout"
 import { useUser } from "@/shared/contexts/user-context"

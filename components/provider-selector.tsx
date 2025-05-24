@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/ui/card"
 import { Check, Lock } from "lucide-react"
 import { ProviderBadge } from "@/components/provider-badge"
 import { cn } from "@/shared/utils/utils"

@@ -1,6 +1,6 @@
 "use client"
 import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent } from "@/shared/ui/ui/card"
 import { Bot } from "lucide-react"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
 import { UserMenu } from "@/widgets/user-menu/user-menu"

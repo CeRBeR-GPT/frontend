@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/shared/ui/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/ui/card"
 import { Mail } from "lucide-react"
 import { Header } from "@/widgets/header/header"
 import { VerifyCodeForm } from "@/features/registration/ui/verifyCode-form"

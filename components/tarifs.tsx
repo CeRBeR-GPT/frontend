@@ -1,10 +1,10 @@
 "use client"
 
 import { Check, X, Zap, Calendar } from "lucide-react"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card"
-import { Button } from "./ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../shared/ui/ui/card"
+import { Button } from "../shared/ui/ui/button"
 import { useRouter } from "next/navigation"
-import { Badge } from "./ui/badge"
+import { Badge } from "../shared/ui/ui/badge"
 import { formatExpireDate } from "../shared/utils/other"
 import { newPaymentApi } from "@/api/api"
 import { useUser } from "@/shared/contexts/user-context"

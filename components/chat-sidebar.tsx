@@ -2,21 +2,22 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { Button } from "@/shared/ui/ui/button"
+import { Card, CardContent } from "@/shared/ui/ui/card"
+import { Input } from "@/shared/ui/ui/input"
+import { ScrollArea } from "@/shared/ui/ui/scroll-area"
 import { Plus, Search, Menu } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { ru } from "date-fns/locale"
 import { usePathname, useRouter } from "next/navigation"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger } from "@/shared/ui/ui/sheet"
 import { NewChatDialog } from "@/components/new-chat-dialog"
 import { ChatOptionsMenu } from "@/components/chat-options-menu"
 import { Loader2 } from "lucide-react"
 import { useDeleteChat } from "@/features/delete-chat/model/use-deleteChat"
 import { useClearChat } from "@/features/clear-chat/model/use-clearChat"
-import { useRenameChat } from "@/features/rename_chat/model/use-clearChat"
+import { useRenameChat } from "@/features/rename_chat/model/use-renameChat"
+
 
 interface ChatHistory {
   id: string

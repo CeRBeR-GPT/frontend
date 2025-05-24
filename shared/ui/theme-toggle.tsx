@@ -1,9 +1,9 @@
 "use client"
 
 import { useTheme } from "next-themes"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/shared/ui/ui/button"
 import { Moon, Sun } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/shared/ui/ui/dropdown-menu"
 
 export function ThemeToggle() {
   const { setTheme } = useTheme()

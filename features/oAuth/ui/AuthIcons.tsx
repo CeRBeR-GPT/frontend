@@ -1,9 +1,9 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { GoogleIcon } from "../../../components/ui/GoogleIcon";
-import { YandexIcon } from "../../../components/ui/YandexIcon";
-import { GitHubIcon } from "../../../components/ui/GitHubIcon";
+import { Button } from "@/shared/ui/ui/button"
+import { GoogleIcon } from "../../../shared/ui/ui/GoogleIcon";
+import { YandexIcon } from "../../../shared/ui/ui/YandexIcon";
+import { GitHubIcon } from "../../../shared/ui/ui/GitHubIcon";
 import { useOAuth } from "@/features/oAuth/model/use-oAuth";
 
 export const AuthIcons = () => {

@@ -3,8 +3,8 @@ import { Bot, User, LogIn } from "lucide-react"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
 import { UserMenu } from "@/widgets/user-menu/user-menu"
 import { NavLinks } from "@/components/nav-links"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/ui/card"
+import { Button } from "@/shared/ui/ui/button"
 
 const WithoutAuth = () => {
     return(

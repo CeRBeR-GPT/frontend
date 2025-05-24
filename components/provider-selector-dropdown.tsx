@@ -2,8 +2,8 @@
 
 import { useState } from "react"
 import { Check, ChevronDown, Bot, Cpu, Sparkles, Zap, Star } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Button } from "@/shared/ui/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/shared/ui/ui/dropdown-menu"
 
 interface ProviderSelectorDropdownProps {
   selectedProvider: string
