@@ -7,6 +7,7 @@ import { getAccess } from "@/shared/utils/tokens-utils";
 import { UserData } from '../../entities/user/model/types';
 import { getUserDataApi } from '../../entities/user/model/api';
 import { DailyStatistic } from '../types/statistics/statistics';
+import { ChatHistory } from '@/entities/chat/model/types';
 
 type UserContextType = {
   userData: UserData | null;
@@ -15,7 +16,11 @@ type UserContextType = {
   getToken: () => Promise<string | null>;
   refreshUserData: () => Promise<void>;
   setUserData: React.Dispatch<React.SetStateAction<UserData>>;
-  statistics: DailyStatistic[]
+  statistics: DailyStatistic[];
+  chatHistory: ChatHistory[];
+  setChatHistory: React.Dispatch<React.SetStateAction<ChatHistory[]>>;
+  chatTitle: string;
+  setChatTitle: React.Dispatch<React.SetStateAction<string>>;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -25,6 +30,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statistics, setStatistics] = useState<DailyStatistic[]>([])
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
+  const [chatTitle, setChatTitle] = useState<string>("")
 
   const getToken = useCallback(async (): Promise<string | null> => {
     if (typeof window === 'undefined') return null;
@@ -80,7 +87,10 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     getToken,
     refreshUserData,
     setUserData,
-    statistics
+    statistics,
+    chatHistory,
+    setChatHistory,
+    chatTitle, setChatTitle
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

@@ -7,12 +7,13 @@ import { ChatHistory } from './types';
 import { useParams, useRouter } from "next/navigation"
 import { useAuth } from '@/features/auth/model/use-auth';
 import { useMessage } from '@/entities/message/model/use-message';
+import { clearChatApi } from '@/features/clear-chat/model/api';
 
 export const useChats = () => {
-    const { getToken } = useUser()
+    const { getToken, chatHistory, setChatHistory, setChatTitle} = useUser()
     const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(false)
-    const [chatTitle, setChatTitle] = useState<string>("")
-    const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
+    // const [chatTitle, setChatTitle] = useState<string>("")
+    // const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
     const [sidebarVersion, setSidebarVersion] = useState<number>(0)
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [isValidChat, setIsValidChat] = useState<boolean>(true)
@@ -27,7 +28,7 @@ export const useChats = () => {
 
     const shouldShowInput = useMemo(() => {
         return isValidChat && !isCheckingChat && (messages.length > 0 || isTestMessageShown)
-      }, [isValidChat, isCheckingChat, messages.length, isTestMessageShown])
+    }, [isValidChat, isCheckingChat, messages.length, isTestMessageShown])
 
     useEffect(() => {
         if (isAuthLoading) return
@@ -58,6 +59,7 @@ export const useChats = () => {
     useEffect(() => {
         checkChatValidity();
     }, [chatHistory, chatId]);
+
 
     const updateChatHistory = useCallback(async () => {
         try {
@@ -194,6 +196,27 @@ export const useChats = () => {
     };
     const isRequested1 = useRef(false)
 
+     const clearChatMessages = useCallback(async (id: string) => {
+          try {
+            await clearChatApi(id);
+            setChatHistory((prev) =>
+              prev.map((chat) =>
+                chat.id === id ? { ...chat, messages: 0, preview: "Нет сообщений", date: new Date() } : chat
+              )
+            );
+    
+            if (id === chatId) {
+              dispatchMessages({ type: "CLEAR" });
+              setIsTestMessageShown(true);
+            }
+    
+            await loadChatHistory(chatId);
+            updateSidebar(); // <-- Добавьте эту строку
+          } catch (error) {
+            console.error("Failed to clear chat:", error);
+          }
+    }, [chatId, setChatHistory, dispatchMessages, setIsTestMessageShown, loadChatHistory, updateSidebar]);
+
     const fetchChats = useCallback(async () => {
         try {
             const token = await getToken()
@@ -234,8 +257,9 @@ export const useChats = () => {
         }
       }, [getToken])
 
-    return { loadChatHistory, updateSidebar, updateChatHistory,  initializeWebSocket, isLoadingHistory, chatTitle,
-        chatId, chatHistory, sidebarVersion, setChatTitle, fetchChats, setChatHistory, isValidChat, checkChatValidity,
-        isCheckingChat, setIsValidChat, isLoading, setIsLoading, ws, shouldShowInput, setIsLoadingHistory, messages
+    return { loadChatHistory, updateSidebar, updateChatHistory,  initializeWebSocket, isLoadingHistory,
+        chatId, chatHistory, sidebarVersion, fetchChats, setChatHistory, isValidChat, checkChatValidity,
+        isCheckingChat, setIsValidChat, isLoading, setIsLoading, ws, shouldShowInput, setIsLoadingHistory, messages,
+        clearChatMessages
     };
 };

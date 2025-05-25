@@ -23,6 +23,7 @@ import { useScrollVisibility } from "@/shared/hooks/useScrollVisibility"
 import { useChatInitialization } from "@/features/chat-init/model/use-chat-init"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
 import { useMessageContext } from "@/shared/contexts/MessageContext"
+import { useUser } from "@/shared/contexts/user-context"
 
 MessageItem.displayName = "MessageItem"
 MessageInput.displayName = "MessageInput"
@@ -30,9 +31,9 @@ MessageInput.displayName = "MessageInput"
 export default function ChatPage() {
   const { messages } = useMessageContext();
   const { messagesContainerRef, isTestMessageShown } = useMessage()
-
-  const { chatId, isValidChat, sidebarVersion, chatTitle, ws, shouldShowInput, isLoadingHistory, isLoading, 
-    setIsLoading, chatHistory } = useChats()
+  const { chatHistory, chatTitle } = useUser()
+  const { chatId, isValidChat, sidebarVersion, ws, shouldShowInput, isLoadingHistory, isLoading, 
+    setIsLoading } = useChats()
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
   useLockBodyScroll();
 

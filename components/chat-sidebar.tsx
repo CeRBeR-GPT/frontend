@@ -17,6 +17,7 @@ import { Loader2 } from "lucide-react"
 import { useDeleteChat } from "@/features/delete-chat/model/use-deleteChat"
 import { useClearChat } from "@/features/clear-chat/model/use-clearChat"
 import { useRenameChat } from "@/features/rename_chat/model/use-renameChat"
+import { useChats } from "@/entities/chat/model/use-chats"
 
 
 interface ChatHistory {
@@ -40,7 +41,7 @@ export function ChatSidebar({ chatHistory}: ChatSidebarProps) {
   const router = useRouter()
   const currentChatId = pathname.split("/").pop() || ""
   const { deleteChat} = useDeleteChat()
-  const {clearChatMessages} = useClearChat()
+  const {clearChatMessages} = useChats()
   const {renameChatTitle} = useRenameChat()
 
   useEffect(() => {

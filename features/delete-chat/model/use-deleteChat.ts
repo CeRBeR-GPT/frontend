@@ -7,8 +7,8 @@ import { useUser } from "@/shared/contexts/user-context";
 export const useDeleteChat = () => {
     const router = useRouter()
 
-    const { getToken } = useUser()
-    const {setChatHistory, chatHistory, chatId, updateSidebar, setIsLoading, ws} = useChats()
+    const { getToken, setChatHistory, chatHistory } = useUser()
+    const { chatId, updateSidebar, setIsLoading, ws} = useChats()
     const deleteChat = useCallback( async (id: string) => {
         router.push(`/chat/${id}`)
         try {
