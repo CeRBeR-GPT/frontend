@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns"
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/shared/ui/ui/hover-card"
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { ru } from "date-fns/locale"
 import { getProviderName } from "@/shared/utils/providers-utils"
 import { DailyStatistic } from "@/shared/types/statistics/statistics"

@@ -5,7 +5,7 @@ import { editChatNameApi } from "./api";
 
 export const useRenameChat = () => {
     const { setChatHistory, setChatTitle } = useChats()
-    const {loadChatHistory, chatId, updateSidebar} = useChats()
+    const {loadChatHistory, chatId, updateSidebar, updateChatHistory} = useChats()
     const renameChatTitle = async (id: string, newTitle: string) => {
         try {
             await editChatNameApi(id, newTitle)
@@ -15,6 +15,7 @@ export const useRenameChat = () => {
             )
             setChatTitle(newTitle)
             updateSidebar()
+            updateChatHistory().then(() => updateSidebar())
         } catch (error) {
         }
     }   

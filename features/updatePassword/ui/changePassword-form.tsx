@@ -1,7 +1,7 @@
 
-import { Button } from "@/shared/ui/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/ui/form"
-import { Input } from "@/shared/ui/ui/input"
+import { Button } from "@/components/ui/button"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
 import { Eye, EyeOff, Save } from "lucide-react"
 import { useChangePasswordForm } from "../model/use-changePassword-form"
 
