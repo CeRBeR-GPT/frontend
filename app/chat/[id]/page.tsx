@@ -1,13 +1,13 @@
 "use client"
 import React from "react"
 import Link from "next/link"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Card } from "@/components/ui/card"
+import { Avatar, AvatarFallback } from "@/components/UI/avatar"
+import { Card } from "@/components/UI/card"
 import { Bot, ArrowDown } from "lucide-react"
 import { UserMenu } from "../../../widgets/user-menu/user-menu"
 import { ChatSidebar } from "@/components/chat-sidebar"
 import { NavLinks } from "@/components/nav-links"
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/UI/toaster"
 import "katex/dist/katex.min.css"
 import  Markdown from "@/components/markdown-with-latex"
 import MessageItem from "@/components/MessageItem"
@@ -29,11 +29,10 @@ MessageItem.displayName = "MessageItem"
 MessageInput.displayName = "MessageInput"
 
 export default function ChatPage() {
-  const { messages } = useMessageContext();
-  const { messagesContainerRef, isTestMessageShown } = useMessage()
+  const { messages, shouldShowInput, isTestMessageShown } = useMessageContext();
+  const { messagesContainerRef } = useMessage()
   const { chatHistory, chatTitle } = useUser()
-  const { chatId, isValidChat, sidebarVersion, ws, shouldShowInput, isLoadingHistory, isLoading, 
-    setIsLoading } = useChats()
+  const { chatId,isValidChat,sidebarVersion,ws,isLoadingHistory,isLoading,setIsLoading } = useChats()
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
   useLockBodyScroll();
 

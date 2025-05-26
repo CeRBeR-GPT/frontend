@@ -1,8 +1,8 @@
 
 
 import { useUser } from "@/shared/contexts/user-context"
-import { Button } from "./ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
+import { Button } from "./UI/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./UI/card"
 
 const Subscription = () => {
     const {userData} = useUser()

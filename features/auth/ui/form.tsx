@@ -1,8 +1,8 @@
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/UI/form"
 
 import { Eye, EyeOff, LogIn } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/UI/button"
+import { Input } from "@/components/UI/input"
 import { useLoginForm } from "../model/use-login-form"
 
 export const FORM = () => {

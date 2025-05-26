@@ -1,6 +1,5 @@
 
-
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getChatAllApi, getChatByIdApi } from './api';
 import { useUser } from '@/shared/contexts/user-context';
 import { ChatHistory } from './types';
@@ -8,27 +7,21 @@ import { useParams, useRouter } from "next/navigation"
 import { useAuth } from '@/features/auth/model/use-auth';
 import { useMessage } from '@/entities/message/model/use-message';
 import { clearChatApi } from '@/features/clear-chat/model/api';
+import { useMessageContext } from '@/shared/contexts/MessageContext';
 
 export const useChats = () => {
-    const { getToken, chatHistory, setChatHistory, setChatTitle} = useUser()
+    const { getToken, chatHistory, setChatHistory, setChatTitle, updateChatHistory} = useUser()
     const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(false)
-    // const [chatTitle, setChatTitle] = useState<string>("")
-    // const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
     const [sidebarVersion, setSidebarVersion] = useState<number>(0)
     const [isLoading, setIsLoading] = useState<boolean>(false)
-    const [isValidChat, setIsValidChat] = useState<boolean>(true)
-    const [isCheckingChat, setIsCheckingChat] = useState<boolean>(true)
     const { messagesContainerRef, ws } = useMessage()
-
-    const { dispatchMessages, setIsTestMessageShown, messages, isTestMessageShown } = useMessage()
+    const { setIsTestMessageShown, isValidChat, setIsValidChat, isCheckingChat,
+      setIsCheckingChat} = useMessageContext()
+    const { dispatchMessages, messages} = useMessage()
     const params = useParams()
     const chatId = params.id as string
     const router = useRouter()
     const { isLoading: isAuthLoading, isAuthenticated} = useAuth()
-
-    const shouldShowInput = useMemo(() => {
-        return isValidChat && !isCheckingChat && (messages.length > 0 || isTestMessageShown)
-    }, [isValidChat, isCheckingChat, messages.length, isTestMessageShown])
 
     useEffect(() => {
         if (isAuthLoading) return
@@ -59,44 +52,49 @@ export const useChats = () => {
     useEffect(() => {
         checkChatValidity();
     }, [chatHistory, chatId]);
+    const isRequested5 = useRef(false)
 
+    // const updateChatHistory = useCallback(async () => {
+    //     if (isRequested5.current) return
+    //     isRequested5.current = true
+    //     try {
+    //         const token = await getToken()
+    //         if (!token) return
 
-    const updateChatHistory = useCallback(async () => {
-        try {
-            const token = await getToken()
-            if (!token) return
+    //         const response = await getChatAllApi()
 
-            const response = await getChatAllApi()
-
-            const updatedChats = response.data.map((chat: any) => {
-                const lastMessageDate =
-                chat.messages.length > 0
-                    ? new Date(chat.messages[chat.messages.length - 1].created_at)
-                    : new Date(chat.created_at)
-                lastMessageDate.setHours(lastMessageDate.getHours() + 3)
+    //         const updatedChats = response.data.map((chat: any) => {
+    //             const lastMessageDate =
+    //             chat.messages.length > 0
+    //                 ? new Date(chat.messages[chat.messages.length - 1].created_at)
+    //                 : new Date(chat.created_at)
+    //             lastMessageDate.setHours(lastMessageDate.getHours() + 3)
         
-                return {
-                    id: chat.id,
-                    title: chat.name,
-                    preview: chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].content : "Нет сообщений",
-                    date: lastMessageDate,
-                    messages: chat.messages.length,
-                }
-            })
+    //             return {
+    //                 id: chat.id,
+    //                 title: chat.name,
+    //                 preview: chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].content : "Нет сообщений",
+    //                 date: lastMessageDate,
+    //                 messages: chat.messages.length,
+    //             }
+    //         })
         
-            const sortedChats = updatedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
+    //         const sortedChats = updatedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
         
-            setChatHistory(sortedChats)
+    //         setChatHistory(sortedChats)
 
-            if (sortedChats.length > 0) {
-                localStorage.setItem("lastSavedChat", sortedChats[0].id)
-            }
-        } catch (error) {
-        }
-    }, [getToken])
+    //         if (sortedChats.length > 0) {
+    //             localStorage.setItem("lastSavedChat", sortedChats[0].id)
+    //         }
+    //     } catch (error) {
+    //     }
+    // }, [getToken])
+    const isRequested = useRef(false)
   
     const loadChatHistory = useCallback(async (chatId: string) => {
         if (chatId === "1") return
+        if (isRequested.current) return
+        isRequested.current = true
         
         setIsLoadingHistory(true)
         try {
@@ -149,7 +147,7 @@ export const useChats = () => {
     
                 setIsLoading(false)
                 updateSidebar()
-                updateChatHistory().then(() => updateSidebar())
+                // updateChatHistory().then(() => updateSidebar())
         
                 setTimeout(() => {
                     messagesContainerRef.current?.scrollTo({
@@ -174,7 +172,7 @@ export const useChats = () => {
           } catch (error) {
           }
         },
-        [getToken, updateSidebar, updateChatHistory],
+        [getToken, updateSidebar],
     )
 
     const checkChatValidity = () => {
@@ -194,9 +192,9 @@ export const useChats = () => {
       setIsValidChat(exists);
       setIsCheckingChat(false);
     };
-    const isRequested1 = useRef(false)
+    const isRequested2 = useRef(false)
 
-     const clearChatMessages = useCallback(async (id: string) => {
+    const clearChatMessages = useCallback(async (id: string) => {
           try {
             await clearChatApi(id);
             setChatHistory((prev) =>
@@ -221,8 +219,8 @@ export const useChats = () => {
         try {
             const token = await getToken()
             if (!token) return
-            if (isRequested1.current) return
-            isRequested1.current = true
+            if (isRequested2.current) return
+            isRequested2.current = true
             const response = await getChatAllApi()
         
             const formattedChats = response.data.map((chat: any) => {
@@ -257,9 +255,9 @@ export const useChats = () => {
         }
       }, [getToken])
 
-    return { loadChatHistory, updateSidebar, updateChatHistory,  initializeWebSocket, isLoadingHistory,
+    return { loadChatHistory, updateSidebar, initializeWebSocket, isLoadingHistory,
         chatId, chatHistory, sidebarVersion, fetchChats, setChatHistory, isValidChat, checkChatValidity,
-        isCheckingChat, setIsValidChat, isLoading, setIsLoading, ws, shouldShowInput, setIsLoadingHistory, messages,
+        isCheckingChat, setIsValidChat, isLoading, setIsLoading, ws, setIsLoadingHistory, messages,
         clearChatMessages
     };
 };

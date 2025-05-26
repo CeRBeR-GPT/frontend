@@ -8,6 +8,7 @@ import { UserData } from '../../entities/user/model/types';
 import { getUserDataApi } from '../../entities/user/model/api';
 import { DailyStatistic } from '../types/statistics/statistics';
 import { ChatHistory } from '@/entities/chat/model/types';
+import { getChatAllApi } from '@/api/api';
 
 type UserContextType = {
   userData: UserData | null;
@@ -21,6 +22,7 @@ type UserContextType = {
   setChatHistory: React.Dispatch<React.SetStateAction<ChatHistory[]>>;
   chatTitle: string;
   setChatTitle: React.Dispatch<React.SetStateAction<string>>;
+  updateChatHistory: () => Promise<void>;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -80,6 +82,40 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   //   refreshUserData();
   // }, [refreshUserData]);
 
+  const updateChatHistory = useCallback(async () => {
+      try {
+          const token = await getToken()
+          if (!token) return
+
+          const response = await getChatAllApi()
+
+          const updatedChats = response.data.map((chat: any) => {
+              const lastMessageDate =
+              chat.messages.length > 0
+                  ? new Date(chat.messages[chat.messages.length - 1].created_at)
+                  : new Date(chat.created_at)
+              lastMessageDate.setHours(lastMessageDate.getHours() + 3)
+      
+              return {
+                  id: chat.id,
+                  title: chat.name,
+                  preview: chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].content : "Нет сообщений",
+                  date: lastMessageDate,
+                  messages: chat.messages.length,
+              }
+          })
+      
+          const sortedChats = updatedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
+      
+          setChatHistory(sortedChats)
+
+          if (sortedChats.length > 0) {
+              localStorage.setItem("lastSavedChat", sortedChats[0].id)
+          }
+      } catch (error) {
+      }
+    }, [getToken])
+
   const value = {
     userData,
     loading,
@@ -90,7 +126,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     statistics,
     chatHistory,
     setChatHistory,
-    chatTitle, setChatTitle
+    chatTitle, setChatTitle, updateChatHistory
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

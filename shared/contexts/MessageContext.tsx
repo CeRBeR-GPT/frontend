@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useReducer, ReactNode } from "react";
+import { createContext, useContext, useReducer, ReactNode, useMemo, useState } from "react";
 // import { Message } from "../features/chat-init/types";
 
 interface Message {
@@ -18,6 +18,13 @@ type MessageAction =
 type MessageContextType = {
   messages: Message[];
   dispatchMessages: (action: MessageAction) => void;
+  shouldShowInput: boolean;
+  isValidChat: boolean;
+  setIsValidChat: React.Dispatch<React.SetStateAction<boolean>>;
+  isCheckingChat: boolean;
+  setIsCheckingChat: React.Dispatch<React.SetStateAction<boolean>>;
+  isTestMessageShown: boolean;
+  setIsTestMessageShown: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const MessageContext = createContext<MessageContextType | undefined>(undefined);
@@ -39,10 +46,22 @@ function messagesReducer(state: Message[], action: MessageAction): Message[] {
 // Провайдер контекста
 export const MessageProvider = ({ children }: { children: ReactNode }) => {
   const [messages, dispatchMessages] = useReducer(messagesReducer, []);
-  
+  const [isValidChat, setIsValidChat] = useState<boolean>(true)
+  const [isCheckingChat, setIsCheckingChat] = useState<boolean>(true)
+  const [isTestMessageShown, setIsTestMessageShown] = useState<boolean>(true);
 
+  const shouldShowInput = useMemo(() => {
+      return isValidChat && !isCheckingChat && (messages.length > 0 || isTestMessageShown)
+  }, [isValidChat, isCheckingChat, messages.length, isTestMessageShown])
+  
   return (
-    <MessageContext.Provider value={{ messages, dispatchMessages }}>
+    <MessageContext.Provider value={
+      { messages, dispatchMessages, 
+        shouldShowInput, isValidChat,
+        setIsValidChat, isCheckingChat, setIsCheckingChat,
+        isTestMessageShown, setIsTestMessageShown 
+      }
+    }>
       {children}
     </MessageContext.Provider>
   );

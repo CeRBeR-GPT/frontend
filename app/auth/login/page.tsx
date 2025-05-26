@@ -1,5 +1,5 @@
 "use client"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/UI/card"
 import { useAuth } from "@/features/auth/model/use-auth"
 import { useLoginForm } from "@/features/auth/model/use-login-form"
 import { Header } from "@/widgets/header/header"

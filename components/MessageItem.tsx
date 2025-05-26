@@ -1,7 +1,7 @@
 import React from "react"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/UI/avatar"
 import { Bot, User, Clipboard } from "lucide-react"
-import { Card } from "@/components/ui/card"
+import { Card } from "@/components/UI/card"
 import  Markdown from "@/components/markdown-with-latex"
 
 interface Message {
