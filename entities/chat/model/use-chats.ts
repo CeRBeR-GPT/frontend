@@ -1,6 +1,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getChatAllApi, getChatByIdApi } from './api';
+import { getChatByIdApi } from './api';
 import { useUser } from '@/shared/contexts/user-context';
 import { ChatHistory } from './types';
 import { useParams, useRouter } from "next/navigation"
@@ -8,9 +8,11 @@ import { useAuth } from '@/features/auth/model/use-auth';
 import { useMessage } from '@/entities/message/model/use-message';
 import { clearChatApi } from '@/features/clear-chat/model/api';
 import { useMessageContext } from '@/shared/contexts/MessageContext';
+import { getChatAllApi } from '@/api/api';
 
 export const useChats = () => {
-    const { getToken, chatHistory, setChatHistory, setChatTitle, updateChatHistory} = useUser()
+    const { getToken, chatHistory, setChatHistory, setChatTitle, isChatsRequested, isChatRequested, isFetchingChats,
+      setIsFetchingChats} = useUser()
     const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(false)
     const [sidebarVersion, setSidebarVersion] = useState<number>(0)
     const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -54,47 +56,47 @@ export const useChats = () => {
     }, [chatHistory, chatId]);
     const isRequested5 = useRef(false)
 
-    // const updateChatHistory = useCallback(async () => {
-    //     if (isRequested5.current) return
-    //     isRequested5.current = true
-    //     try {
-    //         const token = await getToken()
-    //         if (!token) return
+    const updateChatHistory = useCallback(async () => {
+        if (isRequested5.current) return
+        isRequested5.current = true
+        try {
+            const token = await getToken()
+            if (!token) return
 
-    //         const response = await getChatAllApi()
+            const response = await getChatAllApi()
 
-    //         const updatedChats = response.data.map((chat: any) => {
-    //             const lastMessageDate =
-    //             chat.messages.length > 0
-    //                 ? new Date(chat.messages[chat.messages.length - 1].created_at)
-    //                 : new Date(chat.created_at)
-    //             lastMessageDate.setHours(lastMessageDate.getHours() + 3)
+            const updatedChats = response.data.map((chat: any) => {
+                const lastMessageDate =
+                chat.messages.length > 0
+                    ? new Date(chat.messages[chat.messages.length - 1].created_at)
+                    : new Date(chat.created_at)
+                lastMessageDate.setHours(lastMessageDate.getHours() + 3)
         
-    //             return {
-    //                 id: chat.id,
-    //                 title: chat.name,
-    //                 preview: chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].content : "Нет сообщений",
-    //                 date: lastMessageDate,
-    //                 messages: chat.messages.length,
-    //             }
-    //         })
+                return {
+                    id: chat.id,
+                    title: chat.name,
+                    preview: chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].content : "Нет сообщений",
+                    date: lastMessageDate,
+                    messages: chat.messages.length,
+                }
+            })
         
-    //         const sortedChats = updatedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
+            const sortedChats = updatedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
         
-    //         setChatHistory(sortedChats)
+            setChatHistory(sortedChats)
 
-    //         if (sortedChats.length > 0) {
-    //             localStorage.setItem("lastSavedChat", sortedChats[0].id)
-    //         }
-    //     } catch (error) {
-    //     }
-    // }, [getToken])
+            if (sortedChats.length > 0) {
+                localStorage.setItem("lastSavedChat", sortedChats[0].id)
+            }
+        } catch (error) {
+        }
+    }, [getToken])
     const isRequested = useRef(false)
   
     const loadChatHistory = useCallback(async (chatId: string) => {
         if (chatId === "1") return
-        if (isRequested.current) return
-        isRequested.current = true
+        // if (isChatRequested.current) return;
+        // isChatRequested.current = true;
         
         setIsLoadingHistory(true)
         try {
@@ -216,6 +218,9 @@ export const useChats = () => {
     }, [chatId, setChatHistory, dispatchMessages, setIsTestMessageShown, loadChatHistory, updateSidebar]);
 
     const fetchChats = useCallback(async () => {
+        // if (isChatsRequested.current) return;
+        // isChatsRequested.current = true;
+        if (isFetchingChats) return;
         try {
             const token = await getToken()
             if (!token) return
@@ -253,11 +258,14 @@ export const useChats = () => {
             }
         } catch (error) {
         }
-      }, [getToken])
+        finally{
+          setIsFetchingChats(false);
+        }
+      }, [getToken, isFetchingChats])
 
     return { loadChatHistory, updateSidebar, initializeWebSocket, isLoadingHistory,
         chatId, chatHistory, sidebarVersion, fetchChats, setChatHistory, isValidChat, checkChatValidity,
         isCheckingChat, setIsValidChat, isLoading, setIsLoading, ws, setIsLoadingHistory, messages,
-        clearChatMessages
+        clearChatMessages, updateChatHistory
     };
 };

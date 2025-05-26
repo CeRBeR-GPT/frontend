@@ -1,5 +1,5 @@
 "use client"
-import React from "react"
+import React, { useEffect } from "react"
 import Link from "next/link"
 import { Avatar, AvatarFallback } from "@/components/UI/avatar"
 import { Card } from "@/components/UI/card"
@@ -14,7 +14,6 @@ import MessageItem from "@/components/MessageItem"
 import MessageInput from "@/components/MessageInput"
 import { useAuth } from "@/features/auth/model/use-auth"
 import { useChats } from "@/entities/chat/model/use-chats"
-
 import { useMessage } from "@/entities/message/model/use-message"
 import { scrollToBottom } from "@/shared/utils/scrollToButton"
 import { useAutoScroll } from "@/shared/hooks/useAutoScroll"
@@ -24,14 +23,28 @@ import { useChatInitialization } from "@/features/chat-init/model/use-chat-init"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
 import { useMessageContext } from "@/shared/contexts/MessageContext"
 import { useUser } from "@/shared/contexts/user-context"
+import { useRouter } from "next/navigation"
 
 MessageItem.displayName = "MessageItem"
 MessageInput.displayName = "MessageInput"
 
+const getToken = (): string | null => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem('access_token');
+};
+
 export default function ChatPage() {
+  const token = getToken();
+  const router = useRouter()
+  useEffect(() => {
+      if (!token) {
+        router.push("/auth/login")
+      }
+  }, [token])
+  
   const { messages, shouldShowInput, isTestMessageShown } = useMessageContext();
   const { messagesContainerRef } = useMessage()
-  const { chatHistory, chatTitle } = useUser()
+  const { chatHistory, chatTitle, refreshUserData } = useUser()
   const { chatId,isValidChat,sidebarVersion,ws,isLoadingHistory,isLoading,setIsLoading } = useChats()
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
   useLockBodyScroll();
@@ -47,8 +60,8 @@ export default function ChatPage() {
   useAutoScroll(messagesContainerRef, [chatId, isAuthenticated], { delay: 200, smooth: false });
 
 
-  const { isCheckingChat, renderedMessages, handleSubmit, input, handleInputChange } = useChatInitialization(  
-    isLoading, setIsLoading, ws );
+  const { isCheckingChat, renderedMessages, handleSubmit, input, handleInputChange } = useChatInitialization(  {
+    isLoading, setIsLoading, ws });
 
   if (isAuthLoading || !isAuthenticated) { return null }
 

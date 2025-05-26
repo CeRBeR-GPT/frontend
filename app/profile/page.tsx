@@ -14,17 +14,23 @@ import ProviderChoice from "@/components/provider-choice"
 import Tarifs from "@/components/tarifs"
 import { useAuth } from "@/features/auth/model/use-auth"
 import { useUser } from "@/shared/contexts/user-context"
+import { useRouter } from "next/navigation"
 
 export default function ProfilePage() {
   const { isAuthenticated} = useAuth()
   const { refreshUserData } = useUser()
+  const router = useRouter()
+  const getToken = () => localStorage.getItem("access_token")
+  const token = getToken()
   useEffect(() => {
-    const getToken = () => localStorage.getItem("access_token")
-    const token = getToken()
     if (token) {
       refreshUserData()
     }
-  }, [])
+    if (!token) {
+      router.push("/auth/login")
+    }
+  }, [token])
+    
 
   if (!isAuthenticated) { return <WithoutAuth /> }
 

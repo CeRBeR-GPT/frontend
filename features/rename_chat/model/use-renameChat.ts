@@ -5,9 +5,9 @@ import { editChatNameApi } from "./api";
 import { useUser } from "@/shared/contexts/user-context";
 
 export const useRenameChat = () => {
-    const { setChatHistory, setChatTitle, updateChatHistory} = useUser()
+    const { setChatHistory, setChatTitle} = useUser()
     // const { setChatTitle } = useChats()
-    const { updateSidebar } = useChats()
+    const { updateSidebar, updateChatHistory } = useChats()
     const renameChatTitle = async (id: string, newTitle: string) => {
         try {
             await editChatNameApi(id, newTitle)

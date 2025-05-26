@@ -1,14 +1,13 @@
 // features/user/context/user-context.tsx
 
 'use client'
-import React, { createContext, useContext, useCallback, useEffect, useState, useRef } from 'react';
+import React, { createContext, useContext, useCallback, useState, useRef, useEffect } from 'react';
 
 import { getAccess } from "@/shared/utils/tokens-utils";
 import { UserData } from '../../entities/user/model/types';
 import { getUserDataApi } from '../../entities/user/model/api';
 import { DailyStatistic } from '../types/statistics/statistics';
 import { ChatHistory } from '@/entities/chat/model/types';
-import { getChatAllApi } from '@/api/api';
 
 type UserContextType = {
   userData: UserData | null;
@@ -22,7 +21,10 @@ type UserContextType = {
   setChatHistory: React.Dispatch<React.SetStateAction<ChatHistory[]>>;
   chatTitle: string;
   setChatTitle: React.Dispatch<React.SetStateAction<string>>;
-  updateChatHistory: () => Promise<void>;
+  isChatsRequested: React.MutableRefObject<boolean>;
+  isChatRequested: React.MutableRefObject<boolean>; 
+  isFetchingChats: boolean;
+  setIsFetchingChats: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -34,6 +36,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [statistics, setStatistics] = useState<DailyStatistic[]>([])
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
   const [chatTitle, setChatTitle] = useState<string>("")
+  const [isFetchingChats, setIsFetchingChats] = useState(false)
+  const isChatsRequested = useRef(false);
+  const isChatRequested = useRef(false);
 
   const getToken = useCallback(async (): Promise<string | null> => {
     if (typeof window === 'undefined') return null;
@@ -51,8 +56,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const isRequested1 = useRef(false)
   const refreshUserData = useCallback(async () => {
-    if (isRequested1.current) return
-    isRequested1.current = true
+    // if (isRequested1.current) return
+    // isRequested1.current = true
     setLoading(true);
     setError(null);
 
@@ -78,43 +83,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   }, [getToken]);
 
   // // Загружаем данные при инициализации
-  // useEffect(() => {
-  //   refreshUserData();
-  // }, [refreshUserData]);
-
-  const updateChatHistory = useCallback(async () => {
-      try {
-          const token = await getToken()
-          if (!token) return
-
-          const response = await getChatAllApi()
-
-          const updatedChats = response.data.map((chat: any) => {
-              const lastMessageDate =
-              chat.messages.length > 0
-                  ? new Date(chat.messages[chat.messages.length - 1].created_at)
-                  : new Date(chat.created_at)
-              lastMessageDate.setHours(lastMessageDate.getHours() + 3)
-      
-              return {
-                  id: chat.id,
-                  title: chat.name,
-                  preview: chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].content : "Нет сообщений",
-                  date: lastMessageDate,
-                  messages: chat.messages.length,
-              }
-          })
-      
-          const sortedChats = updatedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
-      
-          setChatHistory(sortedChats)
-
-          if (sortedChats.length > 0) {
-              localStorage.setItem("lastSavedChat", sortedChats[0].id)
-          }
-      } catch (error) {
-      }
-    }, [getToken])
+  useEffect(() => {
+    refreshUserData();
+  }, []);
 
   const value = {
     userData,
@@ -126,7 +97,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     statistics,
     chatHistory,
     setChatHistory,
-    chatTitle, setChatTitle, updateChatHistory
+    chatTitle, setChatTitle, isChatsRequested, isChatRequested, isFetchingChats, setIsFetchingChats
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

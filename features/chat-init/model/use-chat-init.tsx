@@ -1,7 +1,5 @@
 // features/chat-init/model/use-chat-init.ts
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/features/auth/model/use-auth';
+import { useCallback, useMemo, useState } from 'react';
 import { useChats } from '@/entities/chat/model/use-chats';
 import MessageItem from "@/components/MessageItem";
 import { useCopyMessage } from '@/features/copy-message/model/use-copyMessage';
@@ -9,7 +7,13 @@ import { useTheme } from 'next-themes';
 import { throttle } from 'lodash-es';
 import { useMessageContext } from '@/shared/contexts/MessageContext';
 
-export const useChatInitialization = (isLoading, setIsLoading, ws) => {
+interface UseChatInitializationProps {
+  isLoading: boolean;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  ws: React.MutableRefObject<WebSocket | null>;
+}
+
+export const useChatInitialization = ({isLoading, setIsLoading, ws} : UseChatInitializationProps) => {
   const { messages, dispatchMessages } = useMessageContext();
   const { handleCopyCode, handleCopyTextMarkdown, copiedCode} = useCopyMessage()
   const { theme } = useTheme()
