@@ -18,7 +18,6 @@ export const useLoginForm = () => {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  const {refreshUserData} = useUser()
   const { login } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
