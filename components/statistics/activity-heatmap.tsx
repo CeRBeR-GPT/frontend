@@ -2,13 +2,13 @@
 
 import { useEffect, useRef, useState } from "react"
 import { format, parseISO, startOfWeek, addDays, subYears, isSameMonth, eachMonthOfInterval } from "date-fns"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/UI/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/UI/tabs"
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/UI/hover-card"
 import { ru } from "date-fns/locale"
 import { ProviderStats } from "./provider-stats"
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
-import { getProviderName } from "@/utils/providers-utils"
+import { ScrollArea, ScrollBar } from "@/components/UI/scroll-area"
+import { getProviderName } from "@/shared/utils/providers-utils"
 
 export interface ProviderStatistic {
   provider_name: string

@@ -4,17 +4,20 @@ import type React from "react"
 import { useRef } from "react"
 import { Copy, Check, Download, Clipboard } from "lucide-react"
 import ReactMarkdown from "react-markdown"
-import remarkMath from "../lib/remarkMath"
+import remarkMath from "../shared/utils/remarkMath"
 import remarkGfm from "remark-gfm"
-import remarkMermaid from "../lib/remarkMermoid"
+
 import rehypeKatex from "rehype-katex"
 import rehypeRaw from "rehype-raw"
 import rehypeStringify from "rehype-stringify"
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism"
 import { Prism, type SyntaxHighlighterProps } from "react-syntax-highlighter"
 import "katex/dist/katex.min.css"
-import { cn } from "@/lib/utils"
-import { useToast } from "@/hooks/use-toast"
+import { cn } from "@/shared/utils/utils"
+import { useToast } from "@/shared/hooks/use-toast"
+import remarkMermaid from "@/shared/utils/remarkMermoid"
+import { useTheme } from "next-themes"
+import { useCopyMessage } from "@/features/copy-message/model/use-copyMessage"
 
 const SyntaxHighlighter = Prism as unknown as typeof React.Component<SyntaxHighlighterProps>
 
@@ -67,23 +70,17 @@ function detectLanguage(className?: string): string {
 
 interface MarkdownWithLatexProps {
   content: string
-  theme?: string
-  onCopy: (code: string) => void
-  copiedCode: string | null
   message_belong?: "user" | "assistant"
-  handleCopyTextMarkdown: (text: string) => void
 }
 
 const Markdown: React.FC<MarkdownWithLatexProps> = ({
   content,
-  theme,
-  onCopy,
-  copiedCode,
   message_belong,
-  handleCopyTextMarkdown,
 }) => {
   const markdownRef = useRef<HTMLDivElement>(null)
   const { toast } = useToast()
+  const { theme } = useTheme()
+  const { handleCopyTextMarkdown, handleCopyCode, copiedCode } = useCopyMessage()
 
   const copyRenderedText = async () => {
     if (markdownRef.current) {
@@ -184,7 +181,7 @@ const Markdown: React.FC<MarkdownWithLatexProps> = ({
                 <div className="relative group">
                   <div className="absolute right-2 top-2 z-10 flex gap-1">
                     <button
-                      onClick={() => onCopy(codeString)}
+                      onClick={() => handleCopyCode(codeString)}
                       className="p-1 rounded bg-background/80 backdrop-blur-sm opacity-80 hover:opacity-100"
                       title="Копировать код"
                     >

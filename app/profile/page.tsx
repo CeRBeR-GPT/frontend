@@ -1,28 +1,36 @@
 "use client"
 import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/UI/card"
 import { Bot } from "lucide-react"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { useAuth } from "@/hooks/use-auth"
-import { UserMenu } from "@/components/user-menu"
+import { ThemeToggle } from "@/shared/ui/theme-toggle"
+import { UserMenu } from "@/widgets/user-menu/user-menu"
 import { NavLinks } from "@/components/nav-links"
 import { useEffect } from "react"
 import WithoutAuth from "@/components/WithoutAuth"
-import { StatisticsDashboard } from "@/components/statistics/statistics-dashboard"
+import { StatisticsDashboard } from "../../components/statistics/statistics-dashboard"
 import ProfileSettings from "@/components/profile-settings"
 import Subscription from "@/components/subscription"
 import ProviderChoice from "@/components/provider-choice"
 import Tarifs from "@/components/tarifs"
+import { useAuth } from "@/features/auth/model/use-auth"
+import { useUser } from "@/shared/contexts/user-context"
+import { useRouter } from "next/navigation"
 
 export default function ProfilePage() {
-  const { isAuthenticated, getUserData } = useAuth()
+  const { isAuthenticated} = useAuth()
+  const { refreshUserData } = useUser()
+  const router = useRouter()
+  const getToken = () => localStorage.getItem("access_token")
+  const token = getToken()
   useEffect(() => {
-    const getToken = () => localStorage.getItem("access_token")
-    const token = getToken()
     if (token) {
-      getUserData()
+      refreshUserData()
     }
-  }, [])
+    if (!token) {
+      router.push("/auth/login")
+    }
+  }, [token])
+    
 
   if (!isAuthenticated) { return <WithoutAuth /> }
 

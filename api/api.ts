@@ -55,10 +55,6 @@ export const handleSubmitFeedbackApi = async (name: string, message: string, for
     })
 }
 
-export const loginApi = async (email: string, password: string) => {
-    return instance.post(`user/login`, { email, password });
-};
-
 export const refreshApi = async (refresh_token: string | null) => {
     return refreshInstance.post(`user/refresh`, {}, {
         headers: {
@@ -67,21 +63,6 @@ export const refreshApi = async (refresh_token: string | null) => {
     });
 };
 
-export const updatePasswordApi = async (newPassword: string) => {
-    return instance.post(`user/edit_password?new_password=${newPassword}`);
-};
-
-export const getVerifyPasswordCodeApi = async () => {
-    return instance.get(`user/secure_verify_code`);
-};
-
-export const VerifyPasswordCodeApi = async (email: string | undefined, code: string) => {
-    return instance.post(`user/secure_verify_code?email=${email}&code=${code}`);
-};
-
-export const getUserDataApi = async () => {
-    return instance.get(`user/self`);
-};
 
 // chat API
 

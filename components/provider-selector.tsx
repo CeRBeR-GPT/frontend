@@ -1,10 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/UI/card"
 import { Check, Lock } from "lucide-react"
 import { ProviderBadge } from "@/components/provider-badge"
-import { cn } from "@/lib/utils"
+import { cn } from "@/shared/utils/utils"
 
 interface ProviderSelectorProps {
   availableProviders: string[]

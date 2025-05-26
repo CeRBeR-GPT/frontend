@@ -1,14 +1,14 @@
 'use client'
 
 import { Check, Lock } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
-import { useAuth } from "@/hooks/use-auth"
-import getProviderIcon, { getProviderDescription, getProviderName } from "@/utils/providers-utils"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./UI/card"
+import getProviderIcon, { getProviderDescription, getProviderName } from "@/shared/utils/providers-utils"
 import { useEffect, useState } from "react";
-import { providersByPlan } from "@/const/providers"
+import { providersByPlan } from "@/shared/const/providers"
+import { useUser } from "@/shared/contexts/user-context";
 
 const ProviderChoice = () => {
-    const { userData } = useAuth()
+    const { userData } = useUser()
     const [selectedProvider, setSelectedProvider] = useState<string>("default")
     const [availableProviders, setAvailableProviders] = useState<string[]>([])
 

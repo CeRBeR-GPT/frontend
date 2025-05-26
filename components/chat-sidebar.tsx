@@ -2,18 +2,23 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { Button } from "@/components/UI/button"
+import { Card, CardContent } from "@/components/UI/card"
+import { Input } from "@/components/UI/input"
+import { ScrollArea } from "@/components/UI/scroll-area"
 import { Plus, Search, Menu } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { ru } from "date-fns/locale"
 import { usePathname, useRouter } from "next/navigation"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/UI/sheet"
 import { NewChatDialog } from "@/components/new-chat-dialog"
 import { ChatOptionsMenu } from "@/components/chat-options-menu"
 import { Loader2 } from "lucide-react"
+import { useDeleteChat } from "@/features/delete-chat/model/use-deleteChat"
+import { useClearChat } from "@/features/clear-chat/model/use-clearChat"
+import { useRenameChat } from "@/features/rename_chat/model/use-renameChat"
+import { useChats } from "@/entities/chat/model/use-chats"
+
 
 interface ChatHistory {
   id: string
@@ -25,15 +30,9 @@ interface ChatHistory {
 
 interface ChatSidebarProps {
   chatHistory: ChatHistory[];
-  setChatHistory: (value: ChatHistory[] | ((prev: ChatHistory[]) => ChatHistory[])) => void;
-  onChatDeleted?: (nextChatId: string | null) => void;
-  onClearChat?: (id: string) => void;
-  renameChatTitle: (id: string, newTitle: string) => void;
-  clearChatMessages: (id: string) => void
-  deleteChat: (id: string) => void;
 }
 
-export function ChatSidebar({ chatHistory, renameChatTitle, clearChatMessages, deleteChat }: ChatSidebarProps) {
+export function ChatSidebar({ chatHistory}: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
   const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false)
@@ -41,6 +40,9 @@ export function ChatSidebar({ chatHistory, renameChatTitle, clearChatMessages, d
   const pathname = usePathname()
   const router = useRouter()
   const currentChatId = pathname.split("/").pop() || ""
+  const { deleteChat} = useDeleteChat()
+  const {clearChatMessages} = useChats()
+  const {renameChatTitle} = useRenameChat()
 
   useEffect(() => {
     if (pathname === "/chat") {

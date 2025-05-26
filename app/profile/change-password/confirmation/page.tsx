@@ -1,73 +1,26 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { z } from "zod"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/UI/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/UI/card"
 import { Mail } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
-import { Header } from "@/components/Header"
-import { VerifyPasswordCodeApi } from "@/api/api"
+import { Header } from "@/widgets/header/header"
 
-const formSchema = z.object({
-  code: z.string().min(5, { message: "Код должен содержать 5 цифр" }).max(5),
-})
+import { ConfirmationForm } from "@/features/updatePassword/ui/confirmation-form"
+import { useUser } from "@/shared/contexts/user-context"
 
 export default function VerifyPage() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState("")
   const router = useRouter()
-  const { getToken, userData, updatePassword } = useAuth()
+  const { getToken, userData } = useUser()
   const email = userData?.email
   const token = getToken()
+
   useEffect(() => {
     if (!token) {
       router.push("/auth/login")
     }
   }, [token, router])
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      code: "",
-    },
-  })
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    const token = await getToken()
-    setIsSubmitting(true);
-    setError("");
-    const email = userData?.email
-    try {
-      const response = await VerifyPasswordCodeApi(email, values.code)
-      if (response.status === 200 || response.status === 201) {
-        const newPassword = localStorage.getItem("new_password")
-        if (newPassword !== null){
-          try {
-              const result = await updatePassword(newPassword)
-              if ( result !== undefined && result.success) {
-                setTimeout(() => {
-                  router.push("/profile")
-                }, 2000)
-              }
-            } catch (error) {
-            } finally {
-              setIsSubmitting(false)
-            }
-        }
-      }
-      
-    } catch (error) {
-      setError("Произошла ошибка при проверке кода. Пожалуйста, попробуйте снова.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -86,41 +39,7 @@ export default function VerifyPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="code"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Код подтверждения</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="12345"
-                          {...field}
-                          maxLength={5}
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          autoComplete="one-time-code"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                {error && <div className="text-sm font-medium text-destructive">{error}</div>}
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <div className="flex items-center gap-2">
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                      <span>Проверка...</span>
-                    </div>
-                  ) : (
-                    "Подтвердить"
-                  )}
-                </Button>
-              </form>
-            </Form>
+            <ConfirmationForm/>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <div className="text-center text-sm">

@@ -1,20 +1,27 @@
 "use client"
 
-import type React from "react"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/features/auth/model/use-auth"
 
 export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, authChecked } = useAuth()
   const router = useRouter()
+  const [initialCheckCompleted, setInitialCheckCompleted] = useState(false)
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (authChecked && !isAuthenticated) {
       router.push("/auth/login")
+      setInitialCheckCompleted(true)
     }
-  }, [isAuthenticated, router])
+  }, [isAuthenticated, authChecked, router])
 
+  // Пока не проверили аутентификацию, не рендерим ничего
+  if (!authChecked) {
+    return null
+  }
+
+  // Если не аутентифицирован, но проверка завершена - null (редирект уже выполнится)
   if (!isAuthenticated) {
     return null
   }

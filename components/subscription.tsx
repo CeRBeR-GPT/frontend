@@ -1,9 +1,11 @@
-import { Button } from "./ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
-import { useAuth } from "@/hooks/use-auth"
+
+
+import { useUser } from "@/shared/contexts/user-context"
+import { Button } from "./UI/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./UI/card"
 
 const Subscription = () => {
-    const {userData} = useAuth()
+    const {userData} = useUser()
 
     const plan = userData?.plan === "default" ? "Базовый" : userData?.plan === "premium" ? "Премиум"
         : userData?.plan === "business" ? "Бизнес"  : ""

@@ -1,9 +1,9 @@
 import type React from "react"
 import "@/app/globals.css"
 import { Inter } from "next/font/google"
-import { ThemeProvider } from "@/components/theme-provider"
-import { AuthProvider } from "@/hooks/use-auth"
-import { Toaster } from "@/components/ui/toaster"
+import { ThemeProvider } from "@/shared/providers/theme-provider"
+import { AuthProvider } from "@/shared/hooks/use-auth"
+import { Toaster } from "@/components/UI/toaster"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -24,8 +24,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <AuthProvider>{children}</AuthProvider>
+          <UserProvider>
+            <AuthProvider>
+              <MessageProvider>
+                {children}
+              </MessageProvider>
+          </AuthProvider>
           <Toaster />
+          </UserProvider>
         </ThemeProvider>
       </body>
     </html>
@@ -35,6 +41,10 @@ export default function RootLayout({
 
 
 import './globals.css'
+import { MessageProvider } from "@/shared/contexts/MessageContext"
+import { UserProvider } from "@/shared/contexts/user-context"
+
+
 
 
 
