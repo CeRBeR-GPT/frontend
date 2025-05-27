@@ -45,9 +45,9 @@ export default function ChatPage() {
   
   const { messages, shouldShowInput, isTestMessageShown } = useMessageContext();
   const { messagesContainerRef } = useMessage()
-  const { chatHistory, chatTitle, refreshUserData } = useUser()
+  const { chatHistory, chatTitle } = useUser()
   const { chatId,isValidChat,sidebarVersion,ws,isLoadingHistory,isLoading,setIsLoading, initializeChatsData } = useChats()
-  const { isAuthenticated, isLoading: isAuthLoading, setAuthChecked } = useAuth()
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
   useLockBodyScroll();
 
   const { showButton: showScrollToBottom } = useScrollVisibility( messagesContainerRef, [messages.length],
@@ -62,15 +62,7 @@ export default function ChatPage() {
 
   useEffect(() => {
       initializeChatsData()
-  }, [chatId, isAuthenticated, isAuthLoading, router, chatHistory])
-
-  // useEffect(() => {
-  //   if (isAuthenticated) {
-  //       refreshUserData().then(() => {
-  //           setAuthChecked(true);
-  //       });
-  //   }
-  // }, [isAuthenticated, refreshUserData]);
+  }, [chatId, isAuthenticated, isAuthLoading, router])
 
   const { isCheckingChat, renderedMessages, handleSubmit, input, handleInputChange } = useChatInitialization(  {
     isLoading, setIsLoading, ws });
