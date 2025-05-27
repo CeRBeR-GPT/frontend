@@ -41,11 +41,12 @@ export default function ChatPage() {
         router.push("/auth/login")
       }
   }, [token])
+
   
   const { messages, shouldShowInput, isTestMessageShown } = useMessageContext();
   const { messagesContainerRef } = useMessage()
-  const { chatHistory, chatTitle, refreshUserData } = useUser()
-  const { chatId,isValidChat,sidebarVersion,ws,isLoadingHistory,isLoading,setIsLoading } = useChats()
+  const { chatHistory, chatTitle } = useUser()
+  const { chatId,isValidChat,sidebarVersion,ws,isLoadingHistory,isLoading,setIsLoading, initializeChatsData } = useChats()
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
   useLockBodyScroll();
 
@@ -59,6 +60,9 @@ export default function ChatPage() {
 
   useAutoScroll(messagesContainerRef, [chatId, isAuthenticated], { delay: 200, smooth: false });
 
+  useEffect(() => {
+      initializeChatsData()
+  }, [chatId, isAuthenticated, isAuthLoading, router])
 
   const { isCheckingChat, renderedMessages, handleSubmit, input, handleInputChange } = useChatInitialization(  {
     isLoading, setIsLoading, ws });

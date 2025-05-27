@@ -18,7 +18,6 @@ export const useLoginForm = () => {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  const {refreshUserData} = useUser()
   const { login } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -39,7 +38,8 @@ export const useLoginForm = () => {
       
       if (result.success) {
         const lastSavedChat = localStorage.getItem("lastSavedChat") || "1";
-        router.push(`/chat/${lastSavedChat}`);
+        // router.push(`/chat/${lastSavedChat}`);
+        window.location.href = `/chat/${lastSavedChat}`;
       } else {
         setError("Неверный email или пароль");
       }

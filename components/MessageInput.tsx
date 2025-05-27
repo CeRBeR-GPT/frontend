@@ -8,6 +8,13 @@ import { useChangeProvider } from "@/features/change-provider/model/use-changePr
 import { useChats } from "@/entities/chat/model/use-chats"
 import { useToast } from "@/shared/hooks/use-toast"
 
+declare global {
+  interface Window {
+    webkitSpeechRecognition: any
+    SpeechRecognition: any
+  }
+}
+
 const MessageInput = React.memo(
   ({
     value,

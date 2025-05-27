@@ -49,7 +49,7 @@ const MessageItem = React.memo( ({ message, theme, onCopy, copiedCode, handleCop
             }`}
           >
             <div className="prose dark:prose-invert max-w-none overflow-x-auto [&_table]:w-full [&_table]:table-auto [&_pre]:overflow-x-auto [&_img]:max-w-full">
-              <Markdown handleCopyTextMarkdown = {handleCopyTextMarkdown} message_belong = {message.message_belong} content={message.text} theme={theme} onCopy={onCopy} copiedCode={copiedCode} />
+              <Markdown message_belong = {message.message_belong} content={message.text}/>
             </div>
             {message.message_belong === "assistant" && (
               <button onClick={copyToClipboard} className="hover:text-gray-700">

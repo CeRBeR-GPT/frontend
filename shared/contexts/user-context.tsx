@@ -56,8 +56,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const isRequested1 = useRef(false)
   const refreshUserData = useCallback(async () => {
-    // if (isRequested1.current) return
-    // isRequested1.current = true
+    if (isRequested1.current) return
+    isRequested1.current = true
     setLoading(true);
     setError(null);
 
@@ -104,14 +104,37 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const useUser = () => {
-
-  if (typeof window === 'undefined') {
-    throw new Error('useUser only works on the client side');
-  }
+  // Проверяем, что выполняется на клиенте
+  const [isClient, setIsClient] = useState(false);
   
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const context = useContext(UserContext);
   if (!context) {
-    throw new Error('useUser must be used within a UserProvider');
+    if (isClient) {
+      throw new Error('useUser must be used within a UserProvider');
+    }
+    // Возвращаем заглушку для SSR
+    return {
+      userData: null,
+      loading: false,
+      error: null,
+      getToken: async () => null,
+      refreshUserData: async () => {},
+      setUserData: () => {},
+      statistics: [],
+      chatHistory: [],
+      setChatHistory: () => {},
+      chatTitle: "",
+      setChatTitle: () => {},
+      isChatsRequested: { current: false },
+      isChatRequested: { current: false },
+      isFetchingChats: false,
+      setIsFetchingChats: () => {}
+    };
   }
+  
   return context;
 };

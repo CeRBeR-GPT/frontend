@@ -8,11 +8,15 @@ import { Mail } from "lucide-react"
 import { Header } from "@/widgets/header/header"
 import { VerifyCodeForm } from "@/features/registration/ui/verifyCode-form"
 import { useVerifyCodeForm } from "@/features/registration/model/use-verifyCode-form"
+import { useEffect } from "react"
+import { useAuth } from "@/features/auth/model/use-auth"
+import { useUser } from "@/shared/contexts/user-context"
 
 export default function VerifyPage() {
   const router = useRouter()
   const { email } = useVerifyCodeForm()
-
+  const { isAuthenticated, setAuthChecked} = useAuth()
+  const { refreshUserData } = useUser()
   // useEffect(() => {
   //   const savedEmail = localStorage.getItem("email")
   //   const savedPassword = localStorage.getItem("password")
@@ -24,6 +28,14 @@ export default function VerifyPage() {
   //     router.push("/auth/register")
   //   }
   // }, [router])
+
+  // useEffect(() => {
+  //     if (isAuthenticated) {
+  //         refreshUserData().then(() => {
+  //             setAuthChecked(true);
+  //         });
+  //     }
+  // }, [isAuthenticated, refreshUserData]);
 
   return (
     <div className="flex flex-col min-h-screen">

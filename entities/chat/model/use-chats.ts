@@ -25,27 +25,31 @@ export const useChats = () => {
     const router = useRouter()
     const { isLoading: isAuthLoading, isAuthenticated} = useAuth()
 
-    useEffect(() => {
-        if (isAuthLoading) return
-        if (!isAuthenticated) {
-          router.push("/auth/login")
-          return
-        }
+    const initializeChatsData = () => {
+      if (isAuthLoading) return
+      if (!isAuthenticated) {
+        router.push("/auth/login")
+        return
+      }
       
-        if (chatId === "1") {
-          dispatchMessages({ type: "CLEAR" })
-          setIsTestMessageShown(true)
-          setChatTitle("Новый чат")
-          return
-        }
+      if (chatId === "1") {
+        dispatchMessages({ type: "CLEAR" })
+        setIsTestMessageShown(true)
+        setChatTitle("Новый чат")
+        return
+      }
       
-        const loadData = async () => {
-          await loadChatHistory(chatId)
-          await initializeWebSocket(chatId)
-          await fetchChats()
-        }
-        loadData()
-      }, [chatId, isAuthenticated, isAuthLoading, router])
+      const loadData = async () => {
+        await loadChatHistory(chatId)
+        await initializeWebSocket(chatId)
+        await fetchChats()
+      }
+      loadData()
+    }
+
+    // useEffect(() => {
+    //    initializeChatsData()
+    // }, [chatId, isAuthenticated, isAuthLoading, router])
 
     const updateSidebar = useCallback(() => {
         setSidebarVersion((v) => v + 1)
@@ -57,8 +61,8 @@ export const useChats = () => {
     const isRequested5 = useRef(false)
 
     const updateChatHistory = useCallback(async () => {
-        if (isRequested5.current) return
-        isRequested5.current = true
+        // if (isRequested5.current) return
+        // isRequested5.current = true
         try {
             const token = await getToken()
             if (!token) return
@@ -149,7 +153,7 @@ export const useChats = () => {
     
                 setIsLoading(false)
                 updateSidebar()
-                // updateChatHistory().then(() => updateSidebar())
+                updateChatHistory().then(() => updateSidebar())
         
                 setTimeout(() => {
                     messagesContainerRef.current?.scrollTo({
@@ -266,6 +270,6 @@ export const useChats = () => {
     return { loadChatHistory, updateSidebar, initializeWebSocket, isLoadingHistory,
         chatId, chatHistory, sidebarVersion, fetchChats, setChatHistory, isValidChat, checkChatValidity,
         isCheckingChat, setIsValidChat, isLoading, setIsLoading, ws, setIsLoadingHistory, messages,
-        clearChatMessages, updateChatHistory
+        clearChatMessages, updateChatHistory, initializeChatsData
     };
 };

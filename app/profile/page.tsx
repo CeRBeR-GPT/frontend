@@ -20,7 +20,10 @@ export default function ProfilePage() {
   const { isAuthenticated} = useAuth()
   const { refreshUserData } = useUser()
   const router = useRouter()
-  const getToken = () => localStorage.getItem("access_token")
+  const getToken = (): string | null => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem('access_token');
+  };
   const token = getToken()
   useEffect(() => {
     if (token) {
