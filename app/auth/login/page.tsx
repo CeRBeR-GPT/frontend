@@ -1,6 +1,5 @@
 "use client"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/UI/card"
-import { useAuth } from "@/features/auth/model/use-auth"
 import { useLoginForm } from "@/features/auth/model/use-login-form"
 import { Header } from "@/widgets/header/header"
 import { FORM } from "@/features/auth/ui/form"
@@ -8,21 +7,8 @@ import { ChoiceAuth } from "@/components/ChoiceAuth"
 import { AuthIcons } from "@/features/oAuth/ui/AuthIcons"
 import Link from "next/link"
 
-
 export default function LoginPage() {
-  const { isLoading } = useAuth()
-  const { isSubmitting, setError} = useLoginForm()
-
-  // if (isLoading) {
-  //   return (
-  //     <div className="flex flex-col min-h-screen">
-  //       <Header />
-  //       <main className="flex-1 flex items-center justify-center p-4">
-  //         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-  //       </main>
-  //     </div>
-  //   )
-  // }
+  const { isSubmitting } = useLoginForm()
 
   return (
     <div className="flex flex-col min-h-screen">

@@ -1,4 +1,4 @@
-// shared/hooks/useAutoScroll.ts
+
 import { useEffect, RefObject } from 'react';
 import { scrollToBottom } from '../utils/scrollToButton';
 

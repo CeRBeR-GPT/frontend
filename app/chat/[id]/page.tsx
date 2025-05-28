@@ -24,24 +24,20 @@ import { ThemeToggle } from "@/shared/ui/theme-toggle"
 import { useMessageContext } from "@/shared/contexts/MessageContext"
 import { useUser } from "@/shared/contexts/user-context"
 import { useRouter } from "next/navigation"
+import { getToken } from "@/shared/utils/tokens-utils"
 
 MessageItem.displayName = "MessageItem"
 MessageInput.displayName = "MessageInput"
 
-const getToken = (): string | null => {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem('access_token');
-};
-
 export default function ChatPage() {
   const token = getToken();
   const router = useRouter()
-  useEffect(() => {
-      if (!token) {
-        router.push("/auth/login")
-      }
-  }, [token])
 
+  useEffect(() => {
+    if (!token) {
+      router.push("/auth/login")
+    }
+  }, [token])
   
   const { messages, shouldShowInput, isTestMessageShown } = useMessageContext();
   const { messagesContainerRef } = useMessage()
@@ -54,17 +50,15 @@ export default function ChatPage() {
     { showOffset: 50,throttleDelay: 100 } );
 
   useAutoScroll(messagesContainerRef, [messages, isLoadingHistory], { delay: 100, smooth: true });
-
   useAutoScroll(messagesContainerRef, [isLoadingHistory, messages.length], { delay: 150, smooth: true, 
     onlyIfNotLoading: false });
-
   useAutoScroll(messagesContainerRef, [chatId, isAuthenticated], { delay: 200, smooth: false });
 
   useEffect(() => {
       initializeChatsData()
   }, [chatId, isAuthenticated, isAuthLoading, router])
 
-  const { isCheckingChat, renderedMessages, handleSubmit, input, handleInputChange } = useChatInitialization(  {
+  const { isCheckingChat, renderedMessages, handleSubmit, input, handleInputChange } = useChatInitialization({
     isLoading, setIsLoading, ws });
 
   if (isAuthLoading || !isAuthenticated) { return null }
