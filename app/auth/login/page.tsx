@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useLoginForm } from "@/features/auth/model/use-login-form"
 import { Header } from "@/widgets/header/header"
 import { FORM } from "@/features/auth/ui/form"
-import { ChoiceAuth } from "@/components/ChoiceAuth"
+import { ChoiceAuth } from "@/shared/ui/ChoiceAuth"
 import { AuthIcons } from "@/features/oAuth/ui/AuthIcons"
 import Link from "next/link"
 
