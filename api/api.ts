@@ -51,15 +51,3 @@ export const getChatAllApi = async () => {
 export const getChatByIdApi = async (id: string) => {
     return instance.get(`chat/${id}`);
 };
-
-
-
-//transactions API
-
-export const newPaymentApi = async (plan: string) => {
-    return instance.post(`transaction/new_payment?plan=${plan}`);
-};
-
-
-
-

@@ -1,7 +1,7 @@
 import React from "react"
-import { Avatar, AvatarFallback } from "@/components/UI/avatar"
+import { Avatar, AvatarFallback } from "@/shared/ui/UI/avatar"
 import { Bot, User, Clipboard } from "lucide-react"
-import { Card } from "@/components/UI/card"
+import { Card } from "@/shared/ui/UI/card"
 import  {Markdown} from "@/features/markdown-renderer/ui/markdown-with-latex"
 
 interface Message {
@@ -18,7 +18,6 @@ const MessageItem = React.memo( ({ message, theme, onCopy, copiedCode, handleCop
     copiedCode: string | null
     handleCopyTextMarkdown: (text: string) => void
   }) => {
-    console.log("Messages", message.message_belong)
 
     const copyToClipboard = async () => {
       try {

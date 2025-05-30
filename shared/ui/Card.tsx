@@ -1,4 +1,4 @@
-import { CardContent, CardDescription, CardHeader, CardTitle, Card } from "@/components/UI/card"
+import { CardContent, CardDescription, CardHeader, CardTitle, Card } from "@/shared/ui/UI/card"
 import { ReactNode } from "react"
 
 export const card = (

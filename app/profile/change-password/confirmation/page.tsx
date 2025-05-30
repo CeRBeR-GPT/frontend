@@ -2,8 +2,8 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/UI/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/UI/card"
+import { Button } from "@/shared/ui/UI/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/UI/card"
 import { Mail } from "lucide-react"
 import { Header } from "@/widgets/header/header"
 

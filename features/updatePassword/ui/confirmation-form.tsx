@@ -1,6 +1,6 @@
-import { Button } from "@/components/UI/button"
+import { Button } from "@/shared/ui/UI/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form"
-import { Input } from "@/components/UI/input"
+import { Input } from "@/shared/ui/UI/input"
 import { useConfirmationForm } from "../model/use-confirmation-form"
 
 export const ConfirmationForm = () => {

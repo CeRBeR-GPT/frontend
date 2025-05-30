@@ -1,12 +1,12 @@
 "use client"
 
 import Link from "next/link"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/UI/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/UI/card"
 import { AlertTriangle } from "lucide-react"
 import { Header } from "@/widgets/header/header"
 import { AuthIcons } from "@/features/oAuth/ui/AuthIcons"
 import { ChoiceAuth } from "@/shared/ui/ChoiceAuth"
-import { Alert, AlertDescription, AlertTitle } from "@/components/UI/alert"
+import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/UI/alert"
 import { SendCodeForm } from "@/features/registration/ui/sendCode-form"
 
 export default function RegisterPage() {
