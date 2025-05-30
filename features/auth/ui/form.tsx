@@ -1,4 +1,4 @@
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/UI/form"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form"
 
 import { Eye, EyeOff, LogIn } from "lucide-react"
 import { Button } from "@/components/UI/button"

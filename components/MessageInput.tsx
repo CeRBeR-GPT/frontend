@@ -1,6 +1,6 @@
 "use client"
 import React, { useCallback, useEffect, useRef, useState } from "react"
-import ProviderSelectorDropdown from "@/components/provider-selector-dropdown"
+import ProviderSelectorDropdown from "@/shared/ui/provider-selector-dropdown"
 import { Button } from "@/components/UI/button"
 import { ArrowUp } from "lucide-react"
 import { Textarea } from "@/components/UI/textarea"

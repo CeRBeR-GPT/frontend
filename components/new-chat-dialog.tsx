@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } 
     from "@/components/UI/dialog"
 import { Button } from "@/components/UI/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/UI/form"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form"
 import { Input } from "@/components/UI/input"
 import { Sparkles, MessageSquarePlus } from "lucide-react"
 import axios from "axios"

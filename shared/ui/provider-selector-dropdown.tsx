@@ -52,6 +52,8 @@ export default function ProviderSelectorDropdown({
     }
   }
 
+  console.log(getProviderName(selectedProvider))
+
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
