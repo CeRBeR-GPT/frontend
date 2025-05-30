@@ -8,7 +8,7 @@ import { NavLinks } from "@/components/nav-links"
 import { useEffect } from "react"
 import WithoutAuth from "@/features/auth/ui/WithoutAuth"
 import { StatisticsDashboard } from "../../components/statistics/statistics-dashboard"
-import ProfileSettings from "@/components/profile-settings"
+import ProfileSettings from "@/widgets/profile/profile-settings"
 import Subscription from "@/widgets/profile/subscription"
 import ProviderChoice from "@/components/provider-choice"
 import Tarifs from "@/components/tarifs"
@@ -22,6 +22,7 @@ export default function ProfilePage() {
   const { refreshUserData } = useUser()
   const router = useRouter()
   const token = getToken()
+
   useEffect(() => {
     if (token) {
       refreshUserData()

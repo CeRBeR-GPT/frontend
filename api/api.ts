@@ -1,10 +1,5 @@
 import axios from "axios";
 
-interface IUserDataRegistration {
-    email: string;
-    password: string;
-}
-
 const instance = axios.create({
     baseURL: 'https://api-gpt.energy-cerber.ru/',
     headers: {
@@ -33,27 +28,6 @@ const getToken = (): string | null => {
 };
 
 // User API
-export const sendEmailCodeApi = async (email: string) => {
-    return instance.get(`user/register/verify_code?email=${email}`);
-};
-
-export const verifyEmailCodeApi = async (email: string, code: string) => {
-    return instance.post(`user/register/verify_code?email=${email}&code=${code}`);
-};
-
-export const registartionApi = async (userData: IUserDataRegistration) => {
-    return instance.post(`/user/register`, userData);
-};
-
-export const handleSubmitFeedbackApi = async (name: string, message: string, formData: FormData) => {
-    return instance.post(`user/feedback?name=${encodeURIComponent(name)}&message=${encodeURIComponent(message)}`, formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
-    }).then(response => {
-        return response;
-    })
-}
 
 export const refreshApi = async (refresh_token: string | null) => {
     return refreshInstance.post(`user/refresh`, {}, {
@@ -78,17 +52,7 @@ export const getChatByIdApi = async (id: string) => {
     return instance.get(`chat/${id}`);
 };
 
-export const editChatNameApi = async (id: string, newName: string) => {
-    return instance.put(`chat/${id}?new_name=${newName}`);
-};
 
-export const deleteChatApi = async (id: string) => {
-    return instance.delete(`chat/${id}`);
-};
-
-export const clearChatApi = async (id: string) => {
-    return instance.delete(`chat/${id}/clear`);
-};
 
 //transactions API
 
