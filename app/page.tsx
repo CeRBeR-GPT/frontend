@@ -3,11 +3,11 @@
 import type React from "react"
 
 import Link from "next/link"
-import { Button } from "@/components/UI/button"
+import { Button } from "@/shared/ui/button"
 import { ArrowRight, Bot } from "lucide-react"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
 import { UserMenu } from "@/widgets/user-menu/user-menu"
-import { NavLinks } from "@/components/nav-links"
+import { NavLinks } from "@/shared/ui/components/nav-links"
 import { useAuth } from "@/features/auth/model/use-auth"
 import { FormFeedback } from "@/features/feedback/ui/FormFeedback"
 

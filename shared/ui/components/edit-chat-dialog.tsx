@@ -2,9 +2,9 @@
 
 import { useState, useEffect, KeyboardEvent } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } 
-from "@/components/UI/dialog"
-import { Button } from "@/components/UI/button"
-import { Input } from "@/components/UI/input"
+from "@/shared/ui/dialog"
+import { Button } from "@/shared/ui/button"
+import { Input } from "@/shared/ui/input"
 import { Pencil, Save } from "lucide-react"
 
 interface EditChatDialogProps {

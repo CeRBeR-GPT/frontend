@@ -3,8 +3,8 @@
 import { useAuth } from "@/features/auth/model/use-auth";
 import Cookies from "js-cookie";
 import { useLoginForm } from "@/features/auth/model/use-login-form";
-import { getChatAllApi } from "@/api/api";
 import { useRouter } from "next/navigation";
+import { getChatAllApi } from "@/entities/chat/model/api";
 
 export const useOAuth = () => {
     const { setError } = useLoginForm()

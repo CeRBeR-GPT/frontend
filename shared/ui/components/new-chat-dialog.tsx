@@ -6,13 +6,13 @@ import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } 
-    from "@/components/UI/dialog"
-import { Button } from "@/components/UI/button"
+    from "@/shared/ui/dialog"
+import { Button } from "@/shared/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form"
-import { Input } from "@/components/UI/input"
+import { Input } from "@/shared/ui/input"
 import { Sparkles, MessageSquarePlus } from "lucide-react"
 import axios from "axios"
-import { createChatApi } from "@/api/api"
+import { createChatApi } from "@/entities/chat/model/api"
 
 const formSchema = z.object({
   chatName: z

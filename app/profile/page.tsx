@@ -1,17 +1,17 @@
 "use client"
 import Link from "next/link"
-import { Card, CardContent } from "@/components/UI/card"
+import { Card, CardContent } from "@/shared/ui/card"
 import { Bot } from "lucide-react"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
 import { UserMenu } from "@/widgets/user-menu/user-menu"
-import { NavLinks } from "@/components/nav-links"
+import { NavLinks } from "@/shared/ui/components/nav-links"
 import { useEffect } from "react"
 import WithoutAuth from "@/features/auth/ui/WithoutAuth"
-import { StatisticsDashboard } from "../../components/statistics/statistics-dashboard"
-import ProfileSettings from "@/components/profile-settings"
+import { StatisticsDashboard } from "../../shared/ui/statistics/statistics-dashboard"
+import ProfileSettings from "@/widgets/profile/profile-settings"
 import Subscription from "@/widgets/profile/subscription"
-import ProviderChoice from "@/components/provider-choice"
-import Tarifs from "@/components/tarifs"
+import ProviderChoice from "@/shared/ui/components/provider-choice"
+import Tarifs from "@/features/pay-for-plan/ui/tarifs"
 import { useAuth } from "@/features/auth/model/use-auth"
 import { useUser } from "@/shared/contexts/user-context"
 import { useRouter } from "next/navigation"
@@ -22,6 +22,7 @@ export default function ProfilePage() {
   const { refreshUserData } = useUser()
   const router = useRouter()
   const token = getToken()
+
   useEffect(() => {
     if (token) {
       refreshUserData()

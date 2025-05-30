@@ -2,9 +2,9 @@ import Link from "next/link"
 import { Bot, User, LogIn } from "lucide-react"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
 import { UserMenu } from "@/widgets/user-menu/user-menu"
-import { NavLinks } from "@/components/nav-links"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/UI/card"
-import { Button } from "@/components/UI/button"
+import { NavLinks } from "@/shared/ui/components/nav-links"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card"
+import { Button } from "@/shared/ui/button"
 
 const WithoutAuth = () => {
     return(

@@ -1,8 +1,8 @@
 'use client'
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/UI/avatar"
-import { Card, CardContent } from "@/components/UI/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
+import { Card, CardContent } from "@/shared/ui/card"
 import { User, LogOut, Lock } from "lucide-react"
-import { Button } from "@/components/UI/button"
+import { Button } from "@/shared/ui/button"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useLogout } from "@/features/logout/model/use-logout"
@@ -12,11 +12,6 @@ const ProfileSettings = () => {
     const router = useRouter()
     const { userData } = useUser()
     const { logout } = useLogout()
-
-    // useEffect(() => {
-    //   fetchUserData(); // Загружаем данные при монтировании
-    // }, [fetchUserData]);
-
 
     const handleLogout = () => {
         logout()
