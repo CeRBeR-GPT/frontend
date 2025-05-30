@@ -9,21 +9,18 @@ import { useEffect } from "react"
 import WithoutAuth from "@/features/auth/ui/WithoutAuth"
 import { StatisticsDashboard } from "../../components/statistics/statistics-dashboard"
 import ProfileSettings from "@/components/profile-settings"
-import Subscription from "@/components/subscription"
+import Subscription from "@/widgets/profile/subscription"
 import ProviderChoice from "@/components/provider-choice"
 import Tarifs from "@/components/tarifs"
 import { useAuth } from "@/features/auth/model/use-auth"
 import { useUser } from "@/shared/contexts/user-context"
 import { useRouter } from "next/navigation"
+import { getToken } from "@/shared/utils/tokens-utils"
 
 export default function ProfilePage() {
   const { isAuthenticated} = useAuth()
   const { refreshUserData } = useUser()
   const router = useRouter()
-  const getToken = (): string | null => {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem('access_token');
-  };
   const token = getToken()
   useEffect(() => {
     if (token) {
