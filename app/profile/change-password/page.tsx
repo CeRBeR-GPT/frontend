@@ -18,11 +18,11 @@ export default function ChangePasswordPage() {
   const router = useRouter()
   const { isAuthenticated } = useAuth()
   
-  // useEffect(() => {
-  //   if (!isAuthenticated) {
-  //     router.push("/auth/login")
-  //   }
-  // }, [isAuthenticated, router])
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/auth/login")
+    }
+  }, [isAuthenticated, router])
 
   if (!isAuthenticated) {
     return null

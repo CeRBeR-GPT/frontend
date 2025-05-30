@@ -1,5 +1,5 @@
 import { Button } from "@/components/UI/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/UI/form"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form"
 import { Input } from "@/components/UI/input"
 import { useConfirmationForm } from "../model/use-confirmation-form"
 

@@ -1,5 +1,5 @@
 import { cn } from "@/shared/utils/utils"
-import { ProviderIcon } from "@/components/provider-icon"
+import { ProviderIcon } from "@/shared/ui/provider-icon"
 
 interface ProviderBadgeProps {
   provider: string

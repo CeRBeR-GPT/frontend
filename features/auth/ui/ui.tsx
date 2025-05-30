@@ -4,7 +4,7 @@ import { Header } from "@/widgets/header/header"
 import { useAuth } from "../model/use-auth"
 import { FORM } from "./form"
 import Link from "next/link"
-import { ChoiceAuth } from "@/components/ChoiceAuth"
+import { ChoiceAuth } from "@/shared/ui/ChoiceAuth"
 import { AuthIcons } from "@/features/oAuth/ui/AuthIcons"
 import { useLoginForm } from "../model/use-login-form"
 

@@ -44,3 +44,9 @@ export const getAccess = async (
     return await refreshAccess(refreshToken);
 };
 
+export const getToken = (): string | null => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem('access_token');
+};
+
+

@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { AlertTriangle } from "lucide-react"
 import { Header } from "@/widgets/header/header"
 import { AuthIcons } from "@/features/oAuth/ui/AuthIcons"
-import { ChoiceAuth } from "@/components/ChoiceAuth"
+import { ChoiceAuth } from "@/shared/ui/ChoiceAuth"
 import { Alert, AlertDescription, AlertTitle } from "@/components/UI/alert"
 import { SendCodeForm } from "@/features/registration/ui/sendCode-form"
 
