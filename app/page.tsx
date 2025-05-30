@@ -3,7 +3,7 @@
 import type React from "react"
 
 import Link from "next/link"
-import { Button } from "@/shared/ui/UI/button"
+import { Button } from "@/shared/ui/button"
 import { ArrowRight, Bot } from "lucide-react"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
 import { UserMenu } from "@/widgets/user-menu/user-menu"

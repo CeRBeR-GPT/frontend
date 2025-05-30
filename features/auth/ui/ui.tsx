@@ -1,5 +1,5 @@
 'use client'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/UI/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card"
 import { Header } from "@/widgets/header/header"
 import { useAuth } from "../model/use-auth"
 import { FORM } from "./form"

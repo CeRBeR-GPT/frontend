@@ -1,6 +1,6 @@
 "use client"
 
-import { Button } from "@/shared/ui/UI/button"
+import { Button } from "@/shared/ui/button"
 import { GoogleIcon } from "../../../shared/ui/GoogleIcon";
 import { YandexIcon } from "../../../shared/ui/YandexIcon";
 import { GitHubIcon } from "../../../shared/ui/GitHubIcon";

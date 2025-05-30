@@ -2,11 +2,11 @@
 
 import { useState } from "react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,DropdownMenuTrigger } 
-         from "@/shared/ui/UI/dropdown-menu"
-import { Button } from "@/shared/ui/UI/button"
+         from "@/shared/ui/dropdown-menu"
+import { Button } from "@/shared/ui/button"
 import { MoreVertical, Pencil, Trash2, Eraser, AlertTriangle } from "lucide-react"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
-         AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/shared/ui/UI/alert-dialog"
+         AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/shared/ui/alert-dialog"
 import { EditChatDialog } from "@/shared/ui/components/edit-chat-dialog"
 
 interface ChatOptionsMenuProps {

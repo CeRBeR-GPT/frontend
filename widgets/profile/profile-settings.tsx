@@ -1,8 +1,8 @@
 'use client'
-import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/UI/avatar"
-import { Card, CardContent } from "@/shared/ui/UI/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
+import { Card, CardContent } from "@/shared/ui/card"
 import { User, LogOut, Lock } from "lucide-react"
-import { Button } from "@/shared/ui/UI/button"
+import { Button } from "@/shared/ui/button"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useLogout } from "@/features/logout/model/use-logout"

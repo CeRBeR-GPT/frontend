@@ -1,4 +1,4 @@
-import { CardHeader,CardTitle, CardDescription } from "./UI/card"
+import { CardHeader,CardTitle, CardDescription } from "./card"
 export const CardHeaderComponent = () => {
 
     return (

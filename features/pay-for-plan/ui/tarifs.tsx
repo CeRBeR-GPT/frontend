@@ -1,9 +1,9 @@
 "use client"
 
 import { Check, X, Zap, Calendar } from "lucide-react"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../../shared/ui/UI/card"
-import { Button } from "../../../shared/ui/UI/button"
-import { Badge } from "../../../shared/ui/UI/badge"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../../shared/ui/card"
+import { Button } from "../../../shared/ui/button"
+import { Badge } from "../../../shared/ui/badge"
 import { usePayForPlan } from "../model/use-pay-for-plan"
 
 const Tarifs = () => {

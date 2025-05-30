@@ -1,7 +1,7 @@
 import React from "react"
-import { Avatar, AvatarFallback } from "@/shared/ui/UI/avatar"
+import { Avatar, AvatarFallback } from "@/shared/ui/avatar"
 import { Bot, User, Clipboard } from "lucide-react"
-import { Card } from "@/shared/ui/UI/card"
+import { Card } from "@/shared/ui/card"
 import  {Markdown} from "@/features/markdown-renderer/ui/markdown-with-latex"
 
 interface Message {

@@ -1,6 +1,6 @@
-import { Button } from "@/shared/ui/UI/button"
+import { Button } from "@/shared/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form"
-import { Input } from "@/shared/ui/UI/input"
+import { Input } from "@/shared/ui/input"
 import { ArrowRight, Eye, EyeOff } from "lucide-react"
 import { useSendCodeForm } from "../model/use-sendCode-form"
 import { useRegistration } from "../model/use-registration"
