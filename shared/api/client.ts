@@ -22,3 +22,11 @@ apiClient.interceptors.request.use((config) => {
   }
   return config;
 });
+
+export const refreshApi = async (refresh_token: string | null) => {
+    return refreshClient.post(`user/refresh`, {}, {
+        headers: {
+            Authorization: `Bearer ${refresh_token}`
+        }
+    });
+};

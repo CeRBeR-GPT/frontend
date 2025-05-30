@@ -4,8 +4,8 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRegistration } from "./use-registration";
 import { useRouter } from "next/navigation"
-import { getChatAllApi } from "@/api/api";
 import { useUser } from "@/shared/contexts/user-context";
+import { getChatAllApi } from "@/entities/chat/model/api";
 
 const formSchema = z.object({
   code: z.string().min(5, { message: "Код должен содержать 5 цифр" }).max(5),

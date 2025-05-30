@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/shared/ui/input"
 import { Sparkles, MessageSquarePlus } from "lucide-react"
 import axios from "axios"
-import { createChatApi } from "@/api/api"
+import { createChatApi } from "@/entities/chat/model/api"
 
 const formSchema = z.object({
   chatName: z

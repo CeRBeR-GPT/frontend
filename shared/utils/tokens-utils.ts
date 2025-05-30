@@ -1,4 +1,5 @@
-import { refreshApi } from "@/api/api";
+import { refreshApi } from "../api/client";
+
 
 export const refreshAccess = async (refresh_token: string | null): Promise<string> => {
     try {
