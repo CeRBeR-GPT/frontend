@@ -2,7 +2,7 @@ import React from "react"
 import { Avatar, AvatarFallback } from "@/components/UI/avatar"
 import { Bot, User, Clipboard } from "lucide-react"
 import { Card } from "@/components/UI/card"
-import  Markdown from "@/components/markdown-with-latex"
+import  {Markdown} from "@/features/markdown-renderer/ui/markdown-with-latex"
 
 interface Message {
     id: number
