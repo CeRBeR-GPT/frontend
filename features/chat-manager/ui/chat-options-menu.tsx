@@ -6,7 +6,7 @@ import { Button } from "@/shared/ui/button"
 import { MoreVertical, Pencil, Trash2, Eraser, AlertTriangle } from "lucide-react"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
          AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/shared/ui/alert-dialog"
-import { EditChatDialog } from "@/shared/ui/components/edit-chat-dialog"
+import { EditChatDialog } from "@/features/chat-manager/ui/edit-chat-dialog"
 import { ChatOptionsMenuProps } from "../model/types"
 import { useChatManager } from "../model/use-chat-manager"
 

@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Bot, ArrowLeft } from "lucide-react"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
 import { UserMenu } from "@/widgets/user-menu/user-menu"
-import { NavLinks } from "@/shared/ui/components/nav-links"
+import { NavLinks } from "@/widgets/navigation/nav-links"
 import { Toaster } from "@/shared/ui/toaster"
 import { useAuth } from "@/features/auth/model/use-auth"
 import { ChangePasswordForm } from "@/features/updatePassword/ui/changePassword-form"
