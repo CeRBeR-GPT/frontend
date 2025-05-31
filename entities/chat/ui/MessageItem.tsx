@@ -3,19 +3,10 @@ import { Avatar, AvatarFallback } from "@/shared/ui/avatar"
 import { Bot, User, Clipboard } from "lucide-react"
 import { Card } from "@/shared/ui/card"
 import  {Markdown} from "@/features/markdown-renderer/ui/markdown-with-latex"
+import { Message } from "../model/types"
 
-interface Message {
-    id: number
-    text: string
-    message_belong: "user" | "assistant"
-    timestamp: Date
-}
-
-const MessageItem = React.memo( ({ message, theme, onCopy, copiedCode, handleCopyTextMarkdown }: {
+const MessageItem = React.memo( ({ message, handleCopyTextMarkdown }: {
     message: Message
-    theme: string | undefined
-    onCopy: (code: string) => void
-    copiedCode: string | null
     handleCopyTextMarkdown: (text: string) => void
   }) => {
 

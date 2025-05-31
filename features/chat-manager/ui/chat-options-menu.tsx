@@ -1,41 +1,19 @@
 "use client"
 
-import { useState } from "react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,DropdownMenuTrigger } 
          from "@/shared/ui/dropdown-menu"
 import { Button } from "@/shared/ui/button"
 import { MoreVertical, Pencil, Trash2, Eraser, AlertTriangle } from "lucide-react"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
          AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/shared/ui/alert-dialog"
-import { EditChatDialog } from "@/shared/ui/components/edit-chat-dialog"
-
-interface ChatOptionsMenuProps {
-  chatId: string
-  chatTitle: string
-  onDelete: (chatId: string) => void
-  onClear: (chatId: string) => void
-  onRename: (chatId: string, newTitle: string) => void
-}
+import { EditChatDialog } from "@/features/chat-manager/ui/edit-chat-dialog"
+import { ChatOptionsMenuProps } from "../model/types"
+import { useChatManager } from "../model/use-chat-manager"
 
 export function ChatOptionsMenu({ chatId, chatTitle, onDelete, onClear, onRename }: ChatOptionsMenuProps) {
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [isClearDialogOpen, setIsClearDialogOpen] = useState(false)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-
-  const handleDelete = () => {
-    onDelete(chatId)
-    setIsDeleteDialogOpen(false)
-  }
-
-  const handleClear = () => {
-    onClear(chatId)
-    setIsClearDialogOpen(false)
-  }
-
-  const handleRename = (newTitle: string) => {
-    onRename(chatId, newTitle)
-    setIsEditDialogOpen(false)
-  }
+  const {handleDelete, handleClear,  handleRename, isDeleteDialogOpen, isClearDialogOpen, isEditDialogOpen,
+    setIsDeleteDialogOpen, setIsClearDialogOpen, setIsEditDialogOpen} = 
+  useChatManager({chatId, onDelete, onClear, onRename})
 
   return (
     <>
