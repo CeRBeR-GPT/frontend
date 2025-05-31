@@ -1,35 +1,19 @@
 'use client'
 
 import { Check, Lock } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../shared/ui/card"
 import getProviderIcon, { getProviderDescription, getProviderName } from "@/shared/utils/providers-utils"
-import { useEffect, useState } from "react";
-import { providersByPlan } from "@/shared/const/providers"
+import { useEffect } from "react";
 import { useUser } from "@/shared/contexts/user-context";
+import { useChoiceProvider } from "../model/use-providerChoice";
 
 const ProviderChoice = () => {
     const { userData } = useUser()
-    const [selectedProvider, setSelectedProvider] = useState<string>("default")
-    const [availableProviders, setAvailableProviders] = useState<string[]>([])
+    const { renderData,  handleProviderChange, selectedProvider, availableProviders } = useChoiceProvider(userData)
 
     useEffect(() => {
-        if (userData) {
-          const providers = providersByPlan[userData.plan as keyof typeof providersByPlan] || providersByPlan.default
-          setAvailableProviders(providers)
-          const savedProvider = localStorage.getItem("selectedProvider")
-          if (savedProvider && providers.includes(savedProvider)) {
-            setSelectedProvider(savedProvider)
-          } else {
-            setSelectedProvider(providers[0])
-            localStorage.setItem("selectedProvider", providers[0])
-          }
-        }
+      renderData()
     }, [userData])
-
-    const handleProviderChange = (provider: string) => {
-      setSelectedProvider(provider)
-      localStorage.setItem("selectedProvider", provider)
-    }
 
     return(
         <div className="mb-8 w-full">

@@ -1,17 +1,12 @@
 "use client"
 
-import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card"
 import { Check, Lock } from "lucide-react"
 import { ProviderBadge } from "@/shared/ui/provider-badge"
 import { cn } from "@/shared/utils/utils"
-
-interface ProviderSelectorProps {
-  availableProviders: string[]
-  selectedProvider: string
-  onProviderChange: (provider: string) => void
-  userPlan: string
-}
+import { getProviderDescription } from "../lib/getProviderDescription"
+import { ProviderSelectorProps } from "../model/types"
+import { allProviders } from "@/shared/const/providers"
 
 export function ProviderSelector({
   availableProviders,
@@ -19,26 +14,6 @@ export function ProviderSelector({
   onProviderChange,
   userPlan,
 }: ProviderSelectorProps) {
-  const [hoveredProvider, setHoveredProvider] = useState<string | null>(null)
-
-  const getProviderDescription = (provider: string) => {
-    switch (provider) {
-      case "default":
-        return "Базовая модель для повседневных задач"
-      case "deepseek":
-        return "Мощная модель с открытым исходным кодом"
-      case "gpt_4o_mini":
-        return "Компактная версия GPT-4o с хорошим балансом скорости и качества"
-      case "gpt_4o":
-        return "Мультимодальная модель от OpenAI с расширенными возможностями"
-      case "gpt_4":
-        return "Продвинутая модель от OpenAI для сложных задач"
-      default:
-        return ""
-    }
-  }
-
-  const allProviders = ["default", "deepseek", "gpt_4o_mini", "gpt_4o", "gpt_4"]
 
   return (
     <Card>
@@ -52,7 +27,6 @@ export function ProviderSelector({
             {allProviders.map((provider) => {
               const isAvailable = availableProviders.includes(provider)
               const isSelected = selectedProvider === provider
-              const isHovered = hoveredProvider === provider
 
               return (
                 <div
@@ -67,8 +41,6 @@ export function ProviderSelector({
                         : "bg-muted",
                   )}
                   onClick={() => isAvailable && onProviderChange(provider)}
-                  onMouseEnter={() => setHoveredProvider(provider)}
-                  onMouseLeave={() => setHoveredProvider(null)}
                 >
                   <div className="flex items-center gap-3">
                     <ProviderBadge provider={provider} size="lg" />

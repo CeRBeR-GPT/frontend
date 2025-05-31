@@ -1,7 +1,7 @@
 // features/chat-init/model/use-chat-init.ts
 import { useCallback, useMemo, useState } from 'react';
 import { useChats } from '@/entities/chat/model/use-chats';
-import MessageItem from "@/shared/ui/components/MessageItem";
+import MessageItem from "@/entities/chat/ui/MessageItem";
 import { useCopyMessage } from '@/features/copy-message/model/use-copyMessage';
 import { useTheme } from 'next-themes';
 import { throttle } from 'lodash-es';
