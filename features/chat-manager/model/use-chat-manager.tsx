@@ -27,6 +27,7 @@ export const useChatManager = ({chatId, onDelete, onClear, onRename}: ChatOption
         onRename(chatId, newTitle)
         setIsEditDialogOpen(false)
     }
+    
     return {handleDelete, handleClear,  handleRename, isDeleteDialogOpen, isClearDialogOpen, isEditDialogOpen,
         setIsDeleteDialogOpen, setIsClearDialogOpen, setIsEditDialogOpen
     };

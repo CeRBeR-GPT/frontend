@@ -18,6 +18,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
   copiedCode, 
   onCopyCode 
 }) => {
+    
   const { toast } = useToast()
   const match = /language-(?!mermaid)(\w+)/.exec(className || "")
   const codeString = String(children).replace(/\n$/, "")

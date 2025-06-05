@@ -28,7 +28,7 @@ export const useClearChat = () => {
         }
 
         await loadChatHistory(chatId);
-        updateSidebar(); // <-- Добавьте эту строку
+        updateSidebar();
       } catch (error) {
         console.error("Failed to clear chat:", error);
       }

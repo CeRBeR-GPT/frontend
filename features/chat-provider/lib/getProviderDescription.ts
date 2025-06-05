@@ -14,4 +14,4 @@ export const getProviderDescription = (provider: string) => {
       default:
         return ""
     }
-  }
+}
