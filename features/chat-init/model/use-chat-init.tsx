@@ -59,8 +59,7 @@ export const useChatInitialization = ({isLoading, setIsLoading, ws} : UseChatIni
         messages.map((message) => {
             return (
                 <MessageItem key={`${message.id}`} handleCopyTextMarkdown = {handleCopyTextMarkdown}
-                message={message} theme={theme}
-                onCopy={handleCopyCode} copiedCode={copiedCode} />
+                message={message}/>
             );
         }),
     [messages, theme, copiedCode, handleCopyCode, handleSubmit],

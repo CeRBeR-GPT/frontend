@@ -5,7 +5,7 @@ import { Button } from "@/shared/ui/button"
 import { ArrowUp } from "lucide-react"
 import { Textarea } from "@/shared/ui/textarea"
 import { useChangeProvider } from "@/features/change-provider/model/use-changeProvider"
-import { useChats } from "@/entities/chat/model/use-chats"
+import { useChats } from "@/entities/chat/model"
 import { useMessageOptions } from "../model/use-message-options"
 
 const MessageInput = React.memo(

@@ -1,4 +1,4 @@
-import { useChats } from "@/entities/chat/model/use-chats";
+import { useChats } from "@/entities/chat/model";
 import { useUser } from "@/shared/contexts/user-context";
 import { useCallback, useEffect, useState } from "react";
 

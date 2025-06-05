@@ -5,9 +5,9 @@ import { useUser } from '@/shared/contexts/user-context';
 import { ChatHistory } from './types';
 import { useParams, useRouter } from "next/navigation"
 import { useAuth } from '@/features/auth/model/use-auth';
-import { useMessage } from '@/entities/message/model/use-message';
 import { clearChatApi } from '@/features/clear-chat/model/api';
 import { useMessageContext } from '@/shared/contexts/MessageContext';
+import { useMessage } from '@/entities/message/model';
 
 
 export const useChats = () => {

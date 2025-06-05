@@ -16,7 +16,7 @@ import { ChatOptionsMenu } from "@/features/chat-manager/ui/chat-options-menu"
 import { Loader2 } from "lucide-react"
 import { useDeleteChat } from "@/features/delete-chat/model/use-deleteChat"
 import { useRenameChat } from "@/features/rename_chat/model/use-renameChat"
-import { useChats } from "@/entities/chat/model/use-chats"
+import { useChats } from "@/entities/chat/model"
 
 
 interface ChatHistory {
