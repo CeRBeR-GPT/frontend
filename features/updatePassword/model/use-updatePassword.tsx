@@ -1,5 +1,5 @@
 
-import { useAuth } from '@/features/auth/model/use-auth';
+import { useAuth } from '@/features/auth/model';
 import { updatePasswordApi } from './api';
 import { useUser } from '@/shared/contexts/user-context';
 export const useUpdatePassword = () => {

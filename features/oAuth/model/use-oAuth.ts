@@ -1,8 +1,8 @@
 
 
-import { useAuth } from "@/features/auth/model/use-auth";
+import { useAuth } from "@/features/auth/model";
 import Cookies from "js-cookie";
-import { useLoginForm } from "@/features/auth/model/use-login-form";
+import { useLoginForm } from "@/features/auth/model";
 import { useRouter } from "next/navigation";
 import { getChatAllApi } from "@/entities/chat/model";
 

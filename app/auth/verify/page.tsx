@@ -9,7 +9,7 @@ import { Header } from "@/widgets/header/header"
 import { VerifyCodeForm } from "@/features/registration/ui/verifyCode-form"
 import { useVerifyCodeForm } from "@/features/registration/model/use-verifyCode-form"
 import { useEffect } from "react"
-import { useAuth } from "@/features/auth/model/use-auth"
+import { useAuth } from "@/features/auth/model"
 import { useUser } from "@/shared/contexts/user-context"
 
 export default function VerifyPage() {

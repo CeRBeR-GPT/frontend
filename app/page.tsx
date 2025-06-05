@@ -8,7 +8,7 @@ import { ArrowRight, Bot } from "lucide-react"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
 import { UserMenu } from "@/widgets/user-menu/user-menu"
 import { NavLinks } from "@/widgets/navigation/nav-links"
-import { useAuth } from "@/features/auth/model/use-auth"
+import { useAuth } from "@/features/auth/model"
 import { FormFeedback } from "@/features/feedback/ui/FormFeedback"
 
 export default function Home() {

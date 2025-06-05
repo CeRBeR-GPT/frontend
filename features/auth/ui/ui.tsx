@@ -1,12 +1,12 @@
 'use client'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card"
 import { Header } from "@/widgets/header/header"
-import { useAuth } from "../model/use-auth"
+import { useAuth } from "../model"
 import { FORM } from "./form"
 import Link from "next/link"
 import { ChoiceAuth } from "@/shared/ui/ChoiceAuth"
 import { AuthIcons } from "@/features/oAuth/ui/AuthIcons"
-import { useLoginForm } from "../model/use-login-form"
+import { useLoginForm } from "../model"
 
 
 export function AuthForm() {

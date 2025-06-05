@@ -1,7 +1,7 @@
 "use client"
 
 import {createContext, useContext, useState, useRef} from "react"
-import { useAuth } from "@/features/auth/model/use-auth";
+import { useAuth } from "@/features/auth/model";
 import { useLogout } from "@/features/logout/model/use-logout";
 import { useStatistics } from "@/features/statistics/model/use-statistics";
 

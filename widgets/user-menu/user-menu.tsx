@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback } from "@/shared/ui/avatar"
 import { Button } from "@/shared/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, 
   DropdownMenuTrigger} from "@/shared/ui/dropdown-menu"
-import { useAuth } from "@/features/auth/model/use-auth"
+import { useAuth } from "@/features/auth/model"
 import { Logout } from "@/features/logout/ui/logout"
 import { useUser } from "@/shared/contexts/user-context"
 import { LogOut, User } from "lucide-react"
