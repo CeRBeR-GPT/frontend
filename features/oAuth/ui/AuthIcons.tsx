@@ -4,7 +4,7 @@ import { Button } from "@/shared/ui/button"
 import { GoogleIcon } from "../../../shared/ui/GoogleIcon";
 import { YandexIcon } from "../../../shared/ui/YandexIcon";
 import { GitHubIcon } from "../../../shared/ui/GitHubIcon";
-import { useOAuth } from "@/features/oAuth/model/use-oAuth";
+import { useOAuth } from "@/features/oAuth/model";
 
 export const AuthIcons = () => {
     const { handleSocialLogin } = useOAuth()

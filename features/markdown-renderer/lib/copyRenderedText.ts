@@ -1,5 +1,5 @@
 import { RefObject } from "react"
-import { ToastFn } from "../model/types"
+import { ToastFn } from "../model"
 
 
 export const copyRenderedText = async (

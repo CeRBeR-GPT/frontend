@@ -4,11 +4,10 @@ import React from "react"
 import { Copy, Check, Download } from "lucide-react"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism"
-import { detectLanguage } from "../lib/detectLanguage"
-import { downloadCode } from "../lib/downloadCode"
+import { detectLanguage, downloadCode } from "../lib"
 import { useToast } from "@/shared/hooks/use-toast"
 import { cn } from "@/shared/utils/utils"
-import { CodeBlockProps } from "../model/types"
+import { CodeBlockProps } from "../model"
 
 export const CodeBlock: React.FC<CodeBlockProps> = ({ 
   children, 

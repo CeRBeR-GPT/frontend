@@ -1,7 +1,7 @@
 import { DropdownMenuItem } from "@radix-ui/react-dropdown-menu"
 import { LogOut } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useLogout } from "../model/use-logout"
+import { useLogout } from "../model"
 
 export function Logout(){
     const router = useRouter()

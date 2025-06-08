@@ -5,7 +5,7 @@ import { Skeleton } from "@/shared/ui/skeleton"
 import { ActivityHeatmap } from "./activity-heatmap"
 import { Button } from "@/shared/ui/button"
 import { RefreshCw } from "lucide-react"
-import { useStatistics } from "@/features/statistics/model/use-statistics"
+import { useStatistics } from "@/features/statistics/model"
 import { useUser } from "@/shared/contexts/user-context"
 
 export function StatisticsDashboard() {

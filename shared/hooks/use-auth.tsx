@@ -1,9 +1,9 @@
 "use client"
 
-import {createContext, useContext, useState, useRef} from "react"
+import {createContext, useContext } from "react"
 import { useAuth } from "@/features/auth/model";
-import { useLogout } from "@/features/logout/model/use-logout";
-import { useStatistics } from "@/features/statistics/model/use-statistics";
+import { useLogout } from "@/features/logout/model";
+import { useStatistics } from "@/features/statistics/model";
 
 type AuthContextType = {
     isAuthenticated: boolean

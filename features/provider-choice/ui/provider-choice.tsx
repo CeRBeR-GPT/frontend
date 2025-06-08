@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../..
 import getProviderIcon, { getProviderDescription, getProviderName } from "@/shared/utils/providers-utils"
 import { useEffect } from "react";
 import { useUser } from "@/shared/contexts/user-context";
-import { useChoiceProvider } from "../model/use-providerChoice";
+import { useChoiceProvider } from "../model";
 
 const ProviderChoice = () => {
     const { userData } = useUser()

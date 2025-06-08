@@ -2,8 +2,8 @@ import React from "react"
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar"
 import { Bot, User, Clipboard } from "lucide-react"
 import { Card } from "@/shared/ui/card"
-import  {Markdown} from "@/features/markdown-renderer/ui/markdown-with-latex"
-import { Message } from "../model/types"
+import  {Markdown} from "@/features/markdown-renderer/ui"
+import { Message } from "../model"
 
 const MessageItem = React.memo( ({ message, handleCopyTextMarkdown }: {
     message: Message

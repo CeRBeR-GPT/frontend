@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Send, Lock, MessageSquarePlus, CheckCircle, Upload, FileUp, Info } from "lucide-react"
 import { Label } from "@/shared/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert"
-import { useFeedback } from "../model/use-feedback"
+import { useFeedback } from "../model"
 import { useAuth } from "@/features/auth/model"
 
 export const FormFeedback = () => {

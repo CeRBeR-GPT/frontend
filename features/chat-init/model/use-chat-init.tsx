@@ -2,7 +2,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useChats } from '@/entities/chat/model/use-chats';
 import MessageItem from "@/entities/chat/ui/MessageItem";
-import { useCopyMessage } from '@/features/copy-message/model/use-copyMessage';
+import { useCopyMessage } from '@/features/copy-message/model';
 import { useTheme } from 'next-themes';
 import { throttle } from 'lodash-es';
 import { useMessageContext } from '@/shared/contexts/MessageContext';

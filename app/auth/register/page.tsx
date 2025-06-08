@@ -4,10 +4,10 @@ import Link from "next/link"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card"
 import { AlertTriangle } from "lucide-react"
 import { Header } from "@/widgets/header/header"
-import { AuthIcons } from "@/features/oAuth/ui/AuthIcons"
+import { AuthIcons } from "@/features/oAuth/ui"
 import { ChoiceAuth } from "@/shared/ui/ChoiceAuth"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert"
-import { SendCodeForm } from "@/features/registration/ui/sendCode-form"
+import { SendCodeForm } from "@/features/registration/ui"
 
 export default function RegisterPage() {
 

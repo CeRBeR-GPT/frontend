@@ -11,7 +11,7 @@ import { UserMenu } from "@/widgets/user-menu/user-menu"
 import { NavLinks } from "@/widgets/navigation/nav-links"
 import { Toaster } from "@/shared/ui/toaster"
 import { useAuth } from "@/features/auth/model"
-import { ChangePasswordForm } from "@/features/updatePassword/ui/changePassword-form"
+import { ChangePasswordForm } from "@/features/updatePassword/ui"
 
 export default function ChangePasswordPage() {
 

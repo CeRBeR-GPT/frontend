@@ -9,7 +9,7 @@ import { ThemeToggle } from "@/shared/ui/theme-toggle"
 import { UserMenu } from "@/widgets/user-menu/user-menu"
 import { NavLinks } from "@/widgets/navigation/nav-links"
 import { useAuth } from "@/features/auth/model"
-import { FormFeedback } from "@/features/feedback/ui/FormFeedback"
+import { FormFeedback } from "@/features/feedback/ui"
 
 export default function Home() {
   const { isAuthenticated } = useAuth()

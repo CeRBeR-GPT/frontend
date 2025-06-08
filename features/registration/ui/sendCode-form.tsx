@@ -2,8 +2,8 @@ import { Button } from "@/shared/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form"
 import { Input } from "@/shared/ui/input"
 import { ArrowRight, Eye, EyeOff } from "lucide-react"
-import { useSendCodeForm } from "../model/use-sendCode-form"
-import { useRegistration } from "../model/use-registration"
+import { useSendCodeForm } from "../model"
+import { useRegistration } from "../model"
 
 export const SendCodeForm = () => {
     const { form, onSubmit, isSubmitting, showPassword, showConfirmPassword, 

@@ -4,7 +4,7 @@ import { useLoginForm } from "@/features/auth/model"
 import { Header } from "@/widgets/header/header"
 import { FORM } from "@/features/auth/ui"
 import { ChoiceAuth } from "@/shared/ui/ChoiceAuth"
-import { AuthIcons } from "@/features/oAuth/ui/AuthIcons"
+import { AuthIcons } from "@/features/oAuth/ui"
 import Link from "next/link"
 
 export default function LoginPage() {

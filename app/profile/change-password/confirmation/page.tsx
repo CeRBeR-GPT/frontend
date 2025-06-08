@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Mail } from "lucide-react"
 import { Header } from "@/widgets/header/header"
 
-import { ConfirmationForm } from "@/features/updatePassword/ui/confirmation-form"
+import { ConfirmationForm } from "@/features/updatePassword/ui"
 import { useUser } from "@/shared/contexts/user-context"
 
 export default function VerifyPage() {
