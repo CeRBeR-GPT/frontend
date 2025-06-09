@@ -4,7 +4,7 @@ import { Check, X, Zap, Calendar } from "lucide-react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../../shared/ui/card"
 import { Button } from "../../../shared/ui/button"
 import { Badge } from "../../../shared/ui/badge"
-import { usePayForPlan } from "../model/use-pay-for-plan"
+import { usePayForPlan } from "../model"
 
 const Tarifs = () => {
   const { expireDate, isPaidPlan, payForPlan, plan} = usePayForPlan()

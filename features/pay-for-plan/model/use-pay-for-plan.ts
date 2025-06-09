@@ -1,6 +1,6 @@
-import { formatExpireDate } from "@/shared/utils/other";
+import { formatExpireDate } from "@/shared/utils";
 import { newPaymentApi } from "./api";
-import { useUser } from "@/shared/contexts/user-context";
+import { useUser } from "@/shared/contexts";
 import { useRouter } from "next/navigation";
 
 export const usePayForPlan = () => {

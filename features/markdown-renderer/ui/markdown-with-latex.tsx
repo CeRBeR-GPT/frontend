@@ -9,13 +9,13 @@ import remarkGfm from "remark-gfm"
 import rehypeKatex from "rehype-katex"
 import rehypeRaw from "rehype-raw"
 import rehypeStringify from "rehype-stringify"
-import { useToast } from "@/shared/hooks/use-toast"
+import { useToast } from "@/shared/hooks"
 import remarkMermaid from "@/shared/utils/remarkMermoid"
 import { useTheme } from "next-themes"
-import { MarkdownWithLatexProps } from "../model/types"
-import { copyRenderedText } from "../lib/copyRenderedText"
+import { MarkdownWithLatexProps } from "../model"
+import { copyRenderedText } from "../lib"
 import { CodeBlock } from "./CodeBlock"
-import { useCopyMessage } from "@/features/copy-message/model/use-copyMessage"
+import { useCopyMessage } from "@/features/copy-message/model"
 
 export const Markdown: React.FC<MarkdownWithLatexProps> = ({ content, message_belong }) => {
   const markdownRef = useRef<HTMLDivElement>(null)

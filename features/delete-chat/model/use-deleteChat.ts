@@ -1,8 +1,8 @@
 import { useCallback } from "react";
 import { deleteChatApi } from "./api";
-import { useChats } from "@/entities/chat/model/use-chats";
+import { useChats } from "@/entities/chat/model";
 import { useRouter } from "next/navigation";
-import { useUser } from "@/shared/contexts/user-context";
+import { useUser } from "@/shared/contexts";
 
 export const useDeleteChat = () => {
     const router = useRouter()

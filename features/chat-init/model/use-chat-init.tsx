@@ -2,10 +2,10 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useChats } from '@/entities/chat/model/use-chats';
 import MessageItem from "@/entities/chat/ui/MessageItem";
-import { useCopyMessage } from '@/features/copy-message/model/use-copyMessage';
+import { useCopyMessage } from '@/features/copy-message/model';
 import { useTheme } from 'next-themes';
 import { throttle } from 'lodash-es';
-import { useMessageContext } from '@/shared/contexts/MessageContext';
+import { useMessageContext } from '@/shared/contexts';
 
 interface UseChatInitializationProps {
   isLoading: boolean;
@@ -59,8 +59,7 @@ export const useChatInitialization = ({isLoading, setIsLoading, ws} : UseChatIni
         messages.map((message) => {
             return (
                 <MessageItem key={`${message.id}`} handleCopyTextMarkdown = {handleCopyTextMarkdown}
-                message={message} theme={theme}
-                onCopy={handleCopyCode} copiedCode={copiedCode} />
+                message={message}/>
             );
         }),
     [messages, theme, copiedCode, handleCopyCode, handleSubmit],

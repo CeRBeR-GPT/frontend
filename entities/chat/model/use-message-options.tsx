@@ -1,6 +1,5 @@
-import { textExtensions } from "@/shared/const/textExtensions";
-import { textMimeTypes } from "@/shared/const/textMimeTypes";
-import { useToast } from "@/shared/hooks/use-toast";
+import { textExtensions, textMimeTypes } from "@/shared/const";
+import { useToast } from "@/shared/hooks";
 import { RefObject, useCallback, useState } from "react";
 
 

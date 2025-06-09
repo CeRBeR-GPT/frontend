@@ -1,7 +1,6 @@
 'use client'
 
 import { createContext, useContext, useReducer, ReactNode, useMemo, useState } from "react";
-// import { Message } from "../features/chat-init/types";
 
 interface Message {
     id: number

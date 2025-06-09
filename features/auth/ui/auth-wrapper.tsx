@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/features/auth/model/use-auth"
+import { useAuth } from "@/features/auth/model"
 
 export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, authChecked } = useAuth()

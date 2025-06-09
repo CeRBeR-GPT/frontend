@@ -7,11 +7,11 @@ import { Button } from "@/shared/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card"
 import { Bot, ArrowLeft } from "lucide-react"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
-import { UserMenu } from "@/widgets/user-menu/user-menu"
-import { NavLinks } from "@/widgets/navigation/nav-links"
+import { UserMenu } from "@/widgets/user-menu"
+import { NavLinks } from "@/widgets/navigation"
 import { Toaster } from "@/shared/ui/toaster"
-import { useAuth } from "@/features/auth/model/use-auth"
-import { ChangePasswordForm } from "@/features/updatePassword/ui/changePassword-form"
+import { useAuth } from "@/features/auth/model"
+import { ChangePasswordForm } from "@/features/updatePassword/ui"
 
 export default function ChangePasswordPage() {
 

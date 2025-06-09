@@ -6,11 +6,11 @@ import { Button } from "@/shared/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card"
 import { Mail } from "lucide-react"
 import { Header } from "@/widgets/header/header"
-import { VerifyCodeForm } from "@/features/registration/ui/verifyCode-form"
-import { useVerifyCodeForm } from "@/features/registration/model/use-verifyCode-form"
+import { VerifyCodeForm } from "@/features/registration/ui"
+import { useVerifyCodeForm } from "@/features/registration/model"
 import { useEffect } from "react"
-import { useAuth } from "@/features/auth/model/use-auth"
-import { useUser } from "@/shared/contexts/user-context"
+import { useAuth } from "@/features/auth/model"
+import { useUser } from "@/shared/contexts"
 
 export default function VerifyPage() {
   const router = useRouter()

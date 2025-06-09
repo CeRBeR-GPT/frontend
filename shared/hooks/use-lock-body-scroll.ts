@@ -1,5 +1,4 @@
-
-// shared/hooks/use-lock-body-scroll.ts
+'use client'
 import { useEffect } from 'react';
 
 export const useLockBodyScroll = (isLocked = true) => {

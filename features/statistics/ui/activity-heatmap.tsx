@@ -8,7 +8,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/shared/ui/hover
 import { ru } from "date-fns/locale"
 import { ProviderStats } from "./provider-stats"
 import { ScrollArea, ScrollBar } from "@/shared/ui/scroll-area"
-import { getProviderName } from "@/shared/utils/providers-utils"
+import { getProviderName } from "@/shared/utils"
 
 export interface ProviderStatistic {
   provider_name: string

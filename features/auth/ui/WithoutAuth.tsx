@@ -1,8 +1,8 @@
 import Link from "next/link"
 import { Bot, User, LogIn } from "lucide-react"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
-import { UserMenu } from "@/widgets/user-menu/user-menu"
-import { NavLinks } from "@/widgets/navigation/nav-links"
+import { UserMenu } from "@/widgets/user-menu"
+import { NavLinks } from "@/widgets/navigation"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card"
 import { Button } from "@/shared/ui/button"
 

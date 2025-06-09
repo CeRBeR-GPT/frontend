@@ -6,10 +6,10 @@ import Link from "next/link"
 import { Button } from "@/shared/ui/button"
 import { ArrowRight, Bot } from "lucide-react"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
-import { UserMenu } from "@/widgets/user-menu/user-menu"
-import { NavLinks } from "@/widgets/navigation/nav-links"
-import { useAuth } from "@/features/auth/model/use-auth"
-import { FormFeedback } from "@/features/feedback/ui/FormFeedback"
+import { UserMenu } from "@/widgets/user-menu"
+import { NavLinks } from "@/widgets/navigation"
+import { useAuth } from "@/features/auth/model"
+import { FormFeedback } from "@/features/feedback/ui"
 
 export default function Home() {
   const { isAuthenticated } = useAuth()

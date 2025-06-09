@@ -4,8 +4,8 @@ import { Check, Lock } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../shared/ui/card"
 import getProviderIcon, { getProviderDescription, getProviderName } from "@/shared/utils/providers-utils"
 import { useEffect } from "react";
-import { useUser } from "@/shared/contexts/user-context";
-import { useChoiceProvider } from "../model/use-providerChoice";
+import { useUser } from "@/shared/contexts";
+import { useChoiceProvider } from "../model";
 
 const ProviderChoice = () => {
     const { userData } = useUser()

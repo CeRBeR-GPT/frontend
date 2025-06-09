@@ -1,4 +1,4 @@
-import { apiClient } from '@/shared/api/client';
+import { apiClient } from '@/shared/api';
 
 export const sendEmailCodeApi = async (email: string) => {
     return apiClient.get(`user/register/verify_code?email=${email}`);

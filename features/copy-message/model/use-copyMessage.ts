@@ -1,4 +1,4 @@
-import { useToast } from "@/shared/hooks/use-toast";
+import { useToast } from "@/shared/hooks";
 import { useCallback, useState } from "react";
 
 export const useCopyMessage = () => {

@@ -1,10 +1,10 @@
 "use client"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card"
-import { useLoginForm } from "@/features/auth/model/use-login-form"
+import { useLoginForm } from "@/features/auth/model"
 import { Header } from "@/widgets/header/header"
-import { FORM } from "@/features/auth/ui/form"
+import { FORM } from "@/features/auth/ui"
 import { ChoiceAuth } from "@/shared/ui/ChoiceAuth"
-import { AuthIcons } from "@/features/oAuth/ui/AuthIcons"
+import { AuthIcons } from "@/features/oAuth/ui"
 import Link from "next/link"
 
 export default function LoginPage() {
@@ -12,7 +12,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
+      {/* <Header /> */}
       <main className="flex-1 flex items-center justify-center p-4">
 
         <Card className="w-full max-w-md mx-auto">

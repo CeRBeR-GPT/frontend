@@ -3,7 +3,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Eye, EyeOff, LogIn } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
-import { useLoginForm } from "../model/use-login-form"
+import { useLoginForm } from "../model"
 
 export const FORM = () => {
     const { form, onSubmit, showPassword, isSubmitting, setShowPassword, error} = useLoginForm()

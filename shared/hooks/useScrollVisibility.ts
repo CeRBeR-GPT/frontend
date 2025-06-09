@@ -1,12 +1,12 @@
-// shared/hooks/useScrollVisibility.ts
+'use client'
 import { useEffect, useState, RefObject } from 'react';
 
 export const useScrollVisibility = (
   containerRef: RefObject<HTMLElement | null>,
   dependencies: any[] = [],
   options: {
-    showOffset?: number; // Расстояние от низа для показа кнопки (по умолчанию 50px)
-    throttleDelay?: number; // Задержка для throttle (по умолчанию 100ms)
+    showOffset?: number;
+    throttleDelay?: number;
   } = {}
 ) => {
   const { showOffset = 50, throttleDelay = 100 } = options;

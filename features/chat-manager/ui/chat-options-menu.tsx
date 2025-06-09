@@ -6,9 +6,8 @@ import { Button } from "@/shared/ui/button"
 import { MoreVertical, Pencil, Trash2, Eraser, AlertTriangle } from "lucide-react"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
          AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/shared/ui/alert-dialog"
-import { EditChatDialog } from "@/features/chat-manager/ui/edit-chat-dialog"
-import { ChatOptionsMenuProps } from "../model/types"
-import { useChatManager } from "../model/use-chat-manager"
+import { EditChatDialog } from "@/features/chat-manager/ui"
+import { ChatOptionsMenuProps, useChatManager } from "../model"
 
 export function ChatOptionsMenu({ chatId, chatTitle, onDelete, onClear, onRename }: ChatOptionsMenuProps) {
   const {handleDelete, handleClear,  handleRename, isDeleteDialogOpen, isClearDialogOpen, isEditDialogOpen,

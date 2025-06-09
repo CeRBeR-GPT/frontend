@@ -1,8 +1,8 @@
-import { providersByPlan } from "@/shared/const/providers";
-import { useUser } from "@/shared/contexts/user-context";
+import { UserData } from "@/entities/user/model";
+import { providersByPlan } from "@/shared/const";
 import { useState } from "react";
 
-export const useChoiceProvider = ( userData ) => {
+export const useChoiceProvider = ( userData: UserData ) => {
     const [selectedProvider, setSelectedProvider] = useState<string>("default")
     const [availableProviders, setAvailableProviders] = useState<string[]>([])
 

@@ -3,7 +3,7 @@ import { Button } from "@/shared/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form"
 import { Input } from "@/shared/ui/input"
 import { Eye, EyeOff, Save } from "lucide-react"
-import { useChangePasswordForm } from "../model/use-changePassword-form"
+import { useChangePasswordForm } from "../model"
 
 export const ChangePasswordForm = () => {
     const { form, onSubmit, isSubmitting, showNewPassword, 

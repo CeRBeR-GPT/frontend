@@ -8,12 +8,9 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/shared/ui/hover
 import { ru } from "date-fns/locale"
 import { ProviderStats } from "./provider-stats"
 import { ScrollArea, ScrollBar } from "@/shared/ui/scroll-area"
-import { getProviderName } from "@/shared/utils/providers-utils"
-import { DailyStatistic } from "@/shared/types/statistics/statistics"
+import { getProviderName, getColorIntensity, calculateViewTotals, scrollToRight} from "@/shared/utils"
+import { DailyStatistic } from "@/shared/types/statistics"
 import { generateMonthlyGrid } from "./ui/generateMonthlyGrid"
-import { getColorIntensity } from "@/shared/utils/statistics/generateMonthlyGrid"
-import { calculateViewTotals } from "@/shared/utils/statistics/calculateViewTotals"
-import { scrollToRight } from "@/shared/utils/statistics/scrollToRight"
 
 export function ActivityHeatmap({ statistics }: {statistics: DailyStatistic[]}) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)

@@ -3,11 +3,10 @@
 'use client'
 import React, { createContext, useContext, useCallback, useState, useRef, useEffect } from 'react';
 
-import { getAccess } from "@/shared/utils/tokens-utils";
-import { UserData } from '../../entities/user/model/types';
-import { getUserDataApi } from '../../entities/user/model/api';
-import { DailyStatistic } from '../types/statistics/statistics';
-import { ChatHistory } from '@/entities/chat/model/types';
+import { getAccess } from "@/shared/utils";
+import { DailyStatistic } from '../types/statistics';
+import { getUserDataApi, UserData } from '@/entities/user/model';
+import { ChatHistory } from '@/entities/chat/model';
 
 type UserContextType = {
   userData: UserData | null;

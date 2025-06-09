@@ -1,8 +1,8 @@
-import { useToast } from "@/shared/hooks/use-toast";
+import { useToast } from "@/shared/hooks";
 import { useState } from "react";
 import { handleSubmitFeedbackApi } from "./api";
-import { allowedFileTypes, blockedExtensions } from "@/shared/const/extensions";
-import { useUser } from "@/shared/contexts/user-context";
+import { allowedFileTypes, blockedExtensions } from "@/shared/const";
+import { useUser } from "@/shared/contexts";
 
 export const useFeedback = () => {
 
