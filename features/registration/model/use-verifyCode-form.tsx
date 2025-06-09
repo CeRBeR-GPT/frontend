@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRegistration } from "./use-registration";
 import { useRouter } from "next/navigation"
-import { useUser } from "@/shared/contexts/user-context";
+import { useUser } from "@/shared/contexts";
 import { getChatAllApi } from "@/entities/chat/model";
 
 const formSchema = z.object({

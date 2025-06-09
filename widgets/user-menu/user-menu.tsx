@@ -6,7 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
   DropdownMenuTrigger} from "@/shared/ui/dropdown-menu"
 import { useAuth } from "@/features/auth/model"
 import { Logout } from "@/features/logout/ui"
-import { useUser } from "@/shared/contexts/user-context"
+import { useUser } from "@/shared/contexts"
 import { LogOut, User } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"

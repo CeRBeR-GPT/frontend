@@ -1,5 +1,5 @@
 import { useChats } from "@/entities/chat/model";
-import { useUser } from "@/shared/contexts/user-context";
+import { useUser } from "@/shared/contexts";
 import { useCallback, useEffect, useState } from "react";
 
 export const useChangeProvider = () => {

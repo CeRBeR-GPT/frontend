@@ -1,8 +1,8 @@
 import { useCallback } from "react";
 import { clearChatApi } from "./api";
 import { useChats } from "@/entities/chat/model/use-chats";
-import { useUser } from "@/shared/contexts/user-context";
-import { useMessageContext } from "@/shared/contexts/MessageContext";
+import { useUser } from "@/shared/contexts";
+import { useMessageContext } from "@/shared/contexts";
 import { useMessage } from "@/entities/message/model";
 
 export const useClearChat = () => {

@@ -1,4 +1,4 @@
-import { fileExtensions } from "@/shared/const/fileExtensions"
+import { fileExtensions } from "@/shared/const"
 import { ToastFn } from "../model"
 
 export const downloadCode = (code: string, language: string, toast: ToastFn) => {

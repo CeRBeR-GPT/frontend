@@ -6,7 +6,7 @@ import { ActivityHeatmap } from "./activity-heatmap"
 import { Button } from "@/shared/ui/button"
 import { RefreshCw } from "lucide-react"
 import { useStatistics } from "@/features/statistics/model"
-import { useUser } from "@/shared/contexts/user-context"
+import { useUser } from "@/shared/contexts"
 
 export function StatisticsDashboard() {
   const { statisticsLoading, refreshStatistics} = useStatistics()

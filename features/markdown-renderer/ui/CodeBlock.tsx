@@ -5,8 +5,8 @@ import { Copy, Check, Download } from "lucide-react"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism"
 import { detectLanguage, downloadCode } from "../lib"
-import { useToast } from "@/shared/hooks/use-toast"
-import { cn } from "@/shared/utils/utils"
+import { useToast } from "@/shared/hooks"
+import { cn } from "@/shared/utils"
 import { CodeBlockProps } from "../model"
 
 export const CodeBlock: React.FC<CodeBlockProps> = ({ 

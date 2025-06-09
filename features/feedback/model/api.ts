@@ -1,4 +1,4 @@
-import { apiClient } from '@/shared/api/client';
+import { apiClient } from '@/shared/api';
 
 export const handleSubmitFeedbackApi = async (name: string, message: string, formData: FormData) => {
     return apiClient.post(`user/feedback?name=${encodeURIComponent(name)}&message=${encodeURIComponent(message)}`, 

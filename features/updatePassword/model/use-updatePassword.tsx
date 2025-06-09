@@ -1,7 +1,7 @@
 
 import { useAuth } from '@/features/auth/model';
 import { updatePasswordApi } from './api';
-import { useUser } from '@/shared/contexts/user-context';
+import { useUser } from '@/shared/contexts';
 export const useUpdatePassword = () => {
 
     const { setIsAuthenticated } = useAuth()

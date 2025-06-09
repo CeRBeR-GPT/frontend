@@ -1,5 +1,5 @@
 
-import { useUser } from '@/shared/contexts/user-context';
+import { useUser } from '@/shared/contexts';
 import { useAuth } from '@/features/auth/model';
 export const useLogout = () => {
 

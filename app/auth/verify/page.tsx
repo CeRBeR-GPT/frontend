@@ -10,7 +10,7 @@ import { VerifyCodeForm } from "@/features/registration/ui"
 import { useVerifyCodeForm } from "@/features/registration/model"
 import { useEffect } from "react"
 import { useAuth } from "@/features/auth/model"
-import { useUser } from "@/shared/contexts/user-context"
+import { useUser } from "@/shared/contexts"
 
 export default function VerifyPage() {
   const router = useRouter()

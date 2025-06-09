@@ -3,8 +3,8 @@
 'use client'
 import React, { createContext, useContext, useCallback, useState, useRef, useEffect } from 'react';
 
-import { getAccess } from "@/shared/utils/tokens-utils";
-import { DailyStatistic } from '../types/statistics/statistics';
+import { getAccess } from "@/shared/utils";
+import { DailyStatistic } from '../types/statistics';
 import { getUserDataApi, UserData } from '@/entities/user/model';
 import { ChatHistory } from '@/entities/chat/model';
 

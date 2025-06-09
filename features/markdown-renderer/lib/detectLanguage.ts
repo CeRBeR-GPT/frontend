@@ -1,4 +1,4 @@
-import { PROGRAMMING_LANGUAGES } from "@/shared/const/PROGRAMMING_LANGUAGES"
+import { PROGRAMMING_LANGUAGES } from "@/shared/const"
 
 
 export function detectLanguage(className?: string): string {

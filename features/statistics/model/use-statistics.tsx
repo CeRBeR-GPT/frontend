@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { DailyStatistic } from '@/shared/types/statistics/statistics';
-import { useUser } from '@/shared/contexts/user-context';
+import { DailyStatistic } from '@/shared/types/statistics';
+import { useUser } from '@/shared/contexts';
 import { getUserDataApi } from '@/entities/user/model';
 
 export const useStatistics = () => {

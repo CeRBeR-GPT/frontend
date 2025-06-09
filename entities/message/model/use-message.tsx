@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { useMessageContext } from "@/shared/contexts/MessageContext";
+import { useMessageContext } from "@/shared/contexts";
 
 export const useMessage = () => {
     const { messages, dispatchMessages } = useMessageContext();

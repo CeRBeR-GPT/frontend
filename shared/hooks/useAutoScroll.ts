@@ -1,6 +1,6 @@
-
+'use client'
 import { useEffect, RefObject } from 'react';
-import { scrollToBottom } from '../utils/scrollToButton';
+import { scrollToBottom } from '../utils';
 
 export const useAutoScroll = (
   messagesContainerRef: RefObject<HTMLDivElement | null>,

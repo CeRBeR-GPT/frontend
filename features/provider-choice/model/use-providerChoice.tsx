@@ -1,6 +1,5 @@
 import { UserData } from "@/entities/user/model";
-import { providersByPlan } from "@/shared/const/providers";
-import { useUser } from "@/shared/contexts/user-context";
+import { providersByPlan } from "@/shared/const";
 import { useState } from "react";
 
 export const useChoiceProvider = ( userData: UserData ) => {

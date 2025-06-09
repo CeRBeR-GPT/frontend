@@ -1,4 +1,4 @@
-import { cn } from "@/shared/utils/utils"
+import { cn } from "@/shared/utils"
 import { ProviderIcon } from "@/shared/ui/provider-icon"
 
 interface ProviderBadgeProps {

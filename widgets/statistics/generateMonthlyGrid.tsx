@@ -1,9 +1,8 @@
 import { format, parseISO } from "date-fns"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/shared/ui/hover-card"
 import { ru } from "date-fns/locale"
-import { getProviderName } from "@/shared/utils/providers-utils"
-import { DailyStatistic } from "@/shared/types/statistics/statistics"
-import { getColorIntensity } from "@/shared/utils/statistics/generateMonthlyGrid"
+import { getProviderName, getColorIntensity } from "@/shared/utils"
+import { DailyStatistic } from "@/shared/types/statistics"
 
 export const generateMonthlyGrid = (
     { 

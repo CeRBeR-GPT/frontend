@@ -2,9 +2,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { loginApi } from './api';
 import { ApiError, UserData } from './types';
-import { getAccess } from '@/shared/utils/tokens-utils';
+import { getAccess } from '@/shared/utils';
 import { useStatistics } from '@/features/statistics/model/use-statistics';
-import { useUser } from '@/shared/contexts/user-context';
+import { useUser } from '@/shared/contexts';
 import { getChatAllApi } from '@/entities/chat/model';
 
 export const useAuth = () => {

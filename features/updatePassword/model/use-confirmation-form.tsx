@@ -5,7 +5,7 @@ import { VerifyPasswordCodeApi } from "./api";
 import { useState } from "react";
 import { useUpdatePassword } from "./use-updatePassword";
 import { useRouter } from "next/navigation"
-import { useUser } from "@/shared/contexts/user-context";
+import { useUser } from "@/shared/contexts";
 
 export const formSchema = z.object({
   code: z.string().min(5, { message: "Код должен содержать 5 цифр" }).max(5),

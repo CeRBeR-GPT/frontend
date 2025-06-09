@@ -6,7 +6,7 @@ import { Button } from "@/shared/ui/button"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useLogout } from "@/features/logout/model"
-import { useUser } from "@/shared/contexts/user-context"
+import { useUser } from "@/shared/contexts"
 
 const ProfileSettings = () => {
     const router = useRouter()

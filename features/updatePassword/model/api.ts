@@ -1,4 +1,4 @@
-import { apiClient } from '@/shared/api/client';
+import { apiClient } from '@/shared/api';
 
 export const updatePasswordApi = async (newPassword: string) => {
     return apiClient.post(`user/edit_password?new_password=${newPassword}`);

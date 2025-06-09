@@ -1,4 +1,4 @@
-
+'use client'
 import { useEffect, useState, RefObject } from 'react';
 
 export const useScrollVisibility = (

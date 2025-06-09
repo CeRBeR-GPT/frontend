@@ -1,12 +1,12 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getChatAllApi, getChatByIdApi } from './api';
-import { useUser } from '@/shared/contexts/user-context';
+import { useUser } from '@/shared/contexts';
 import { ChatHistory } from './types';
 import { useParams, useRouter } from "next/navigation"
 import { useAuth } from '@/features/auth/model';
 import { clearChatApi } from '@/features/clear-chat/model/api';
-import { useMessageContext } from '@/shared/contexts/MessageContext';
+import { useMessageContext } from '@/shared/contexts';
 import { useMessage } from '@/entities/message/model';
 
 

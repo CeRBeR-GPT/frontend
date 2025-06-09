@@ -8,7 +8,7 @@ import { Mail } from "lucide-react"
 import { Header } from "@/widgets/header/header"
 
 import { ConfirmationForm } from "@/features/updatePassword/ui"
-import { useUser } from "@/shared/contexts/user-context"
+import { useUser } from "@/shared/contexts"
 
 export default function VerifyPage() {
   const router = useRouter()

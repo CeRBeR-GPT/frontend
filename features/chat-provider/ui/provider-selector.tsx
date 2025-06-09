@@ -3,10 +3,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card"
 import { Check, Lock } from "lucide-react"
 import { ProviderBadge } from "@/shared/ui/provider-badge"
-import { cn } from "@/shared/utils/utils"
+import { cn } from "@/shared/utils"
 import { getProviderDescription } from "../lib"
 import { ProviderSelectorProps } from "../model"
-import { allProviders } from "@/shared/const/providers"
+import { allProviders } from "@/shared/const"
 
 export function ProviderSelector({
   availableProviders,
