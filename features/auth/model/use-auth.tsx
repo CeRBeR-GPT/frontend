@@ -1,9 +1,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { loginApi } from './api';
-import { ApiError, UserData } from './types';
+import { ApiError } from './types';
 import { getAccess } from '@/shared/utils';
-import { useStatistics } from '@/features/statistics/model/use-statistics';
 import { useUser } from '@/shared/contexts';
 import { getChatAllApi } from '@/entities/chat/model';
 
@@ -12,7 +11,6 @@ export const useAuth = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [authChecked, setAuthChecked] = useState(false);
     const [isLoading, setIsLoading] = useState(true)
-    // const { setStatistics } = useStatistics()
     const { refreshUserData } = useUser()
     
     const getToken = useCallback(async (): Promise<string | null> => {
