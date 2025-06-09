@@ -8,8 +8,8 @@ import { ArrowRight, Bot } from "lucide-react"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
 import { UserMenu } from "@/widgets/user-menu"
 import { NavLinks } from "@/widgets/navigation"
-import { useAuth } from "@/features/auth/model"
 import { FormFeedback } from "@/features/feedback/ui"
+import { useAuth } from "@/shared/contexts"
 
 export default function Home() {
   const { isAuthenticated } = useAuth()

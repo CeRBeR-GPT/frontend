@@ -10,8 +10,8 @@ import { ThemeToggle } from "@/shared/ui/theme-toggle"
 import { UserMenu } from "@/widgets/user-menu"
 import { NavLinks } from "@/widgets/navigation"
 import { Toaster } from "@/shared/ui/toaster"
-import { useAuth } from "@/features/auth/model"
 import { ChangePasswordForm } from "@/features/updatePassword/ui"
+import { useAuth } from "@/shared/contexts"
 
 export default function ChangePasswordPage() {
 

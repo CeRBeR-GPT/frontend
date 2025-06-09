@@ -4,8 +4,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import { useAuth } from "@/features/auth/model";
-import { useRouter } from "next/navigation";
+import { useAuth } from "@/shared/contexts";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Пожалуйста, введите корректный email" }),

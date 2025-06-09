@@ -7,7 +7,7 @@ import { Send, Lock, MessageSquarePlus, CheckCircle, Upload, FileUp, Info } from
 import { Label } from "@/shared/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert"
 import { useFeedback } from "../model"
-import { useAuth } from "@/features/auth/model"
+import { useAuth } from "@/shared/contexts"
 
 export const FormFeedback = () => {
     const { handleSubmitFeedback, handleFileChange, fileError, isSubmitting, message, file, setFile, 
