@@ -1,27 +1,26 @@
-"use client"
+'use client';
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/shared/contexts"
+import { useEffect } from 'react';
+
+import { useRouter } from 'next/navigation';
+
+import { useAuth } from '@/shared/contexts';
 
 export default function ChatRedirect() {
-  const router = useRouter()
-  const { isAuthenticated } = useAuth()
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     if (isAuthenticated) {
-
-      const lastSavedChat = localStorage.getItem("lastSavedChat")
+      const lastSavedChat = localStorage.getItem('lastSavedChat');
 
       if (lastSavedChat) {
-        router.replace(`/chat/${lastSavedChat}`)
+        router.replace(`/chat/${lastSavedChat}`);
       }
     } else {
-      router.replace("/")
+      router.replace('/');
     }
-  }, [isAuthenticated, router])
+  }, [isAuthenticated, router]);
 
-  return null
+  return null;
 }
-
-

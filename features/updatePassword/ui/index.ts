@@ -1,2 +1,2 @@
-export * from './changePassword-form'
-export * from './confirmation-form'
+export * from './changePassword-form';
+export * from './confirmation-form';

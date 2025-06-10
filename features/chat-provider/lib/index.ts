@@ -1,1 +1,1 @@
-export * from './getProviderDescription'
+export * from './getProviderDescription';

@@ -1,25 +1,34 @@
-"use client"
+'use client';
 
-import { Avatar, AvatarFallback } from "@/shared/ui/avatar"
-import { Button } from "@/shared/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, 
-  DropdownMenuTrigger} from "@/shared/ui/dropdown-menu"
-import { Logout } from "@/features/logout/ui"
-import { useAuth, useUser } from "@/shared/contexts"
-import { LogOut, User } from "lucide-react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useState } from 'react';
+
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+import { LogOut, User } from 'lucide-react';
+
+import { Logout } from '@/features/logout/ui';
+import { useAuth, useUser } from '@/shared/contexts';
+import { Avatar, AvatarFallback } from '@/shared/ui/avatar';
+import { Button } from '@/shared/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/shared/ui/dropdown-menu';
 
 export function UserMenu() {
-  const { isAuthenticated, authChecked } = useAuth()
-  const { userData } = useUser()
+  const { isAuthenticated, authChecked } = useAuth();
+  const { userData } = useUser();
   //const router = useRouter()
-  const [isAuth, setIsAuth] = useState(false)
+  const [isAuth, setIsAuth] = useState(false);
 
   useEffect(() => {
-    setIsAuth(isAuthenticated)
-  }, [isAuthenticated])
+    setIsAuth(isAuthenticated);
+  }, [isAuthenticated]);
 
   // const handleLogout = () => {
   //   logout()
@@ -31,7 +40,7 @@ export function UserMenu() {
       <Button size="sm" asChild>
         <Link href="/auth/login">Войти</Link>
       </Button>
-    )
+    );
   }
 
   return (
@@ -53,17 +62,17 @@ export function UserMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/profile" className="cursor-pointer">Профиль</Link>
+          <Link href="/profile" className="cursor-pointer">
+            Профиль
+          </Link>
         </DropdownMenuItem>
 
-        <Logout/>
+        <Logout />
         {/* <DropdownMenuItem className="text-red-600 cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           <span>Выйти</span>
         </DropdownMenuItem> */}
-
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }
-

@@ -1,2 +1,2 @@
-export * from './sendCode-form'
-export * from './verifyCode-form'
+export * from './sendCode-form';
+export * from './verifyCode-form';

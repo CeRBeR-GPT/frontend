@@ -1,5 +1,6 @@
-'use client'
-import { useEffect, useState, RefObject } from 'react';
+'use client';
+
+import { RefObject, useEffect, useState } from 'react';
 
 export const useScrollVisibility = (
   containerRef: RefObject<HTMLElement | null>,
@@ -21,14 +22,14 @@ export const useScrollVisibility = (
 
     const handleScrollEvent = () => {
       clearTimeout(timeoutId);
-      
+
       timeoutId = setTimeout(() => {
         const { scrollTop, scrollHeight, clientHeight } = container;
         const isAtBottom = scrollHeight - (scrollTop + clientHeight) < showOffset;
         const isScrollingDown = scrollTop > lastScrollTop;
         lastScrollTop = scrollTop;
         const hasMoreContentBelow = scrollHeight > clientHeight + scrollTop;
-        
+
         setShowButton(isScrollingDown && hasMoreContentBelow && !isAtBottom);
       }, throttleDelay);
     };

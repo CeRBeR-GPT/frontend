@@ -1,57 +1,64 @@
-import { useCallback } from "react";
-import { deleteChatApi } from "./api";
-import { useChats } from "@/entities/chat/model";
-import { useRouter } from "next/navigation";
-import { useUser } from "@/shared/contexts";
+import { useCallback } from 'react';
+
+import { useRouter } from 'next/navigation';
+
+import { useChats } from '@/entities/chat/model';
+import { useUser } from '@/shared/contexts';
+
+import { deleteChatApi } from './api';
 
 export const useDeleteChat = () => {
-    const router = useRouter()
+  const router = useRouter();
 
-    const { getToken, setChatHistory, chatHistory } = useUser()
-    const { chatId, updateSidebar, setIsLoading, ws} = useChats()
-    const deleteChat = useCallback( async (id: string) => {
-        router.push(`/chat/${id}`)
-        try {
-            setIsLoading(true)
+  const { getToken, setChatHistory, chatHistory } = useUser();
+  const { chatId, updateSidebar, setIsLoading, ws } = useChats();
+  const deleteChat = useCallback(
+    async (id: string) => {
+      router.push(`/chat/${id}`);
+      try {
+        setIsLoading(true);
 
-            await deleteChatApi(id)
-            localStorage.setItem("lastDeletedChat", id || "")
-            const remainingChats = chatHistory.filter((chat) => chat.id !== id)
-            setChatHistory(remainingChats)
-            const lastSavedChat = localStorage.getItem("lastSavedChat")
-            if (lastSavedChat === id) {
-                localStorage.setItem("lastSavedChat", remainingChats.length > 0 ? remainingChats[0].id : "1")
-            }
-
-            if (id === chatId) {
-                const nextChatId = remainingChats.length > 0 ? remainingChats[0].id : "1"
-                if (ws.current) {
-                    ws.current.close(1000, "Chat deleted")
-                    ws.current = null
-                }
-
-                router.push(`/chat/${nextChatId}`)
-            }
-
-            updateSidebar()
-        } catch (error) {
-        } finally {
-            setIsLoading(false)
+        await deleteChatApi(id);
+        localStorage.setItem('lastDeletedChat', id || '');
+        const remainingChats = chatHistory.filter((chat) => chat.id !== id);
+        setChatHistory(remainingChats);
+        const lastSavedChat = localStorage.getItem('lastSavedChat');
+        if (lastSavedChat === id) {
+          localStorage.setItem(
+            'lastSavedChat',
+            remainingChats.length > 0 ? remainingChats[0].id : '1'
+          );
         }
-    },
-        [chatId, chatHistory, getToken, router, updateSidebar],
-    )
 
-    const handleChatDeleted = useCallback(
-        (nextChatId: string | null) => {
-          if (nextChatId) {
-            router.push(`/chat/${nextChatId}`)
-          } else {
-            router.push("/chat/1")
+        if (id === chatId) {
+          const nextChatId = remainingChats.length > 0 ? remainingChats[0].id : '1';
+          if (ws.current) {
+            ws.current.close(1000, 'Chat deleted');
+            ws.current = null;
           }
-        },
-        [router],
-    )
 
-    return { deleteChat, handleChatDeleted };
+          router.push(`/chat/${nextChatId}`);
+        }
+
+        updateSidebar();
+      } catch (error) {
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [chatId, chatHistory, getToken, router, updateSidebar]
+  );
+
+  const handleChatDeleted = useCallback(
+    (nextChatId: string | null) => {
+      if (nextChatId) {
+        router.push(`/chat/${nextChatId}`);
+      } else {
+        router.push('/chat/1');
+      }
+    },
+    [router]
+  );
+
+  return { deleteChat, handleChatDeleted };
 };

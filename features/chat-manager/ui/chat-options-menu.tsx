@@ -1,18 +1,47 @@
-"use client"
+'use client';
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,DropdownMenuTrigger } 
-         from "@/shared/ui/dropdown-menu"
-import { Button } from "@/shared/ui/button"
-import { MoreVertical, Pencil, Trash2, Eraser, AlertTriangle } from "lucide-react"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
-         AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/shared/ui/alert-dialog"
-import { EditChatDialog } from "@/features/chat-manager/ui"
-import { ChatOptionsMenuProps, useChatManager } from "../model"
+import { AlertTriangle, Eraser, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 
-export function ChatOptionsMenu({ chatId, chatTitle, onDelete, onClear, onRename }: ChatOptionsMenuProps) {
-  const {handleDelete, handleClear,  handleRename, isDeleteDialogOpen, isClearDialogOpen, isEditDialogOpen,
-    setIsDeleteDialogOpen, setIsClearDialogOpen, setIsEditDialogOpen} = 
-  useChatManager({chatId, onDelete, onClear, onRename})
+import { EditChatDialog } from '@/features/chat-manager/ui';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/shared/ui/alert-dialog';
+import { Button } from '@/shared/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/shared/ui/dropdown-menu';
+
+import { ChatOptionsMenuProps, useChatManager } from '../model';
+
+export function ChatOptionsMenu({
+  chatId,
+  chatTitle,
+  onDelete,
+  onClear,
+  onRename,
+}: ChatOptionsMenuProps) {
+  const {
+    handleDelete,
+    handleClear,
+    handleRename,
+    isDeleteDialogOpen,
+    isClearDialogOpen,
+    isEditDialogOpen,
+    setIsDeleteDialogOpen,
+    setIsClearDialogOpen,
+    setIsEditDialogOpen,
+  } = useChatManager({ chatId, onDelete, onClear, onRename });
 
   return (
     <>
@@ -24,12 +53,14 @@ export function ChatOptionsMenu({ chatId, chatTitle, onDelete, onClear, onRename
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-        <DropdownMenuItem onClick={() => {
-            setIsEditDialogOpen(true)
-            }}>
+          <DropdownMenuItem
+            onClick={() => {
+              setIsEditDialogOpen(true);
+            }}
+          >
             <Pencil className="mr-2 h-4 w-4" />
             <span>Переименовать</span>
-        </DropdownMenuItem>
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setIsClearDialogOpen(true)}>
             <Eraser className="mr-2 h-4 w-4" />
             <span>Очистить сообщения</span>
@@ -58,7 +89,10 @@ export function ChatOptionsMenu({ chatId, chatTitle, onDelete, onClear, onRename
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Отмена</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700 focus:ring-red-600">
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
               Удалить
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -73,13 +107,16 @@ export function ChatOptionsMenu({ chatId, chatTitle, onDelete, onClear, onRename
               Очистка сообщений
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Вы уверены, что хотите очистить все сообщения в чате "{chatTitle}"? История сообщений будет удалена, но
-              сам чат останется.
+              Вы уверены, что хотите очистить все сообщения в чате "{chatTitle}"? История сообщений
+              будет удалена, но сам чат останется.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Отмена</AlertDialogCancel>
-            <AlertDialogAction onClick={handleClear} className="bg-amber-600 hover:bg-amber-700 focus:ring-amber-600">
+            <AlertDialogAction
+              onClick={handleClear}
+              className="bg-amber-600 hover:bg-amber-700 focus:ring-amber-600"
+            >
               Очистить
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -93,5 +130,5 @@ export function ChatOptionsMenu({ chatId, chatTitle, onDelete, onClear, onRename
         onSave={handleRename}
       />
     </>
-  )
+  );
 }

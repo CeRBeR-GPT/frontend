@@ -1,2 +1,2 @@
-export * from './types'
-export * from './use-message'
+export * from './types';
+export * from './use-message';

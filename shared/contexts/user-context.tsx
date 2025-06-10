@@ -1,12 +1,16 @@
 // features/user/context/user-context.tsx
 
-'use client'
-import React, { createContext, useContext, useCallback, useState, useRef, useEffect } from 'react';
+'use client';
 
-import { getAccess } from "@/shared/utils";
-import { DailyStatistic } from '../types/statistics';
-import { getUserDataApi, UserData } from '@/entities/user/model';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+
 import { ChatHistory } from '@/entities/chat/model';
+import { UserData, getUserDataApi } from '@/entities/user/model';
+import { getAccess } from '@/shared/utils';
+
+import { DailyStatistic } from '../types/statistics';
+
+// features/user/context/user-context.tsx
 
 type UserContextType = {
   userData: UserData | null;
@@ -21,7 +25,7 @@ type UserContextType = {
   chatTitle: string;
   setChatTitle: React.Dispatch<React.SetStateAction<string>>;
   isChatsRequested: React.MutableRefObject<boolean>;
-  isChatRequested: React.MutableRefObject<boolean>; 
+  isChatRequested: React.MutableRefObject<boolean>;
   isFetchingChats: boolean;
   setIsFetchingChats: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -32,16 +36,16 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [statistics, setStatistics] = useState<DailyStatistic[]>([])
-  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
-  const [chatTitle, setChatTitle] = useState<string>("")
-  const [isFetchingChats, setIsFetchingChats] = useState(false)
+  const [statistics, setStatistics] = useState<DailyStatistic[]>([]);
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
+  const [chatTitle, setChatTitle] = useState<string>('');
+  const [isFetchingChats, setIsFetchingChats] = useState(false);
   const isChatsRequested = useRef(false);
   const isChatRequested = useRef(false);
 
   const getToken = useCallback(async (): Promise<string | null> => {
     if (typeof window === 'undefined') return null;
-    
+
     const accessToken = localStorage.getItem('access_token');
     const refreshToken = localStorage.getItem('refresh_token');
     if (!accessToken || !refreshToken) return null;
@@ -53,10 +57,10 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  const isRequested1 = useRef(false)
+  const isRequested1 = useRef(false);
   const refreshUserData = useCallback(async () => {
-    if (isRequested1.current) return
-    isRequested1.current = true
+    if (isRequested1.current) return;
+    isRequested1.current = true;
     setLoading(true);
     setError(null);
 
@@ -70,7 +74,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       setUserData(response.data);
 
       if (response.data?.statistics) {
-          setStatistics(response.data.statistics)
+        setStatistics(response.data.statistics);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
@@ -96,7 +100,12 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     statistics,
     chatHistory,
     setChatHistory,
-    chatTitle, setChatTitle, isChatsRequested, isChatRequested, isFetchingChats, setIsFetchingChats
+    chatTitle,
+    setChatTitle,
+    isChatsRequested,
+    isChatRequested,
+    isFetchingChats,
+    setIsFetchingChats,
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
@@ -105,7 +114,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 export const useUser = () => {
   // Проверяем, что выполняется на клиенте
   const [isClient, setIsClient] = useState(false);
-  
+
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -126,14 +135,14 @@ export const useUser = () => {
       statistics: [],
       chatHistory: [],
       setChatHistory: () => {},
-      chatTitle: "",
+      chatTitle: '',
       setChatTitle: () => {},
       isChatsRequested: { current: false },
       isChatRequested: { current: false },
       isFetchingChats: false,
-      setIsFetchingChats: () => {}
+      setIsFetchingChats: () => {},
     };
   }
-  
+
   return context;
 };

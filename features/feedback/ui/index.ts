@@ -1,1 +1,1 @@
-export * from './FormFeedback'
+export * from './FormFeedback';

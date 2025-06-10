@@ -1,1 +1,1 @@
-export * from './tarifs'
+export * from './tarifs';

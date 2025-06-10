@@ -1,1 +1,1 @@
-export * from './use-copyMessage'
+export * from './use-copyMessage';

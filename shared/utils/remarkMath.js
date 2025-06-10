@@ -4,9 +4,8 @@
  *
  * @typedef {import('mdast-util-math')} DoNotTouchAsThisImportIncludesMathInTree
  */
-
-import { math } from "micromark-extension-math-2";
-import { mathFromMarkdown, mathToMarkdown } from "mdast-util-math";
+import { mathFromMarkdown, mathToMarkdown } from 'mdast-util-math';
+import { math } from 'micromark-extension-math-2';
 
 /**
  * Plugin to support math.
@@ -17,9 +16,9 @@ import { mathFromMarkdown, mathToMarkdown } from "mdast-util-math";
 export default function remarkMath(options = {}) {
   const data = this.data();
 
-  add("micromarkExtensions", math(options));
-  add("fromMarkdownExtensions", mathFromMarkdown());
-  add("toMarkdownExtensions", mathToMarkdown(options));
+  add('micromarkExtensions', math(options));
+  add('fromMarkdownExtensions', mathFromMarkdown());
+  add('toMarkdownExtensions', mathToMarkdown(options));
 
   /**
    * @param {string} field

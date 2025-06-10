@@ -1,1 +1,1 @@
-export * from './use-statistics'
+export * from './use-statistics';

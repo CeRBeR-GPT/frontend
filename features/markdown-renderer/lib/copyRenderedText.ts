@@ -1,6 +1,6 @@
-import { RefObject } from "react"
-import { ToastFn } from "../model"
+import { RefObject } from 'react';
 
+import { ToastFn } from '../model';
 
 export const copyRenderedText = async (
   markdownRef: RefObject<HTMLElement | null>,
@@ -8,20 +8,20 @@ export const copyRenderedText = async (
   toast: ToastFn
 ): Promise<void> => {
   if (markdownRef.current) {
-    const renderedText = markdownRef.current.innerText || markdownRef.current.textContent || ""
+    const renderedText = markdownRef.current.innerText || markdownRef.current.textContent || '';
     try {
-      await navigator.clipboard.writeText(renderedText)
-      handleCopyTextMarkdown(renderedText)
+      await navigator.clipboard.writeText(renderedText);
+      handleCopyTextMarkdown(renderedText);
       toast({
-        title: "Текст скопирован",
-        description: "Текст скопирован в буфер обмена",
-      })
+        title: 'Текст скопирован',
+        description: 'Текст скопирован в буфер обмена',
+      });
     } catch (err) {
       toast({
-        title: "Ошибка копирования",
-        description: "Не удалось скопировать текст",
-        variant: "destructive",
-      })
+        title: 'Ошибка копирования',
+        description: 'Не удалось скопировать текст',
+        variant: 'destructive',
+      });
     }
   }
-}
+};

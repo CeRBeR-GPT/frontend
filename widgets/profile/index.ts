@@ -1,2 +1,2 @@
-export * from './profile-settings'
-export * from './subscription'
+export * from './profile-settings';
+export * from './subscription';

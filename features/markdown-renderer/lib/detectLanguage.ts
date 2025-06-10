@@ -1,15 +1,14 @@
-import { PROGRAMMING_LANGUAGES } from "@/shared/const"
-
+import { PROGRAMMING_LANGUAGES } from '@/shared/const';
 
 export function detectLanguage(className?: string): string {
-  if (!className) return "text"
+  if (!className) return 'text';
 
   for (const lang of PROGRAMMING_LANGUAGES) {
     if (className.includes(lang)) {
-      return lang
+      return lang;
     }
   }
 
-  const match = /language-(\w+)/.exec(className)
-  return match?.[1] || "text"
+  const match = /language-(\w+)/.exec(className);
+  return match?.[1] || 'text';
 }

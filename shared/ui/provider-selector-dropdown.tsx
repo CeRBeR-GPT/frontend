@@ -1,14 +1,21 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { Check, ChevronDown, Bot, Cpu, Sparkles, Zap, Star } from "lucide-react"
-import { Button } from "@/shared/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu"
+import { useState } from 'react';
+
+import { Bot, Check, ChevronDown, Cpu, Sparkles, Star, Zap } from 'lucide-react';
+
+import { Button } from '@/shared/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/shared/ui/dropdown-menu';
 
 interface ProviderSelectorDropdownProps {
-  selectedProvider: string
-  availableProviders: string[]
-  onProviderChange: (provider: string) => void
+  selectedProvider: string;
+  availableProviders: string[];
+  onProviderChange: (provider: string) => void;
 }
 
 export default function ProviderSelectorDropdown({
@@ -16,43 +23,43 @@ export default function ProviderSelectorDropdown({
   availableProviders,
   onProviderChange,
 }: ProviderSelectorDropdownProps) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
 
   const getProviderIcon = (provider: string) => {
     switch (provider) {
-      case "default":
-        return <Bot className="w-4 h-4" />
-      case "deepseek":
-        return <Cpu className="w-4 h-4" />
-      case "gpt_4o_mini":
-        return <Sparkles className="w-4 h-4" />
-      case "gpt_4o":
-        return <Zap className="w-4 h-4" />
-      case "gpt_4":
-        return <Star className="w-4 h-4" />
+      case 'default':
+        return <Bot className="h-4 w-4" />;
+      case 'deepseek':
+        return <Cpu className="h-4 w-4" />;
+      case 'gpt_4o_mini':
+        return <Sparkles className="h-4 w-4" />;
+      case 'gpt_4o':
+        return <Zap className="h-4 w-4" />;
+      case 'gpt_4':
+        return <Star className="h-4 w-4" />;
       default:
-        return <Bot className="w-4 h-4" />
+        return <Bot className="h-4 w-4" />;
     }
-  }
+  };
 
   const getProviderName = (provider: string) => {
     switch (provider) {
-      case "default":
-        return "Стандартный"
-      case "deepseek":
-        return "DeepSeek"
-      case "gpt_4o_mini":
-        return "GPT-4o Mini"
-      case "gpt_4o":
-        return "GPT-4o"
-      case "gpt_4":
-        return "GPT-4"
+      case 'default':
+        return 'Стандартный';
+      case 'deepseek':
+        return 'DeepSeek';
+      case 'gpt_4o_mini':
+        return 'GPT-4o Mini';
+      case 'gpt_4o':
+        return 'GPT-4o';
+      case 'gpt_4':
+        return 'GPT-4';
       default:
-        return provider
+        return provider;
     }
-  }
+  };
 
-  console.log(getProviderName(selectedProvider))
+  console.log(getProviderName(selectedProvider));
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -69,10 +76,10 @@ export default function ProviderSelectorDropdown({
         {availableProviders.map((provider) => (
           <DropdownMenuItem
             key={provider}
-            className="flex items-center justify-between cursor-pointer"
+            className="flex cursor-pointer items-center justify-between"
             onClick={() => {
-              onProviderChange(provider)
-              setOpen(false)
+              onProviderChange(provider);
+              setOpen(false);
             }}
           >
             <div className="flex items-center gap-2">
@@ -84,5 +91,5 @@ export default function ProviderSelectorDropdown({
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }
