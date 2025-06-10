@@ -28,6 +28,7 @@ export default function RootLayout({
             <AuthProvider>
               <MessageProvider>
                 {/* <Header></Header> */}
+                <Header />
                 {children}
               </MessageProvider>
           </AuthProvider>

@@ -36,7 +36,7 @@ export default function ProfilePage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="border-b">
+      {/* <header className="border-b">
         <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
           <Link href="/" className="flex items-center gap-2 font-bold">
             <Bot className="w-6 h-6" />
@@ -48,7 +48,7 @@ export default function ProfilePage() {
             <UserMenu />
           </nav>
         </div>
-      </header>
+      </header> */}
 
       <main className="flex-1 container mx-auto px-4 py-6 md:px-6 max-w-7xl">
         <div className="grid gap-6 md:grid-cols-[250px_1fr] lg:grid-cols-[300px_1fr]">

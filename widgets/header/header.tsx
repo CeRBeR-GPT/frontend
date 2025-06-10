@@ -3,6 +3,7 @@ import Link from "next/link"
 import { Bot} from "lucide-react"
 import { ThemeToggle } from "@/shared/ui/theme-toggle"
 import {NavLinks} from "@/widgets/navigation"
+import { UserMenu } from "../user-menu"
 
 export const Header = () => {
 
@@ -16,6 +17,7 @@ export const Header = () => {
             <nav className="flex items-center gap-4">
               <NavLinks />
               <ThemeToggle />
+              <UserMenu/>
             </nav>
           </div>
       </header>
