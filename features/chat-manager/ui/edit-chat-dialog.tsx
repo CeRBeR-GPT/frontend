@@ -1,49 +1,57 @@
-"use client"
+'use client';
 
-import { useState, useEffect, KeyboardEvent } from "react"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } 
-from "@/shared/ui/dialog"
-import { Button } from "@/shared/ui/button"
-import { Input } from "@/shared/ui/input"
-import { Pencil, Save } from "lucide-react"
+import { KeyboardEvent, useEffect, useState } from 'react';
+
+import { Pencil, Save } from 'lucide-react';
+
+import { Button } from '@/shared/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/ui/dialog';
+import { Input } from '@/shared/ui/input';
 
 interface EditChatDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  chatTitle: string
-  onSave: (newTitle: string) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  chatTitle: string;
+  onSave: (newTitle: string) => void;
 }
 
 export function EditChatDialog({ open, onOpenChange, chatTitle, onSave }: EditChatDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [title, setTitle] = useState(chatTitle)
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [title, setTitle] = useState(chatTitle);
 
   useEffect(() => {
     if (open) {
-      setTitle(chatTitle)
+      setTitle(chatTitle);
     }
-  }, [chatTitle, open])
+  }, [chatTitle, open]);
 
   async function handleSave() {
-    if (!title.trim() || isSubmitting) return
-    
-    setIsSubmitting(true)
+    if (!title.trim() || isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 300))
-      onSave(title)
-      onOpenChange(false)
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      onSave(title);
+      onOpenChange(false);
     } catch (error) {
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      e.preventDefault()
-      handleSave()
+      e.preventDefault();
+      handleSave();
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -57,7 +65,7 @@ export function EditChatDialog({ open, onOpenChange, chatTitle, onSave }: EditCh
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <label htmlFor="chatTitle" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="chatTitle" className="mb-2 block text-sm font-medium text-gray-700">
               Название чата
             </label>
             <Input
@@ -89,5 +97,5 @@ export function EditChatDialog({ open, onOpenChange, chatTitle, onSave }: EditCh
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

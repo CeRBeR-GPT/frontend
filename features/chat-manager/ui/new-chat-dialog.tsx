@@ -1,56 +1,65 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { z } from "zod"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } 
-    from "@/shared/ui/dialog"
-import { Button } from "@/shared/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form"
-import { Input } from "@/shared/ui/input"
-import { Sparkles, MessageSquarePlus } from "lucide-react"
-import axios from "axios"
-import { createChatApi } from "@/entities/chat/model"
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+
+import { useRouter } from 'next/navigation';
+
+import { zodResolver } from '@hookform/resolvers/zod';
+import axios from 'axios';
+import { MessageSquarePlus, Sparkles } from 'lucide-react';
+import { z } from 'zod';
+
+import { createChatApi } from '@/entities/chat/model';
+import { Button } from '@/shared/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Input } from '@/shared/ui/input';
 
 const formSchema = z.object({
   chatName: z
     .string()
-    .min(1, { message: "Название чата не может быть пустым" })
-    .max(50, { message: "Название чата не должно превышать 50 символов" }),
-})
+    .min(1, { message: 'Название чата не может быть пустым' })
+    .max(50, { message: 'Название чата не должно превышать 50 символов' }),
+});
 
 interface NewChatDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export const NewChatDialog = ({ open, onOpenChange }: NewChatDialogProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [chatName, setChatName] = useState("")
-  const [error, setError] = useState<null | string>(null)
-  const router = useRouter()
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [chatName, setChatName] = useState('');
+  const [error, setError] = useState<null | string>(null);
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      chatName: "",
+      chatName: '',
     },
-  })
+  });
 
   async function onSubmit() {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
-      const response = await createChatApi(chatName)
-      onOpenChange(false)
-      router.push(`/chat/${response.data.id}`)
+      const response = await createChatApi(chatName);
+      onOpenChange(false);
+      router.push(`/chat/${response.data.id}`);
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 400){
-        setError("Превышен лимит чатов по вашему тарифу")
+      if (axios.isAxiosError(error) && error.response?.status === 400) {
+        setError('Превышен лимит чатов по вашему тарифу');
       }
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
@@ -62,7 +71,9 @@ export const NewChatDialog = ({ open, onOpenChange }: NewChatDialogProps) => {
             <MessageSquarePlus className="h-5 w-5 text-primary" />
             Новый чат
           </DialogTitle>
-          <DialogDescription>Введите название для вашего нового чата. Вы сможете изменить его позже.</DialogDescription>
+          <DialogDescription>
+            Введите название для вашего нового чата. Вы сможете изменить его позже.
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -78,8 +89,8 @@ export const NewChatDialog = ({ open, onOpenChange }: NewChatDialogProps) => {
                       {...field}
                       autoFocus
                       onChange={(e) => {
-                        field.onChange(e)
-                        setChatName(e.target.value)
+                        field.onChange(e);
+                        setChatName(e.target.value);
                       }}
                     />
                   </FormControl>
@@ -87,17 +98,17 @@ export const NewChatDialog = ({ open, onOpenChange }: NewChatDialogProps) => {
                 </FormItem>
               )}
             />
-            {error && (
-              <div className="text-sm font-medium text-destructive ">
-                {error}
-              </div>
-            )}
+            {error && <div className="text-sm font-medium text-destructive">{error}</div>}
 
             <DialogFooter className="mt-4">
-              <Button type="button" variant="outline" onClick={() => {
-                onOpenChange(false)
-                setError(null)
-              }}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  onOpenChange(false);
+                  setError(null);
+                }}
+              >
                 Отмена
               </Button>
               <Button type="submit" disabled={isSubmitting}>
@@ -118,5 +129,5 @@ export const NewChatDialog = ({ open, onOpenChange }: NewChatDialogProps) => {
         </Form>
       </DialogContent>
     </Dialog>
-  )
-}
+  );
+};

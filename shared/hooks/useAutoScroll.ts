@@ -1,5 +1,7 @@
-'use client'
-import { useEffect, RefObject } from 'react';
+'use client';
+
+import { RefObject, useEffect } from 'react';
+
 import { scrollToBottom } from '../utils';
 
 export const useAutoScroll = (

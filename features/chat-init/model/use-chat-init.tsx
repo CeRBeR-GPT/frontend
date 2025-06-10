@@ -1,39 +1,48 @@
 // features/chat-init/model/use-chat-init.ts
 import { useCallback, useMemo, useState } from 'react';
-import { useChats } from '@/entities/chat/model/use-chats';
-import MessageItem from "@/entities/chat/ui/MessageItem";
-import { useCopyMessage } from '@/features/copy-message/model';
+
 import { useTheme } from 'next-themes';
+
 import { throttle } from 'lodash-es';
+
+import { useChats } from '@/entities/chat/model/use-chats';
+import MessageItem from '@/entities/chat/ui/MessageItem';
+import { useCopyMessage } from '@/features/copy-message/model';
 import { useMessageContext } from '@/shared/contexts';
+
 import { UseChatInitializationProps } from './types';
 
-export const useChatInitialization = ({isLoading, setIsLoading, ws} : UseChatInitializationProps) => {
+export const useChatInitialization = ({
+  isLoading,
+  setIsLoading,
+  ws,
+}: UseChatInitializationProps) => {
   const { messages, dispatchMessages } = useMessageContext();
-  const { theme } = useTheme()
-  
+  const { theme } = useTheme();
+
   const { isCheckingChat } = useChats();
-  const [input, setInput] = useState<string>("")
-    
-  const throttledSubmit = useMemo(() =>
-    throttle((inputText: string) => {
-      if (!inputText.trim() || isLoading) return;
+  const [input, setInput] = useState<string>('');
 
-      const userMessage = {
-        id: Date.now(),
-        text: inputText,
-        message_belong: "user" as const,
-        timestamp: new Date(),
-      };
+  const throttledSubmit = useMemo(
+    () =>
+      throttle((inputText: string) => {
+        if (!inputText.trim() || isLoading) return;
 
-      dispatchMessages({ type: "ADD", payload: userMessage });
-      setIsLoading(true);
-      setInput("");
+        const userMessage = {
+          id: Date.now(),
+          text: inputText,
+          message_belong: 'user' as const,
+          timestamp: new Date(),
+        };
 
-      if (ws.current) {
-        ws.current.send(inputText);
-      }
-    }, 500),
+        dispatchMessages({ type: 'ADD', payload: userMessage });
+        setIsLoading(true);
+        setInput('');
+
+        if (ws.current) {
+          ws.current.send(inputText);
+        }
+      }, 500),
     [isLoading, dispatchMessages, setIsLoading, setInput, ws]
   );
 
@@ -46,22 +55,22 @@ export const useChatInitialization = ({isLoading, setIsLoading, ws} : UseChatIni
   );
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setInput(e.target.value)
-  }, [])
+    setInput(e.target.value);
+  }, []);
 
-  const renderedMessages = useMemo(() =>
-        messages.map((message) => {
-            return (
-                <MessageItem key={`${message.id}`}
-                message={message}/>
-            );
-        }),
-    [messages, theme, handleSubmit],
+  const renderedMessages = useMemo(
+    () =>
+      messages.map((message) => {
+        return <MessageItem key={`${message.id}`} message={message} />;
+      }),
+    [messages, theme, handleSubmit]
   );
 
   return {
     isCheckingChat,
     renderedMessages, // Возвращаем подготовленные сообщения для рендеринга,
-    handleSubmit, input, handleInputChange
+    handleSubmit,
+    input,
+    handleInputChange,
   };
 };

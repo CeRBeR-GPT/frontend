@@ -1,54 +1,57 @@
-"use client"
-import type React from "react"
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { Button } from "@/shared/ui/button"
-import { Card, CardContent } from "@/shared/ui/card"
-import { Input } from "@/shared/ui/input"
-import { ScrollArea } from "@/shared/ui/scroll-area"
-import { Plus, Search, Menu } from "lucide-react"
-import { formatDistanceToNow } from "date-fns"
-import { ru } from "date-fns/locale"
-import { usePathname, useRouter } from "next/navigation"
-import { Sheet, SheetContent, SheetTrigger } from "@/shared/ui/sheet"
-import { NewChatDialog, ChatOptionsMenu } from "@/features/chat-manager/ui"
-import { Loader2 } from "lucide-react"
-import { useDeleteChat } from "@/features/delete-chat/model"
-import { useRenameChat } from "@/features/rename_chat/model"
-import { useChats } from "@/entities/chat/model"
+'use client';
 
+import type React from 'react';
+import { useEffect, useState } from 'react';
+
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+
+import { formatDistanceToNow } from 'date-fns';
+import { ru } from 'date-fns/locale';
+import { Menu, Plus, Search } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+
+import { useChats } from '@/entities/chat/model';
+import { ChatOptionsMenu, NewChatDialog } from '@/features/chat-manager/ui';
+import { useDeleteChat } from '@/features/delete-chat/model';
+import { useRenameChat } from '@/features/rename_chat/model';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent } from '@/shared/ui/card';
+import { Input } from '@/shared/ui/input';
+import { ScrollArea } from '@/shared/ui/scroll-area';
+import { Sheet, SheetContent, SheetTrigger } from '@/shared/ui/sheet';
 
 interface ChatHistory {
-  id: string
-  title: string
-  preview: string
-  date: Date
-  messages: number
+  id: string;
+  title: string;
+  preview: string;
+  date: Date;
+  messages: number;
 }
 
 interface ChatSidebarProps {
   chatHistory: ChatHistory[];
 }
 
-export function ChatSidebar({ chatHistory}: ChatSidebarProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [isOpen, setIsOpen] = useState(false)
-  const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const pathname = usePathname()
-  const router = useRouter()
-  const currentChatId = pathname.split("/").pop() || ""
-  const { deleteChat} = useDeleteChat()
-  const {clearChatMessages} = useChats()
-  const {renameChatTitle} = useRenameChat()
+export function ChatSidebar({ chatHistory }: ChatSidebarProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+  const currentChatId = pathname.split('/').pop() || '';
+  const { deleteChat } = useDeleteChat();
+  const { clearChatMessages } = useChats();
+  const { renameChatTitle } = useRenameChat();
 
   useEffect(() => {
-    if (pathname === "/chat") {
-      const lastSavedChat = localStorage.getItem("lastSavedChat");
+    if (pathname === '/chat') {
+      const lastSavedChat = localStorage.getItem('lastSavedChat');
       if (lastSavedChat) {
         router.push(`/chat/${lastSavedChat}`);
       } else {
-        router.push("/chat/1");
+        router.push('/chat/1');
       }
     }
   }, [pathname, router]);
@@ -56,7 +59,7 @@ export function ChatSidebar({ chatHistory}: ChatSidebarProps) {
   const filteredChats = (chatHistory || []).filter(
     (chat) =>
       (chat.title?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-      (chat.preview?.toLowerCase() || '').includes(searchQuery.toLowerCase()),
+      (chat.preview?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   );
 
   const handleNewChatClick = (e: React.MouseEvent) => {
@@ -65,9 +68,9 @@ export function ChatSidebar({ chatHistory}: ChatSidebarProps) {
   };
 
   const sidebarContent = (
-    <div className="flex flex-col gap-4 h-full">
+    <div className="flex h-full flex-col gap-4">
       <Button className="w-full gap-2" onClick={handleNewChatClick}>
-        <Plus className="w-4 h-4" />
+        <Plus className="h-4 w-4" />
         Новый чат
       </Button>
 
@@ -82,24 +85,26 @@ export function ChatSidebar({ chatHistory}: ChatSidebarProps) {
         />
       </div>
 
-      <ScrollArea className="flex-1 pr--1">
-        <div className="space-y-2  mr--1">
+      <ScrollArea className="pr--1 flex-1">
+        <div className="mr--1 space-y-2">
           {isLoading ? (
-            <div className="flex justify-center items-center h-20">
+            <div className="flex h-20 items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin" />
             </div>
           ) : filteredChats.length > 0 ? (
             filteredChats.map((chat) => (
               <Link href={`/chat/${chat.id}`} key={chat.id} onClick={() => setIsOpen(false)}>
                 <Card
-                  className={`cursor-pointer hover:bg-muted/50 transition-colors ${currentChatId === chat.id ? "bg-muted" : ""}`}
+                  className={`cursor-pointer transition-colors hover:bg-muted/50 ${currentChatId === chat.id ? 'bg-muted' : ''}`}
                 >
-                  <CardContent className="p-3 flex justify-between items-start">
-                    <div className="space-y-1 flex-1 mr-2">
-                      <h3 className="font-medium text-sm line-clamp-1">{chat.title}</h3>
-                      <p className="text-xs text-muted-foreground line-clamp-1">{chat.preview}</p>
+                  <CardContent className="flex items-start justify-between p-3">
+                    <div className="mr-2 flex-1 space-y-1">
+                      <h3 className="line-clamp-1 text-sm font-medium">{chat.title}</h3>
+                      <p className="line-clamp-1 text-xs text-muted-foreground">{chat.preview}</p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>{formatDistanceToNow(chat.date, { addSuffix: true, locale: ru })}</span>
+                        <span>
+                          {formatDistanceToNow(chat.date, { addSuffix: true, locale: ru })}
+                        </span>
                         <span>•</span>
                         <span>{chat.messages} сообщ.</span>
                       </div>
@@ -116,12 +121,12 @@ export function ChatSidebar({ chatHistory}: ChatSidebarProps) {
               </Link>
             ))
           ) : searchQuery ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="py-8 text-center text-muted-foreground">
               <p>Чаты не найдены</p>
               <p className="text-sm">Попробуйте изменить поисковый запрос</p>
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="py-8 text-center text-muted-foreground">
               <p>История чатов пуста</p>
               <p className="text-sm">Начните новый чат, чтобы задать вопрос</p>
             </div>
@@ -141,15 +146,15 @@ export function ChatSidebar({ chatHistory}: ChatSidebarProps) {
           <span className="sr-only">Toggle sidebar</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-[280px] sm:w-[320px] p-4">
+      <SheetContent side="left" className="w-[280px] p-4 sm:w-[320px]">
         {sidebarContent}
       </SheetContent>
     </Sheet>
   );
 
   const desktopSidebar = (
-    <div className="hidden md:block w-[260px] border-r h-[calc(100vh-4rem)] overflow-hidden">
-      <div className="p-4 h-full">{sidebarContent}</div>
+    <div className="hidden h-[calc(100vh-4rem)] w-[260px] overflow-hidden border-r md:block">
+      <div className="h-full p-4">{sidebarContent}</div>
     </div>
   );
 

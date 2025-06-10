@@ -1,1 +1,1 @@
-export * from './AuthIcons'
+export * from './AuthIcons';

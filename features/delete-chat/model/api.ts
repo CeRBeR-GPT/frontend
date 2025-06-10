@@ -1,5 +1,5 @@
 import { apiClient } from '@/shared/api';
 
 export const deleteChatApi = async (id: string) => {
-    return apiClient.delete(`chat/${id}`);
+  return apiClient.delete(`chat/${id}`);
 };

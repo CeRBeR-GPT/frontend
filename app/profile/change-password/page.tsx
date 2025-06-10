@@ -1,40 +1,49 @@
-"use client"
+'use client';
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/shared/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card"
-import { Bot, ArrowLeft } from "lucide-react"
-import { ThemeToggle } from "@/shared/ui/theme-toggle"
-import { UserMenu } from "@/widgets/user-menu"
-import { NavLinks } from "@/widgets/navigation"
-import { Toaster } from "@/shared/ui/toaster"
-import { ChangePasswordForm } from "@/features/updatePassword/ui"
-import { useAuth } from "@/shared/contexts"
+import { useEffect } from 'react';
+
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+import { ArrowLeft, Bot } from 'lucide-react';
+
+import { ChangePasswordForm } from '@/features/updatePassword/ui';
+import { useAuth } from '@/shared/contexts';
+import { Button } from '@/shared/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/shared/ui/card';
+import { ThemeToggle } from '@/shared/ui/theme-toggle';
+import { Toaster } from '@/shared/ui/toaster';
+import { NavLinks } from '@/widgets/navigation';
+import { UserMenu } from '@/widgets/user-menu';
 
 export default function ChangePasswordPage() {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
 
-  const router = useRouter()
-  const { isAuthenticated } = useAuth()
-  
   useEffect(() => {
     if (!isAuthenticated) {
-      router.push("/auth/login")
+      router.push('/auth/login');
     }
-  }, [isAuthenticated, router])
+  }, [isAuthenticated, router]);
 
   if (!isAuthenticated) {
-    return null
+    return null;
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex min-h-screen flex-col">
       <Toaster />
       <header className="border-b">
-        <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
           <Link href="/" className="flex items-center gap-2 font-bold">
-            <Bot className="w-6 h-6" />
+            <Bot className="h-6 w-6" />
             <span>CeRBeR-AI</span>
           </Link>
           <nav className="flex items-center gap-4">
@@ -44,7 +53,7 @@ export default function ChangePasswordPage() {
           </nav>
         </div>
       </header>
-      <main className="flex-1 container flex items-center justify-center px-4 py-12">
+      <main className="container flex flex-1 items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
             <div className="flex items-center">
@@ -60,7 +69,7 @@ export default function ChangePasswordPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <ChangePasswordForm/>
+            <ChangePasswordForm />
           </CardContent>
           <CardFooter className="flex justify-center">
             <div className="text-center text-sm text-muted-foreground">
@@ -70,6 +79,5 @@ export default function ChangePasswordPage() {
         </Card>
       </main>
     </div>
-  )
+  );
 }
-

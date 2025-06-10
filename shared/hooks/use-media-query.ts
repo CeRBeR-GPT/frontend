@@ -1,31 +1,31 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from 'react';
 
 export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(false)
+  const [matches, setMatches] = useState(false);
 
   useEffect(() => {
-    const media = window.matchMedia(query)
+    const media = window.matchMedia(query);
 
     // Устанавливаем начальное значение
     if (media.matches !== matches) {
-      setMatches(media.matches)
+      setMatches(media.matches);
     }
 
     // Создаем колбэк для обновления состояния
     const listener = () => {
-      setMatches(media.matches)
-    }
+      setMatches(media.matches);
+    };
 
     // Добавляем слушатель
-    media.addEventListener("change", listener)
+    media.addEventListener('change', listener);
 
     // Очищаем слушатель при размонтировании
     return () => {
-      media.removeEventListener("change", listener)
-    }
-  }, [matches, query])
+      media.removeEventListener('change', listener);
+    };
+  }, [matches, query]);
 
-  return matches
+  return matches;
 }

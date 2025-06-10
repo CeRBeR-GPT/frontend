@@ -1,1 +1,1 @@
-export * from './use-changeProvider'
+export * from './use-changeProvider';

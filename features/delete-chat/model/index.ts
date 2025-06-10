@@ -1,1 +1,1 @@
-export * from './use-deleteChat'
+export * from './use-deleteChat';

@@ -1,50 +1,59 @@
-"use client"
+'use client';
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/shared/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card"
-import { Mail } from "lucide-react"
-import { Header } from "@/widgets/header/header"
+import { useEffect } from 'react';
 
-import { ConfirmationForm } from "@/features/updatePassword/ui"
-import { useUser } from "@/shared/contexts"
+import { useRouter } from 'next/navigation';
+
+import { Mail } from 'lucide-react';
+
+import { ConfirmationForm } from '@/features/updatePassword/ui';
+import { useUser } from '@/shared/contexts';
+import { Button } from '@/shared/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/shared/ui/card';
+import { Header } from '@/widgets/header/header';
 
 export default function VerifyPage() {
-  const router = useRouter()
-  const { getToken, userData } = useUser()
-  const email = userData?.email
-  const token = getToken()
+  const router = useRouter();
+  const { getToken, userData } = useUser();
+  const email = userData?.email;
+  const token = getToken();
 
   useEffect(() => {
     if (!token) {
-      router.push("/auth/login")
+      router.push('/auth/login');
     }
-  }, [token, router])
+  }, [token, router]);
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header/>
-      <main className="flex-1 container flex items-center justify-center px-4 py-12">
+    <div className="flex min-h-screen flex-col">
+      <Header />
+      <main className="container flex flex-1 items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
-            <div className="flex justify-center mb-4">
+            <div className="mb-4 flex justify-center">
               <div className="rounded-full bg-primary/10 p-6">
                 <Mail className="h-10 w-10 text-primary" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-center">Проверка пароля</CardTitle>
+            <CardTitle className="text-center text-2xl font-bold">Проверка пароля</CardTitle>
             <CardDescription className="text-center">
               Мы отправили код подтверждения на <span className="font-medium">{email}</span>
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ConfirmationForm/>
+            <ConfirmationForm />
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <div className="text-center text-sm">
-              Не получили код?{" "}
-              <Button variant="link" className="p-0 h-auto" onClick={() => router.refresh()}>
+              Не получили код?{' '}
+              <Button variant="link" className="h-auto p-0" onClick={() => router.refresh()}>
                 Отправить повторно
               </Button>
             </div>
@@ -52,5 +61,5 @@ export default function VerifyPage() {
         </Card>
       </main>
     </div>
-  )
+  );
 }

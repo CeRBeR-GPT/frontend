@@ -1,21 +1,26 @@
-import { DropdownMenuItem } from "@radix-ui/react-dropdown-menu"
-import { LogOut } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { useLogout } from "../model"
+import { useRouter } from 'next/navigation';
 
-export function Logout(){
-    const router = useRouter()
-    const { logout } = useLogout()
+import { DropdownMenuItem } from '@radix-ui/react-dropdown-menu';
+import { LogOut } from 'lucide-react';
 
-    const handleLogout = () => {
-        logout()
-        router.push("/")
-      }
+import { useLogout } from '../model';
 
-    return(
-        <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer flex align-items: center" >
-          <LogOut className="mr-2 h-4 w-4 mt-1" />
-          <span>Выйти</span>
-        </DropdownMenuItem>
-    )
+export function Logout() {
+  const router = useRouter();
+  const { logout } = useLogout();
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
+
+  return (
+    <DropdownMenuItem
+      onClick={handleLogout}
+      className="align-items: center flex cursor-pointer text-red-600"
+    >
+      <LogOut className="mr-2 mt-1 h-4 w-4" />
+      <span>Выйти</span>
+    </DropdownMenuItem>
+  );
 }

@@ -1,21 +1,23 @@
-import { BarChart, ChevronUp } from "lucide-react"
-import { Progress } from "@/shared/ui/progress"
-import type { ProviderStatistic } from "./activity-heatmap"
-import getProviderIcon, { getProviderName } from "@/shared/utils/providers-utils"
+import { BarChart, ChevronUp } from 'lucide-react';
+
+import { Progress } from '@/shared/ui/progress';
+import getProviderIcon, { getProviderName } from '@/shared/utils/providers-utils';
+
+import type { ProviderStatistic } from './activity-heatmap';
 
 interface ProviderStatsProps {
-  providers: ProviderStatistic[]
+  providers: ProviderStatistic[];
 }
 
 export function ProviderStats({ providers }: ProviderStatsProps) {
-  if (!providers.length) return null
+  if (!providers.length) return null;
 
-  const sortedProviders = [...providers].sort((a, b) => b.messages_sent - a.messages_sent)
-  const totalMessages = sortedProviders.reduce((sum, p) => sum + p.messages_sent, 0)
+  const sortedProviders = [...providers].sort((a, b) => b.messages_sent - a.messages_sent);
+  const totalMessages = sortedProviders.reduce((sum, p) => sum + p.messages_sent, 0);
   const providersWithPercentage = sortedProviders.map((p) => ({
     ...p,
     percentage: Math.round((p.messages_sent / totalMessages) * 100) || 0,
-  }))
+  }));
 
   return (
     <div className="space-y-4">
@@ -35,9 +37,9 @@ export function ProviderStats({ providers }: ProviderStatsProps) {
               <div className="flex items-center text-muted-foreground">
                 <span>{provider.messages_sent} сообщений</span>
                 <ChevronUp
-                  className={`h-4 w-4 text-green-500 ml-1 ${provider.percentage < 5 ? "rotate-180 text-red-500" : ""}`}
+                  className={`ml-1 h-4 w-4 text-green-500 ${provider.percentage < 5 ? 'rotate-180 text-red-500' : ''}`}
                 />
-                <span className={`${provider.percentage < 5 ? "text-red-500" : "text-green-500"}`}>
+                <span className={`${provider.percentage < 5 ? 'text-red-500' : 'text-green-500'}`}>
                   {provider.percentage}%
                 </span>
               </div>
@@ -47,5 +49,5 @@ export function ProviderStats({ providers }: ProviderStatsProps) {
         ))}
       </div>
     </div>
-  )
+  );
 }

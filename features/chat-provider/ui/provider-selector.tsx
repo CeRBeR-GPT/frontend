@@ -1,12 +1,14 @@
-"use client"
+'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card"
-import { Check, Lock } from "lucide-react"
-import { ProviderBadge } from "@/shared/ui/provider-badge"
-import { cn } from "@/shared/utils"
-import { getProviderDescription } from "../lib"
-import { ProviderSelectorProps } from "../model"
-import { allProviders } from "@/shared/const"
+import { Check, Lock } from 'lucide-react';
+
+import { allProviders } from '@/shared/const';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
+import { ProviderBadge } from '@/shared/ui/provider-badge';
+import { cn } from '@/shared/utils';
+
+import { getProviderDescription } from '../lib';
+import { ProviderSelectorProps } from '../model';
 
 export function ProviderSelector({
   availableProviders,
@@ -14,7 +16,6 @@ export function ProviderSelector({
   onProviderChange,
   userPlan,
 }: ProviderSelectorProps) {
-
   return (
     <Card>
       <CardHeader>
@@ -25,20 +26,20 @@ export function ProviderSelector({
         <div className="space-y-4">
           <div className="grid gap-3">
             {allProviders.map((provider) => {
-              const isAvailable = availableProviders.includes(provider)
-              const isSelected = selectedProvider === provider
+              const isAvailable = availableProviders.includes(provider);
+              const isSelected = selectedProvider === provider;
 
               return (
                 <div
                   key={provider}
                   className={cn(
-                    "flex items-center justify-between p-3 rounded-lg transition-colors",
-                    isAvailable ? "cursor-pointer" : "opacity-60",
+                    'flex items-center justify-between rounded-lg p-3 transition-colors',
+                    isAvailable ? 'cursor-pointer' : 'opacity-60',
                     isSelected
-                      ? "bg-primary text-primary-foreground"
+                      ? 'bg-primary text-primary-foreground'
                       : isAvailable
-                        ? "bg-muted hover:bg-muted/80"
-                        : "bg-muted",
+                        ? 'bg-muted hover:bg-muted/80'
+                        : 'bg-muted'
                   )}
                   onClick={() => isAvailable && onProviderChange(provider)}
                 >
@@ -46,16 +47,16 @@ export function ProviderSelector({
                     <ProviderBadge provider={provider} size="lg" />
                     <div>
                       <p className="font-medium">
-                        {provider === "default"
-                          ? "Стандартный"
-                          : provider === "deepseek"
-                            ? "DeepSeek"
-                            : provider === "gpt_4o_mini"
-                              ? "GPT-4o Mini"
-                              : provider === "gpt_4o"
-                                ? "GPT-4o"
-                                : provider === "gpt_4"
-                                  ? "GPT-4"
+                        {provider === 'default'
+                          ? 'Стандартный'
+                          : provider === 'deepseek'
+                            ? 'DeepSeek'
+                            : provider === 'gpt_4o_mini'
+                              ? 'GPT-4o Mini'
+                              : provider === 'gpt_4o'
+                                ? 'GPT-4o'
+                                : provider === 'gpt_4'
+                                  ? 'GPT-4'
                                   : provider}
                       </p>
                       <p className="text-xs opacity-80">{getProviderDescription(provider)}</p>
@@ -63,25 +64,25 @@ export function ProviderSelector({
                   </div>
                   <div className="flex items-center">
                     {!isAvailable && (
-                      <div className="mr-2 text-xs font-medium px-2 py-0.5 rounded bg-muted-foreground/20 text-muted-foreground">
-                        {provider === "gpt_4o_mini" ? "Premium+" : "Бизнес"}
+                      <div className="mr-2 rounded bg-muted-foreground/20 px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                        {provider === 'gpt_4o_mini' ? 'Premium+' : 'Бизнес'}
                       </div>
                     )}
-                    {isSelected && <Check className="w-5 h-5" />}
+                    {isSelected && <Check className="h-5 w-5" />}
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
 
-          {userPlan !== "business" && (
-            <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-200 rounded-lg text-sm">
+          {userPlan !== 'business' && (
+            <div className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-950/20 dark:text-amber-200">
               <p className="flex items-center gap-2">
-                <Lock className="w-4 h-4 flex-shrink-0" />
+                <Lock className="h-4 w-4 flex-shrink-0" />
                 <span>
-                  {userPlan === "default"
-                    ? "Обновите до Premium для доступа к GPT-4o Mini или до Бизнес для всех моделей"
-                    : "Обновите до Бизнес тарифа для доступа ко всем моделям"}
+                  {userPlan === 'default'
+                    ? 'Обновите до Premium для доступа к GPT-4o Mini или до Бизнес для всех моделей'
+                    : 'Обновите до Бизнес тарифа для доступа ко всем моделям'}
                 </span>
               </p>
             </div>
@@ -89,5 +90,5 @@ export function ProviderSelector({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
