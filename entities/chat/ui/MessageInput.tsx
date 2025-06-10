@@ -7,6 +7,8 @@ import { Textarea } from "@/shared/ui/textarea"
 import { useChangeProvider } from "@/features/change-provider/model"
 import { useChats } from "@/entities/chat/model"
 import { useMessageOptions } from "../model/use-message-options"
+import { DucumentIcon } from "@/shared/ui/document-icon"
+import { SpeechIcon } from "@/shared/ui/speech-icon"
 
 const MessageInput = React.memo(
   ({
@@ -74,22 +76,7 @@ const MessageInput = React.memo(
               disabled={isLoading}
               aria-label="Загрузить текстовый файл"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="12" y1="18" x2="12" y2="12" />
-                <line x1="9" y1="15" x2="15" y2="15" />
-              </svg>
+              <DucumentIcon/>
             </button>
             <button
               type="button"
@@ -112,21 +99,7 @@ const MessageInput = React.memo(
               ) : recordingStatus === "processing" ? (
                 <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                  <line x1="12" x2="12" y1="19" y2="22"></line>
-                </svg>
+                <SpeechIcon/>
               )}
             </button>
             <Button type="submit" className="rounded-full w-10 h-10 p-0" disabled={!value.trim() || isLoading}>

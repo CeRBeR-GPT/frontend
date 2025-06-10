@@ -1,24 +1,18 @@
 "use client"
 import React, { useEffect } from "react"
-import Link from "next/link"
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar"
 import { Card } from "@/shared/ui/card"
 import { Bot, ArrowDown } from "lucide-react"
-import { UserMenu } from "@/widgets/user-menu"
 import { ChatSidebar } from "@/features/chat-manager/ui"
-import { NavLinks } from "@/widgets/navigation"
 import { Toaster } from "@/shared/ui/toaster"
 import "katex/dist/katex.min.css"
 import  {Markdown} from "@/features/markdown-renderer/ui"
 import MessageItem from "@/entities/chat/ui/MessageItem"
-import { useAuth } from "@/features/auth/model"
 import { useChats } from "@/entities/chat/model"
 import { scrollToBottom } from "@/shared/utils"
 import { useLockBodyScroll, useScrollVisibility, useAutoScroll } from "@/shared/hooks"
 import { useChatInitialization } from "@/features/chat-init/model"
-import { ThemeToggle } from "@/shared/ui/theme-toggle"
-import { useMessageContext } from "@/shared/contexts"
-import { useUser } from "@/shared/contexts"
+import { useAuth, useMessageContext, useUser } from "@/shared/contexts"
 import { useRouter } from "next/navigation"
 import { getToken } from "@/shared/utils"
 import { useMessage } from "@/entities/message/model"
@@ -39,7 +33,7 @@ export default function ChatPage() {
   
   const { messages, shouldShowInput, isTestMessageShown } = useMessageContext();
   const { messagesContainerRef } = useMessage()
-  const { chatHistory, chatTitle } = useUser()
+  const { chatHistory } = useUser()
   const { chatId,isValidChat,sidebarVersion,ws,isLoadingHistory,isLoading,setIsLoading, initializeChatsData } = useChats()
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
   useLockBodyScroll();
@@ -64,31 +58,8 @@ export default function ChatPage() {
   return (
     <div  className="flex flex-col min-h-screen">
   <Toaster />
-  <header className="border-b sticky top-0 z-10 bg-background">
-    <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
-      <div className="flex items-center gap-4">
-        <Link href="/" className="flex items-center gap-2 font-bold">
-          <Bot className="w-6 h-6" />
-          <span className="hidden sm:inline">CeRBeR-AI</span>
-        </Link>
-        <div className="hidden md:flex items-center gap-1 text-sm text-muted-foreground">
-          <span>/</span>
-          <span className="font-medium text-foreground">
-            {chatTitle === "Новый чат" ? "" : chatTitle}
-          </span>
-        </div>
-      </div>
-      <nav className="flex items-center gap-4">
-        <NavLinks />
-        <ThemeToggle />
-        <UserMenu />
-      </nav>
-    </div>
-  </header>
-
   <div className="flex flex-1 overflow-hidden">
     <ChatSidebar key={`sidebar-${sidebarVersion}`} chatHistory={chatHistory}/>
-
     {isCheckingChat ? (
       <div className="flex-1 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>

@@ -1,6 +1,5 @@
 
-import { useUser } from '@/shared/contexts';
-import { useAuth } from '@/features/auth/model';
+import { useAuth, useUser } from '@/shared/contexts';
 export const useLogout = () => {
 
     const { setIsAuthenticated, setAuthChecked} = useAuth()

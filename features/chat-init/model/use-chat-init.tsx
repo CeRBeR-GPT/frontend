@@ -6,16 +6,10 @@ import { useCopyMessage } from '@/features/copy-message/model';
 import { useTheme } from 'next-themes';
 import { throttle } from 'lodash-es';
 import { useMessageContext } from '@/shared/contexts';
-
-interface UseChatInitializationProps {
-  isLoading: boolean;
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  ws: React.MutableRefObject<WebSocket | null>;
-}
+import { UseChatInitializationProps } from './types';
 
 export const useChatInitialization = ({isLoading, setIsLoading, ws} : UseChatInitializationProps) => {
   const { messages, dispatchMessages } = useMessageContext();
-  const { handleCopyCode, handleCopyTextMarkdown, copiedCode} = useCopyMessage()
   const { theme } = useTheme()
   
   const { isCheckingChat } = useChats();
@@ -58,11 +52,11 @@ export const useChatInitialization = ({isLoading, setIsLoading, ws} : UseChatIni
   const renderedMessages = useMemo(() =>
         messages.map((message) => {
             return (
-                <MessageItem key={`${message.id}`} handleCopyTextMarkdown = {handleCopyTextMarkdown}
+                <MessageItem key={`${message.id}`}
                 message={message}/>
             );
         }),
-    [messages, theme, copiedCode, handleCopyCode, handleSubmit],
+    [messages, theme, handleSubmit],
   );
 
   return {

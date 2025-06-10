@@ -4,9 +4,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import { useAuth } from "@/features/auth/model";
-import { useRouter } from "next/navigation";
-import { useUser } from "@/shared/contexts/user-context";
+import { useAuth } from "@/shared/contexts";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Пожалуйста, введите корректный email" }),
@@ -17,7 +15,6 @@ export const useLoginForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
   const { login } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({

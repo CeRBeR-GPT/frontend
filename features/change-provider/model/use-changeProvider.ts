@@ -1,14 +1,9 @@
 import { useChats } from "@/entities/chat/model";
+import { providersByPlan } from "@/shared/const";
 import { useUser } from "@/shared/contexts";
 import { useCallback, useEffect, useState } from "react";
 
 export const useChangeProvider = () => {
-
-    const providersByPlan = {
-        default: ["default", "deepseek"],
-        premium: ["default", "deepseek", "gpt_4o_mini"],
-        business: ["default", "deepseek", "gpt_4o_mini", "gpt_4o", "gpt_4"],
-    }
 
     const [selectedProvider, setSelectedProvider] = useState<string>("default")
     const [availableProviders, setAvailableProviders] = useState<string[]>([])

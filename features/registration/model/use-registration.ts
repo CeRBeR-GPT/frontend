@@ -1,4 +1,4 @@
-import { useAuth } from "@/features/auth/model";
+import { useAuth } from "@/shared/contexts";
 import { registartionApi, sendEmailCodeApi, verifyEmailCodeApi } from "./api";
 import { useState } from "react";
 

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/features/auth/model"
+import { useAuth } from "@/shared/contexts"
 
 export default function ChatRedirect() {
   const router = useRouter()

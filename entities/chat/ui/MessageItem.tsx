@@ -4,12 +4,12 @@ import { Bot, User, Clipboard } from "lucide-react"
 import { Card } from "@/shared/ui/card"
 import  {Markdown} from "@/features/markdown-renderer/ui"
 import { Message } from "../model"
+import { useCopyMessage } from "@/features/copy-message/model"
 
-const MessageItem = React.memo( ({ message, handleCopyTextMarkdown }: {
+const MessageItem = React.memo( ({ message }: {
     message: Message
-    handleCopyTextMarkdown: (text: string) => void
   }) => {
-
+    const { handleCopyTextMarkdown } = useCopyMessage()
     const copyToClipboard = async () => {
       try {
           await navigator.clipboard.writeText(message.text);
