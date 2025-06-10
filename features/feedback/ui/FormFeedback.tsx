@@ -8,6 +8,7 @@ import { Label } from "@/shared/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert"
 import { useFeedback } from "../model"
 import { useAuth } from "@/shared/contexts"
+import { FeedbackIcon } from "@/shared/ui/feedback-icon"
 
 export const FormFeedback = () => {
     const { handleSubmitFeedback, handleFileChange, fileError, isSubmitting, message, file, setFile, 
@@ -108,21 +109,7 @@ export const FormFeedback = () => {
                                             className="h-8 w-8 text-gray-500"
                                         >
                                             <span className="sr-only">Удалить файл</span>
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="24"
-                                                height="24"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                className="h-4 w-4"
-                                            >
-                                            <path d="M18 6 6 18"></path>
-                                            <path d="m6 6 12 12"></path>
-                                            </svg>
+                                            <FeedbackIcon/>
                                         </Button>
                                     )}
                                     </div>
