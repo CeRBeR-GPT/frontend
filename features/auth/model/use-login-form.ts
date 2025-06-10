@@ -37,7 +37,6 @@ export const useLoginForm = () => {
 
       if (result.success) {
         const lastSavedChat = localStorage.getItem('lastSavedChat') || '1';
-        // router.push(`/chat/${lastSavedChat}`);
         window.location.href = `/chat/${lastSavedChat}`;
       } else {
         setError('Неверный email или пароль');
