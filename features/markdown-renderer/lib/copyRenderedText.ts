@@ -1,6 +1,6 @@
 import { RefObject } from 'react';
 
-import { ToastFn } from '../model';
+import { ToastFn } from '../types';
 
 export const copyRenderedText = async (
   markdownRef: RefObject<HTMLElement | null>,

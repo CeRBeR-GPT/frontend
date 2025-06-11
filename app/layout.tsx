@@ -1,16 +1,9 @@
 import type React from 'react';
-
-import { Inter } from 'next/font/google';
-
 import '@/app/globals.css';
-import { MessageProvider } from '@/shared/contexts/MessageContext';
-import { UserProvider } from '@/shared/contexts/user-context';
-import { AuthProvider } from '@/shared/hooks';
+import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/shared/providers';
+import { AuthProvider } from '@/shared/hooks';
 import { Toaster } from '@/shared/ui/toaster';
-import { Header } from '@/widgets/header/header';
-
-import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -35,7 +28,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <UserProvider>
             <AuthProvider>
               <MessageProvider>
-                {/* <Header></Header> */}
                 <Header />
                 {children}
               </MessageProvider>
@@ -47,3 +39,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+
+import './globals.css';
+import { MessageProvider } from '@/shared/contexts/MessageContext';
+import { UserProvider } from '@/shared/contexts/user-context';
+import { Header } from '@/widgets/header/header';

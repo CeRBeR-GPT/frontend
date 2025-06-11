@@ -7,8 +7,8 @@ import { useRouter } from 'next/navigation';
 
 import { Mail } from 'lucide-react';
 
-import { useVerifyCodeForm } from '@/features/registration/model';
-import { VerifyCodeForm } from '@/features/registration/ui';
+import { useVerifyCodeForm } from '@/features/registration/hooks';
+import { VerifyCodeForm } from '@/features/registration/components';
 import { useAuth, useUser } from '@/shared/contexts';
 import { Button } from '@/shared/ui/button';
 import {

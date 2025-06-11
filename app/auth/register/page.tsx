@@ -4,8 +4,8 @@ import Link from 'next/link';
 
 import { AlertTriangle } from 'lucide-react';
 
-import { AuthIcons } from '@/features/oAuth/ui';
-import { SendCodeForm } from '@/features/registration/ui';
+import { AuthIcons } from '@/features/oAuth/components';
+import { SendCodeForm } from '@/features/registration/components';
 import { ChoiceAuth } from '@/shared/ui/ChoiceAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/shared/ui/alert';
 import {

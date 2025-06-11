@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 import { Lock, LogOut, User } from 'lucide-react';
 
-import { useLogout } from '@/features/logout/model';
+import { useLogout } from '@/features/logout/hooks';
 import { useUser } from '@/shared/contexts';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
 import { Button } from '@/shared/ui/button';

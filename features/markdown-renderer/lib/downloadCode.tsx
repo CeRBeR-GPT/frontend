@@ -1,6 +1,6 @@
 import { fileExtensions } from '@/shared/const';
 
-import { ToastFn } from '../model';
+import { ToastFn } from '../types';
 
 export const downloadCode = (code: string, language: string, toast: ToastFn) => {
   const extension = fileExtensions[language] || 'txt';

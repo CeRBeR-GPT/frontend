@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { Mail } from 'lucide-react';
 
-import { ConfirmationForm } from '@/features/updatePassword/ui';
+import { ConfirmationForm } from '@/features/updatePassword/components';
 import { useUser } from '@/shared/contexts';
 import { Button } from '@/shared/ui/button';
 import {
@@ -17,7 +17,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/shared/ui/card';
-import { Header } from '@/widgets/header/header';
 
 export default function VerifyPage() {
   const router = useRouter();
@@ -33,7 +32,6 @@ export default function VerifyPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
       <main className="container flex flex-1 items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">

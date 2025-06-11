@@ -1,14 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-
-import { LogOut, User } from 'lucide-react';
-
-import { Logout } from '@/features/logout/ui';
-import { useAuth, useUser } from '@/shared/contexts';
 import { Avatar, AvatarFallback } from '@/shared/ui/avatar';
 import { Button } from '@/shared/ui/button';
 import {
@@ -19,6 +10,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
+import { Logout } from '@/features/logout/components';
+import { useAuth, useUser } from '@/shared/contexts';
+import { LogOut, User } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export function UserMenu() {
   const { isAuthenticated, authChecked } = useAuth();
