@@ -1,8 +1,8 @@
-import { useChats } from '@/entities/chat/model';
+import { useChats } from '@/entities/chat/hooks';
 import { useUser } from '@/shared/contexts';
 
-import { editChatNameApi } from './api';
-import { ChatHistory } from './types';
+import { editChatNameApi } from '../api/api';
+import { ChatHistory } from '../types/types';
 
 export const useRenameChat = () => {
   const { setChatHistory, setChatTitle } = useUser();

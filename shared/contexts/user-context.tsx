@@ -4,11 +4,12 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
-import { ChatHistory } from '@/entities/chat/model';
-import { UserData, getUserDataApi } from '@/entities/user/model';
+import { getUserDataApi } from '@/entities/user/api';
 import { getAccess } from '@/shared/utils';
 
 import { DailyStatistic } from '../types/statistics';
+import { UserData } from '@/entities/user/types';
+import { ChatHistory } from '@/entities/chat/types';
 
 // features/user/context/user-context.tsx
 

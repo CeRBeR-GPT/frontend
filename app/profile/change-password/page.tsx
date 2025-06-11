@@ -5,9 +5,9 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { ArrowLeft, Bot } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
-import { ChangePasswordForm } from '@/features/updatePassword/ui';
+import { ChangePasswordForm } from '@/features/updatePassword/components';
 import { useAuth } from '@/shared/contexts';
 import { Button } from '@/shared/ui/button';
 import {
@@ -18,10 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/shared/ui/card';
-import { ThemeToggle } from '@/shared/ui/theme-toggle';
 import { Toaster } from '@/shared/ui/toaster';
-import { NavLinks } from '@/widgets/navigation';
-import { UserMenu } from '@/widgets/user-menu';
 
 export default function ChangePasswordPage() {
   const router = useRouter();
@@ -40,19 +37,6 @@ export default function ChangePasswordPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <Toaster />
-      <header className="border-b">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-          <Link href="/" className="flex items-center gap-2 font-bold">
-            <Bot className="h-6 w-6" />
-            <span>CeRBeR-AI</span>
-          </Link>
-          <nav className="flex items-center gap-4">
-            <NavLinks />
-            <ThemeToggle />
-            <UserMenu />
-          </nav>
-        </div>
-      </header>
       <main className="container flex flex-1 items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">

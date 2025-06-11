@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 
-import { useLoginForm } from '@/features/auth/model';
-import { FORM } from '@/features/auth/ui';
-import { AuthIcons } from '@/features/oAuth/ui';
+import { useLoginForm } from '@/features/auth/hooks';
+import { FORM } from '@/features/auth/components';
+import { AuthIcons } from '@/features/oAuth/components';
 import { ChoiceAuth } from '@/shared/ui/ChoiceAuth';
 import {
   Card,

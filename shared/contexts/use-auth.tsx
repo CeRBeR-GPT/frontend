@@ -2,12 +2,12 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
-import { getChatAllApi } from '@/entities/chat/model';
-import { loginApi } from '@/entities/user/model';
-import { ApiError } from '@/features/auth/model';
+import { loginApi } from '@/entities/user/api';
 
 import { getAccess } from '../utils';
 import { useUser } from './user-context';
+import { getChatAllApi } from '@/entities/chat/api';
+import { ApiError } from '@/features/auth/types';
 
 type AuthContextType = {
   isAuthenticated: boolean;

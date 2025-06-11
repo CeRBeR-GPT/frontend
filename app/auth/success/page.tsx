@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { useOAuth } from '@/features/oAuth/model';
+import { useOAuth } from '@/features/oAuth/hooks';
 
 const AuthSuccess = () => {
   const router = useRouter();

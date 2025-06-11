@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 import { ArrowRight } from 'lucide-react';
 
-import { FormFeedback } from '@/features/feedback/ui';
+import { FormFeedback } from '@/features/feedback/components';
 import { useAuth } from '@/shared/contexts';
 import { Button } from '@/shared/ui/button';
 import { TelegramIcon } from '@/shared/ui/telegram-icon';
