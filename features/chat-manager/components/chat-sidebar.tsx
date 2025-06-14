@@ -12,14 +12,14 @@ import { Menu, Plus, Search } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 
 import { useChats } from '@/entities/chat/hooks';
-import { ChatOptionsMenu, NewChatDialog } from '@/features/chat-manager/components';
 import { useDeleteChat } from '@/features/delete-chat/hooks';
 import { useRenameChat } from '@/features/rename_chat/model';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent } from '@/shared/ui/card';
+import { Card, CardContent } from '@/shared/components/ui/Card';
 import { Input } from '@/shared/components/ui/input';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetTrigger } from '@/shared/components/ui/sheet';
+import { ChatOptionsMenu, NewChatDialog } from '.';
 
 interface ChatHistory {
   id: string;

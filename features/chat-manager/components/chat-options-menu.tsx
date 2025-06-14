@@ -2,7 +2,6 @@
 
 import { AlertTriangle, Eraser, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 
-import { EditChatDialog } from '@/features/chat-manager/components';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +23,7 @@ import {
 
 import { useChatManager } from '../hooks';
 import { ChatOptionsMenuProps } from '../types';
+import { EditChatDialog } from '.';
 
 export function ChatOptionsMenu({
   chatId,

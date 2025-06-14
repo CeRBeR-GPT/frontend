@@ -15,13 +15,11 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/shared/ui/card';
-import { Header } from '@/widgets/header/header';
+} from '@/shared/components/ui/Card';
 
 export default function RegisterPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
       <main className="flex flex-1 items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">

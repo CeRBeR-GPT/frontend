@@ -1,4 +1,4 @@
-export const allowedFileTypes = [
+export const ALLOWED_FILE_TYPES = [
   // Изображения
   'image/jpeg',
   'image/png',

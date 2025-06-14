@@ -9,7 +9,7 @@ import { useLogout } from '@/features/logout/hooks';
 import { useUser } from '@/shared/contexts';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent } from '@/shared/ui/card';
+import { Card, CardContent } from '@/shared/components/ui/Card';
 
 const ProfileSettings = () => {
   const router = useRouter();

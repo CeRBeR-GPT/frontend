@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { allowedFileTypes, blockedExtensions } from '@/shared/const';
+import { ALLOWED_FILE_TYPES, blockedExtensions } from '@/shared/const';
 import { useUser } from '@/shared/contexts';
 import { useToast } from '@/shared/hooks';
 
@@ -107,7 +107,7 @@ export const useFeedback = () => {
         return;
       }
 
-      if (!allowedFileTypes.includes(selectedFile.type) && selectedFile.type !== '') {
+      if (!ALLOWED_FILE_TYPES.includes(selectedFile.type) && selectedFile.type !== '') {
         setFileError(`Тип файла ${selectedFile.type || fileExtension} не поддерживается.`);
         return;
       }

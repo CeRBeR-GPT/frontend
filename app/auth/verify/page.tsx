@@ -1,7 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
-
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -9,7 +7,6 @@ import { Mail } from 'lucide-react';
 
 import { useVerifyCodeForm } from '@/features/registration/hooks';
 import { VerifyCodeForm } from '@/features/registration/components';
-import { useAuth, useUser } from '@/shared/contexts';
 import { Button } from '@/shared/components/ui/button';
 import {
   Card,
@@ -18,33 +15,12 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/shared/ui/card';
+} from '@/shared/components/ui/Card';
 import { Header } from '@/widgets/header/header';
 
 export default function VerifyPage() {
   const router = useRouter();
   const { email } = useVerifyCodeForm();
-  const { isAuthenticated, setAuthChecked } = useAuth();
-  const { refreshUserData } = useUser();
-  // useEffect(() => {
-  //   const savedEmail = localStorage.getItem("email")
-  //   const savedPassword = localStorage.getItem("password")
-
-  //   if (savedEmail && savedPassword) {
-  //     setEmail(savedEmail)
-  //     setPassword(savedPassword)
-  //   } else {
-  //     router.push("/auth/register")
-  //   }
-  // }, [router])
-
-  // useEffect(() => {
-  //     if (isAuthenticated) {
-  //         refreshUserData().then(() => {
-  //             setAuthChecked(true);
-  //         });
-  //     }
-  // }, [isAuthenticated, refreshUserData]);
 
   return (
     <div className="flex min-h-screen flex-col">

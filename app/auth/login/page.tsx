@@ -13,8 +13,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/shared/ui/card';
-import { Header } from '@/widgets/header/header';
+} from '@/shared/components/ui/Card';
 
 export default function LoginPage() {
   const { isSubmitting } = useLoginForm();

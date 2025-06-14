@@ -13,7 +13,7 @@ import {
 } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/Card';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/shared/components/ui/hover-card';
 import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';

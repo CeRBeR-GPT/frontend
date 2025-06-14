@@ -17,7 +17,7 @@ import { Markdown } from '@/features/markdown-renderer/components';
 import { useAuth, useMessageContext, useUser } from '@/shared/contexts';
 import { useAutoScroll, useLockBodyScroll, useScrollVisibility } from '@/shared/hooks';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
-import { Card } from '@/shared/ui/card';
+import { Card } from '@/shared/components/ui/Card';
 import { Toaster } from '@/shared/components/ui/toaster';
 import { scrollToBottom } from '@/shared/utils';
 import { getToken } from '@/shared/utils';

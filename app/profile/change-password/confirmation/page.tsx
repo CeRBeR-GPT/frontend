@@ -16,7 +16,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/shared/ui/card';
+} from '@/shared/components/ui/Card';
 
 export default function VerifyPage() {
   const router = useRouter();

@@ -10,7 +10,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/shared/ui/card';
+} from '@/shared/components/ui/Card';
 import { ThemeToggle } from '@/shared/components/ui/theme-toggle';
 import { NavLinks } from '@/widgets/navigation';
 import { UserMenu } from '@/widgets/user-menu';

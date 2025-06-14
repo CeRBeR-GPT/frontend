@@ -9,7 +9,7 @@ import {
 } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
 
-import { useVerifyCodeForm } from '../hooks/use-verifyCode-form';
+import { useVerifyCodeForm } from '../hooks';
 
 export const VerifyCodeForm = () => {
   const { form, onSubmit, error, isSubmitting } = useVerifyCodeForm();

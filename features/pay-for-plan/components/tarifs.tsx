@@ -11,7 +11,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '../../../shared/components/ui/card';
+} from '../../../shared/components/ui/Card';
 import { usePayForPlan } from '../hooks';
 
 const Tarifs = () => {

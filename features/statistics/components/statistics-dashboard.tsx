@@ -2,13 +2,13 @@
 
 import { RefreshCw } from 'lucide-react';
 
-import { useStatistics } from '@/features/statistics/hooks';
 import { useUser } from '@/shared/contexts';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/Card';
 import { Skeleton } from '@/shared/components/ui/skeleton';
 
 import { ActivityHeatmap } from './activity-heatmap';
+import { useStatistics } from '../hooks';
 
 export function StatisticsDashboard() {
   const { statisticsLoading, refreshStatistics } = useStatistics();

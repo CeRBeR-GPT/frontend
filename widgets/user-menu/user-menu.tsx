@@ -12,24 +12,18 @@ import {
 } from '@/shared/components/ui/dropdown-menu';
 import { Logout } from '@/features/logout/components';
 import { useAuth, useUser } from '@/shared/contexts';
-import { LogOut, User } from 'lucide-react';
+import { User } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 export function UserMenu() {
-  const { isAuthenticated, authChecked } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { userData } = useUser();
-  //const router = useRouter()
   const [isAuth, setIsAuth] = useState(false);
 
   useEffect(() => {
     setIsAuth(isAuthenticated);
   }, [isAuthenticated]);
-
-  // const handleLogout = () => {
-  //   logout()
-  //   router.push("/")
-  // }
 
   if (!isAuth) {
     return (
@@ -62,12 +56,7 @@ export function UserMenu() {
             Профиль
           </Link>
         </DropdownMenuItem>
-
         <Logout />
-        {/* <DropdownMenuItem className="text-red-600 cursor-pointer">
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Выйти</span>
-        </DropdownMenuItem> */}
       </DropdownMenuContent>
     </DropdownMenu>
   );

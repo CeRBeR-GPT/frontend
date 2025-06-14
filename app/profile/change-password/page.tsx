@@ -17,7 +17,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/shared/ui/card';
+} from '@/shared/components/ui/Card';
 import { Toaster } from '@/shared/components/ui/toaster';
 
 export default function ChangePasswordPage() {

@@ -12,7 +12,7 @@ import ProviderSelectorDropdown from '@/shared/components/ui/provider-selector-d
 import { SpeechIcon } from '@/shared/components/ui/speech-icon';
 import { Textarea } from '@/shared/components/ui/textarea';
 
-import { useMessageOptions } from '../hooks/use-message-options';
+import { useMessageOptions } from '../hooks';
 
 const MessageInput = React.memo(
   ({
