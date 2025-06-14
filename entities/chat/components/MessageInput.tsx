@@ -6,11 +6,11 @@ import { ArrowUp } from 'lucide-react';
 
 import { useChats } from '@/entities/chat/hooks';
 import { useChangeProvider } from '@/features/change-provider/hooks';
-import { Button } from '@/shared/ui/button';
-import { DucumentIcon } from '@/shared/ui/document-icon';
-import ProviderSelectorDropdown from '@/shared/ui/provider-selector-dropdown';
-import { SpeechIcon } from '@/shared/ui/speech-icon';
-import { Textarea } from '@/shared/ui/textarea';
+import { Button } from '@/shared/components/ui/button';
+import { DocumentIcon } from '@/shared/components/document-icon';
+import ProviderSelectorDropdown from '@/shared/components/ui/provider-selector-dropdown';
+import { SpeechIcon } from '@/shared/components/ui/speech-icon';
+import { Textarea } from '@/shared/components/ui/textarea';
 
 import { useMessageOptions } from '../hooks/use-message-options';
 
@@ -90,7 +90,7 @@ const MessageInput = React.memo(
               disabled={isLoading}
               aria-label="Загрузить текстовый файл"
             >
-              <DucumentIcon />
+              <DocumentIcon />
             </button>
             <button
               type="button"

@@ -8,7 +8,7 @@ import { Mail } from 'lucide-react';
 
 import { ConfirmationForm } from '@/features/updatePassword/components';
 import { useUser } from '@/shared/contexts';
-import { Button } from '@/shared/ui/button';
+import { Button } from '@/shared/components/ui/button';
 import {
   Card,
   CardContent,

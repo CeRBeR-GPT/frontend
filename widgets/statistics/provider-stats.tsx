@@ -1,7 +1,7 @@
 import { BarChart, ChevronUp } from 'lucide-react';
 
 import { ProviderStatistic } from '@/shared/types/statistics';
-import { Progress } from '@/shared/ui/progress';
+import { Progress } from '@/shared/components/ui/progress';
 import getProviderIcon, { getProviderName } from '@/shared/utils/providers-utils';
 
 export function ProviderStats({ providers }: { providers: ProviderStatistic[] }) {

@@ -6,8 +6,8 @@ import { AlertTriangle } from 'lucide-react';
 
 import { AuthIcons } from '@/features/oAuth/components';
 import { SendCodeForm } from '@/features/registration/components';
-import { ChoiceAuth } from '@/shared/ui/ChoiceAuth';
-import { Alert, AlertDescription, AlertTitle } from '@/shared/ui/alert';
+import { ChoiceAuth } from '@/shared/components/ChoiceAuth';
+import { Alert, AlertDescription, AlertTitle } from '@/shared/components/ui/alert';
 import {
   Card,
   CardContent,

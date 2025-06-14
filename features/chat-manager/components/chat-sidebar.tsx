@@ -15,11 +15,11 @@ import { useChats } from '@/entities/chat/hooks';
 import { ChatOptionsMenu, NewChatDialog } from '@/features/chat-manager/components';
 import { useDeleteChat } from '@/features/delete-chat/hooks';
 import { useRenameChat } from '@/features/rename_chat/model';
-import { Button } from '@/shared/ui/button';
+import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
-import { Input } from '@/shared/ui/input';
-import { ScrollArea } from '@/shared/ui/scroll-area';
-import { Sheet, SheetContent, SheetTrigger } from '@/shared/ui/sheet';
+import { Input } from '@/shared/components/ui/input';
+import { ScrollArea } from '@/shared/components/ui/scroll-area';
+import { Sheet, SheetContent, SheetTrigger } from '@/shared/components/ui/sheet';
 
 interface ChatHistory {
   id: string;

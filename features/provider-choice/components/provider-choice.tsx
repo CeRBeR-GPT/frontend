@@ -10,7 +10,13 @@ import getProviderIcon, {
   getProviderName,
 } from '@/shared/utils/providers-utils';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '../../../shared/components/ui/card';
 import { useChoiceProvider } from '../hooks';
 
 const ProviderChoice = () => {

@@ -11,7 +11,7 @@ import getProviderIcon, {
   getProviderName,
 } from '@/shared/utils/providers-utils';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/Card';
 
 const ProviderChoice = () => {
   const { userData } = useUser();

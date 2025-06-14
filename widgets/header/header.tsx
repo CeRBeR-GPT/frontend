@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Bot } from 'lucide-react';
 
-import { ThemeToggle } from '@/shared/ui/theme-toggle';
+import { ThemeToggle } from '@/shared/components/ui/theme-toggle';
 import { NavLinks } from '@/widgets/navigation';
 import { UserMenu } from '../user-menu';
 import { useUser } from '@/shared/contexts';

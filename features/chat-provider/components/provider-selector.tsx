@@ -3,12 +3,18 @@
 import { Check, Lock } from 'lucide-react';
 
 import { allProviders } from '@/shared/const';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
-import { ProviderBadge } from '@/shared/ui/provider-badge';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/shared/components/ui/Card';
+import { ProviderBadge } from '@/shared/components/provider-badge';
 import { cn } from '@/shared/utils';
 
 import { getProviderDescription } from '../lib';
-import { ProviderSelectorProps } from '../model';
+import { ProviderSelectorProps } from '../types';
 
 export function ProviderSelector({
   availableProviders,

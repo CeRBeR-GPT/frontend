@@ -10,7 +10,7 @@ import axios from 'axios';
 import { MessageSquarePlus, Sparkles } from 'lucide-react';
 import { z } from 'zod';
 
-import { Button } from '@/shared/ui/button';
+import { Button } from '@/shared/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -18,9 +18,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
-import { Input } from '@/shared/ui/input';
+} from '@/shared/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/shared/components/ui/form';
+import { Input } from '@/shared/components/ui/input';
 import { createChatApi } from '@/entities/chat/api';
 
 const formSchema = z.object({

@@ -14,9 +14,9 @@ import {
 import { ru } from 'date-fns/locale';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/shared/ui/hover-card';
-import { ScrollArea, ScrollBar } from '@/shared/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/shared/components/ui/hover-card';
+import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { getProviderName } from '@/shared/utils';
 
 import { ProviderStats } from './provider-stats';

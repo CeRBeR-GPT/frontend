@@ -1,24 +1,21 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-
-import { addDays, format, parseISO, subYears } from 'date-fns';
+import { format, parseISO, addDays, subYears } from 'date-fns';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/Card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/shared/components/ui/hover-card';
 import { ru } from 'date-fns/locale';
-
-import { DailyStatistic } from '@/shared/types/statistics';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/shared/ui/hover-card';
-import { ScrollArea, ScrollBar } from '@/shared/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
+import { ProviderStats } from './provider-stats';
+import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area';
 import {
-  calculateViewTotals,
-  getColorIntensity,
   getProviderName,
+  getColorIntensity,
+  calculateViewTotals,
   scrollToRight,
 } from '@/shared/utils';
-
-import { ProviderStats } from './provider-stats';
-import { generateMonthlyGrid } from './ui/generateMonthlyGrid';
+import { DailyStatistic } from '@/shared/types/statistics';
+import { generateMonthlyGrid } from './generateMonthlyGrid';
 
 export function ActivityHeatmap({ statistics }: { statistics: DailyStatistic[] }) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);

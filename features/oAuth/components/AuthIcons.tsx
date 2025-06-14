@@ -1,11 +1,11 @@
 'use client';
 
 import { useOAuth } from '@/features/oAuth/hooks';
-import { Button } from '@/shared/ui/button';
+import { Button } from '@/shared/components/ui/button';
 
-import { GitHubIcon } from '../../../shared/ui/GitHubIcon';
-import { GoogleIcon } from '../../../shared/ui/GoogleIcon';
-import { YandexIcon } from '../../../shared/ui/YandexIcon';
+import { GitHubIcon } from '../../../shared/components/GitHubIcon';
+import { GoogleIcon } from '../../../shared/components/GoogleIcon';
+import { YandexIcon } from '../../../shared/components/YandexIcon';
 
 export const AuthIcons = () => {
   const { handleSocialLogin } = useOAuth();

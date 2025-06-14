@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 import { Bot, LogIn, User } from 'lucide-react';
 
-import { Button } from '@/shared/ui/button';
+import { Button } from '@/shared/components/ui/button';
 import {
   Card,
   CardContent,
@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/shared/ui/card';
-import { ThemeToggle } from '@/shared/ui/theme-toggle';
+import { ThemeToggle } from '@/shared/components/ui/theme-toggle';
 import { NavLinks } from '@/widgets/navigation';
 import { UserMenu } from '@/widgets/user-menu';
 

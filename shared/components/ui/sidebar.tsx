@@ -7,12 +7,17 @@ import { VariantProps, cva } from 'class-variance-authority';
 import { PanelLeft } from 'lucide-react';
 
 import { useIsMobile } from '@/shared/hooks';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Separator } from '@/shared/ui/separator';
-import { Sheet, SheetContent } from '@/shared/ui/sheet';
-import { Skeleton } from '@/shared/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/ui/tooltip';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Separator } from '@/shared/components/ui/separator';
+import { Sheet, SheetContent } from '@/shared/components/ui/sheet';
+import { Skeleton } from '@/shared/components/ui/skeleton';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/shared/components/ui/tooltip';
 import { cn } from '@/shared/utils';
 
 const SIDEBAR_COOKIE_NAME = 'sidebar:state';

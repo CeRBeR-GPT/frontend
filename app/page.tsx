@@ -8,8 +8,8 @@ import { ArrowRight } from 'lucide-react';
 
 import { FormFeedback } from '@/features/feedback/components';
 import { useAuth } from '@/shared/contexts';
-import { Button } from '@/shared/ui/button';
-import { TelegramIcon } from '@/shared/ui/telegram-icon';
+import { Button } from '@/shared/components/ui/button';
+import { TelegramIcon } from '@/shared/components/telegram-icon';
 
 export default function Home() {
   const { isAuthenticated } = useAuth();

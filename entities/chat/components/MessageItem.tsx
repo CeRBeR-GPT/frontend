@@ -4,7 +4,7 @@ import { Bot, Clipboard, User } from 'lucide-react';
 
 import { useCopyMessage } from '@/features/copy-message/hooks';
 import { Markdown } from '@/features/markdown-renderer/components';
-import { Avatar, AvatarFallback } from '@/shared/ui/avatar';
+import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { Card } from '@/shared/ui/card';
 import { Message } from '../types';
 

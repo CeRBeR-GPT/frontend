@@ -4,13 +4,13 @@ import { useState } from 'react';
 
 import { Bot, Check, ChevronDown, Cpu, Sparkles, Star, Zap } from 'lucide-react';
 
-import { Button } from '@/shared/ui/button';
+import { Button } from '@/shared/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/shared/ui/dropdown-menu';
+} from '@/shared/components/ui/dropdown-menu';
 
 interface ProviderSelectorDropdownProps {
   selectedProvider: string;

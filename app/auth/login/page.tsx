@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useLoginForm } from '@/features/auth/hooks';
 import { FORM } from '@/features/auth/components';
 import { AuthIcons } from '@/features/oAuth/components';
-import { ChoiceAuth } from '@/shared/ui/ChoiceAuth';
+import { ChoiceAuth } from '@/shared/components/ChoiceAuth';
 import {
   Card,
   CardContent,

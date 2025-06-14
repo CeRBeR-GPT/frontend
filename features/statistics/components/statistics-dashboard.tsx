@@ -4,9 +4,9 @@ import { RefreshCw } from 'lucide-react';
 
 import { useStatistics } from '@/features/statistics/hooks';
 import { useUser } from '@/shared/contexts';
-import { Button } from '@/shared/ui/button';
+import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Skeleton } from '@/shared/ui/skeleton';
+import { Skeleton } from '@/shared/components/ui/skeleton';
 
 import { ActivityHeatmap } from './activity-heatmap';
 

@@ -13,7 +13,7 @@ export const useVerifyCodeForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
-  const { verifyEmailCode, verifyCode, registartion } = useRegistration();
+  const { verifyEmailCode, verifyCode, registration } = useRegistration();
   const { refreshUserData } = useUser();
 
   const form = useForm<verifyCodeSchemaType>({
@@ -44,7 +44,7 @@ export const useVerifyCodeForm = () => {
     try {
       const response = await verifyEmailCode(email, values.code);
       if (response.status === 200 || response.status === 201) {
-        const registrationResponse = await registartion(userData);
+        const registrationResponse = await registration(userData);
         if (registrationResponse.status === 200 || registrationResponse.status === 201) {
           localStorage.setItem('access_token', registrationResponse.data.access_token);
 

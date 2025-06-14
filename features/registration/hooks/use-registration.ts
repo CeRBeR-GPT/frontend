@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { useAuth } from '@/shared/contexts';
 
-import { registartionApi, sendEmailCodeApi, verifyEmailCodeApi } from '../api/api';
+import { registrationApi, sendEmailCodeApi, verifyEmailCodeApi } from '../api/api';
 
 export const useRegistration = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -39,9 +39,9 @@ export const useRegistration = () => {
     }
   };
 
-  const registartion = async (userData: { email: string; password: string }) => {
+  const registration = async (userData: { email: string; password: string }) => {
     try {
-      const response = await registartionApi(userData);
+      const response = await registrationApi(userData);
       localStorage.setItem('access_token', response.data.access_token);
       localStorage.setItem('refresh_token', response.data.refresh_token);
       return response;
@@ -53,7 +53,7 @@ export const useRegistration = () => {
   return {
     verifyCode,
     verifyEmailCode,
-    registartion,
+    registration,
     sendEmailCode,
     errorMessage,
     setErrorMessage,

@@ -4,7 +4,7 @@ import { KeyboardEvent, useEffect, useState } from 'react';
 
 import { Pencil, Save } from 'lucide-react';
 
-import { Button } from '@/shared/ui/button';
+import { Button } from '@/shared/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -12,8 +12,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/ui/dialog';
-import { Input } from '@/shared/ui/input';
+} from '@/shared/components/ui/dialog';
+import { Input } from '@/shared/components/ui/input';
 
 interface EditChatDialogProps {
   open: boolean;

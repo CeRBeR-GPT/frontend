@@ -10,7 +10,7 @@ import { Mail } from 'lucide-react';
 import { useVerifyCodeForm } from '@/features/registration/hooks';
 import { VerifyCodeForm } from '@/features/registration/components';
 import { useAuth, useUser } from '@/shared/contexts';
-import { Button } from '@/shared/ui/button';
+import { Button } from '@/shared/components/ui/button';
 import {
   Card,
   CardContent,
