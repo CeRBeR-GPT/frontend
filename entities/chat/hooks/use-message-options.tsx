@@ -1,6 +1,6 @@
 import { RefObject, useCallback, useState } from 'react';
 
-import { textExtensions, textMimeTypes } from '@/shared/const';
+import { TEXT_EXTENSIONS, TEXT_MIME_TYPES } from '@/shared/const';
 import { useToast } from '@/shared/hooks';
 
 export const useMessageOptions = (
@@ -16,9 +16,9 @@ export const useMessageOptions = (
   const { toast } = useToast();
 
   const isTextFile = (file: File): boolean => {
-    if (textMimeTypes.includes(file.type)) return true;
+    if (TEXT_MIME_TYPES.includes(file.type)) return true;
     const fileName = file.name.toLowerCase();
-    return textExtensions.some((ext) => fileName.endsWith(ext));
+    return TEXT_EXTENSIONS.some((ext) => fileName.endsWith(ext));
   };
 
   const handleFileUpload = useCallback(() => {

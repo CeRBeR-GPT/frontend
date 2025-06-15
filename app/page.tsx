@@ -8,7 +8,7 @@ import { ArrowRight } from 'lucide-react';
 
 import { FormFeedback } from '@/features/feedback/components';
 import { useAuth } from '@/shared/contexts';
-import { Button } from '@/shared/components/ui/button';
+import { buttonVariants } from '@/shared/components/ui/button';
 import { TelegramIcon } from '@/shared/components/telegram-icon';
 
 export default function Home() {
@@ -35,10 +35,12 @@ export default function Home() {
                       ? `/chat/${localStorage.getItem('lastSavedChat') || '1'}`
                       : '/auth/login'
                   }
+                  className={buttonVariants({
+                    size: 'lg',
+                    className: 'gap-1',
+                  })}
                 >
-                  <Button size="lg" className="gap-1">
-                    Начать общение <ArrowRight className="h-4 w-4" />
-                  </Button>
+                  Начать общение <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
             </div>

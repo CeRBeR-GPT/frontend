@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { Check, Lock } from 'lucide-react';
 
-import { providersByPlan } from '@/shared/const';
+import { PROVIDERS_BY_PLAN } from '@/shared/const';
 import { useUser } from '@/shared/contexts';
 import getProviderIcon, {
   getProviderDescription,
@@ -21,7 +21,8 @@ const ProviderChoice = () => {
   useEffect(() => {
     if (userData) {
       const providers =
-        providersByPlan[userData.plan as keyof typeof providersByPlan] || providersByPlan.default;
+        PROVIDERS_BY_PLAN[userData.plan as keyof typeof PROVIDERS_BY_PLAN] ||
+        PROVIDERS_BY_PLAN.default;
       setAvailableProviders(providers);
       const savedProvider = localStorage.getItem('selectedProvider');
       if (savedProvider && providers.includes(savedProvider)) {

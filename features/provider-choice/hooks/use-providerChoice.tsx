@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { providersByPlan } from '@/shared/const';
+import { PROVIDERS_BY_PLAN } from '@/shared/const';
 import { UserData } from '@/entities/user/types';
 
 export const useChoiceProvider = (userData: UserData) => {
@@ -15,7 +15,8 @@ export const useChoiceProvider = (userData: UserData) => {
   const renderData = () => {
     if (userData) {
       const providers =
-        providersByPlan[userData.plan as keyof typeof providersByPlan] || providersByPlan.default;
+        PROVIDERS_BY_PLAN[userData.plan as keyof typeof PROVIDERS_BY_PLAN] ||
+        PROVIDERS_BY_PLAN.default;
       setAvailableProviders(providers);
       const savedProvider = localStorage.getItem('selectedProvider');
       if (savedProvider && providers.includes(savedProvider)) {

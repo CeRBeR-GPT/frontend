@@ -2,7 +2,7 @@
 
 import { Check, Lock } from 'lucide-react';
 
-import { allProviders } from '@/shared/const';
+import { ALL_PROVIDERS } from '@/shared/const';
 import {
   Card,
   CardContent,
@@ -31,7 +31,7 @@ export function ProviderSelector({
       <CardContent>
         <div className="space-y-4">
           <div className="grid gap-3">
-            {allProviders.map((provider) => {
+            {ALL_PROVIDERS.map((provider) => {
               const isAvailable = availableProviders.includes(provider);
               const isSelected = selectedProvider === provider;
 

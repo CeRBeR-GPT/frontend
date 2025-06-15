@@ -1,4 +1,4 @@
-export const textMimeTypes = [
+export const TEXT_MIME_TYPES = [
   'text/plain',
   'text/html',
   'text/css',

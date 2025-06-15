@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { useChats } from '@/entities/chat/hooks';
-import { providersByPlan } from '@/shared/const';
+import { PROVIDERS_BY_PLAN } from '@/shared/const';
 import { useUser } from '@/shared/contexts';
 
 export const useChangeProvider = () => {
@@ -13,7 +13,8 @@ export const useChangeProvider = () => {
   useEffect(() => {
     if (userData) {
       const providers =
-        providersByPlan[userData.plan as keyof typeof providersByPlan] || providersByPlan.default;
+        PROVIDERS_BY_PLAN[userData.plan as keyof typeof PROVIDERS_BY_PLAN] ||
+        PROVIDERS_BY_PLAN.default;
       setAvailableProviders(providers);
       const savedProvider = localStorage.getItem('selectedProvider');
       if (savedProvider && providers.includes(savedProvider)) {
