@@ -28,7 +28,7 @@ import {
   FormMessage,
 } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
-import { createChatApi } from '@/entities/chat/api';
+import { chatApi } from '@/entities/chat/api';
 
 const formSchema = z.object({
   chatName: z
@@ -58,7 +58,7 @@ export const NewChatDialog = ({ open, onOpenChange }: NewChatDialogProps) => {
   async function onSubmit() {
     setIsSubmitting(true);
     try {
-      const response = await createChatApi(chatName);
+      const response = await chatApi.create(chatName);
       onOpenChange(false);
       router.push(`/chat/${response.data.id}`);
     } catch (error) {

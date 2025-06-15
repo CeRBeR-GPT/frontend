@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useUser } from '@/shared/contexts';
 import { useRegistration } from './use-registration';
 import { formSchema, verifyCodeSchemaType } from '../schemes/verifyCode.schema';
-import { getChatAllApi } from '@/entities/chat/api';
+import { chatApi } from '@/entities/chat/api';
 
 export const useVerifyCodeForm = () => {
   const [error, setError] = useState('');
@@ -55,7 +55,7 @@ export const useVerifyCodeForm = () => {
             localStorage.removeItem('password');
 
             try {
-              const chatResponse = await getChatAllApi();
+              const chatResponse = await chatApi.getAll();
 
               if (chatResponse.data) {
                 welcomeChatId = chatResponse.data[0].id;

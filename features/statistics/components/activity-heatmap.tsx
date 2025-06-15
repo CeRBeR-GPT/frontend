@@ -2,15 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import {
-  addDays,
-  eachMonthOfInterval,
-  format,
-  isSameMonth,
-  parseISO,
-  startOfWeek,
-  subYears,
-} from 'date-fns';
+import { addDays, format, isSameMonth, parseISO, subYears } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/Card';
