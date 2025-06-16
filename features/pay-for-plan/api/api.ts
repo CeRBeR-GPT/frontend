@@ -3,7 +3,7 @@ import { apiClient } from '@/shared/api';
 class PaymentApi {
   private baseUrl = 'transaction';
 
-  newPayment(plan: string) {
+  async newPayment(plan: string) {
     return apiClient.post(`${this.baseUrl}/new_payment?plan=${plan}`);
   }
 }

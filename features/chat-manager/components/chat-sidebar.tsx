@@ -10,30 +10,15 @@ import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Menu, Plus, Search } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
-
-import { useChats } from '@/entities/chat/hooks';
-import { useDeleteChat } from '@/features/delete-chat/hooks';
-import { useRenameChat } from '@/features/rename_chat/model';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/Card';
 import { Input } from '@/shared/components/ui/input';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetTrigger } from '@/shared/components/ui/sheet';
 import { ChatOptionsMenu, NewChatDialog } from '.';
+import { ChatHistory } from '@/entities/chat/types';
 
-interface ChatHistory {
-  id: string;
-  title: string;
-  preview: string;
-  date: Date;
-  messages: number;
-}
-
-interface ChatSidebarProps {
-  chatHistory: ChatHistory[];
-}
-
-export function ChatSidebar({ chatHistory }: ChatSidebarProps) {
+export function ChatSidebar({ chatHistory }: { chatHistory: ChatHistory[] }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false);
@@ -41,9 +26,6 @@ export function ChatSidebar({ chatHistory }: ChatSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const currentChatId = pathname.split('/').pop() || '';
-  const { deleteChat } = useDeleteChat();
-  const { clearChatMessages } = useChats();
-  const { renameChatTitle } = useRenameChat();
 
   useEffect(() => {
     if (pathname === '/chat') {
@@ -109,13 +91,7 @@ export function ChatSidebar({ chatHistory }: ChatSidebarProps) {
                         <span>{chat.messages} сообщ.</span>
                       </div>
                     </div>
-                    <ChatOptionsMenu
-                      chatId={chat.id}
-                      chatTitle={chat.title}
-                      onDelete={deleteChat}
-                      onClear={clearChatMessages}
-                      onRename={renameChatTitle}
-                    />
+                    <ChatOptionsMenu chatId={chat.id} chatTitle={chat.title} />
                   </CardContent>
                 </Card>
               </Link>

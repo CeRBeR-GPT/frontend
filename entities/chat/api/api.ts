@@ -3,15 +3,15 @@ import { apiClient } from '@/shared/api';
 class ChatApi {
   private baseUrl = 'chat';
 
-  getAll() {
+  async getAll() {
     return apiClient.get(`${this.baseUrl}/all`);
   }
 
-  getById(id: string) {
+  async getById(id: string) {
     return apiClient.get(`${this.baseUrl}/${id}`);
   }
 
-  create(chatName: string) {
+  async create(chatName: string) {
     return apiClient.post(`${this.baseUrl}/new?name=${chatName}`);
   }
 }

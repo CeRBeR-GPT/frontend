@@ -3,7 +3,7 @@ import { apiClient } from '@/shared/api';
 class FeedbackApi {
   private baseUrl = 'user';
 
-  handleSubmitFeedback(name: string, message: string, formData: FormData) {
+  async handleSubmitFeedback(name: string, message: string, formData: FormData) {
     return apiClient.post(
       `${this.baseUrl}/feedback?name=${encodeURIComponent(name)}&message=${encodeURIComponent(message)}`,
       formData,
