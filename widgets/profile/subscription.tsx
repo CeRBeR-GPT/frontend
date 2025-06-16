@@ -1,7 +1,13 @@
 import { useUser } from '@/shared/contexts';
 
-import { Button } from '../../shared/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../shared/ui/card';
+import { Button } from '../../shared/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '../../shared/components/ui/Card';
 
 const Subscription = () => {
   const { userData } = useUser();

@@ -2,21 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-}
-
-.dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-}
-
 body {
   @apply bg-background text-foreground;
-}
-
-body {
   font-family: Arial, Helvetica, sans-serif;
   overflow-x: hidden;
 }
@@ -101,13 +88,4 @@ body {
 
 .scrollbar::-webkit-scrollbar-thumb:hover {
   background: #dbdadd;
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
 }

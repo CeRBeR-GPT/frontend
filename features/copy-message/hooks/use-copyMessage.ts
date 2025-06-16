@@ -1,10 +1,10 @@
-import { useCallback, useState } from 'react';
-
 import { useToast } from '@/shared/hooks';
+import { useCallback, useState } from 'react';
 
 export const useCopyMessage = () => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const { toast } = useToast();
+
   const handleCopyCode = useCallback((code: string) => {
     navigator.clipboard.writeText(code);
     setCopiedCode(code);

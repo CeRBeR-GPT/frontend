@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { useAuth } from '@/shared/contexts';
 
-import { registartionApi, sendEmailCodeApi, verifyEmailCodeApi } from '../api/api';
+import { regApi } from '../api/api';
 
 export const useRegistration = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -19,7 +19,7 @@ export const useRegistration = () => {
 
   const verifyEmailCode = async (email: string, code: string) => {
     try {
-      return await verifyEmailCodeApi(email, code);
+      return await regApi.verifyEmailCode(email, code);
     } catch (error) {
       throw error;
     }
@@ -27,7 +27,7 @@ export const useRegistration = () => {
 
   const sendEmailCode = async (email: string) => {
     try {
-      const response = await sendEmailCodeApi(email);
+      const response = await regApi.sendEmailCode(email);
       return response;
     } catch (error: any) {
       if (error.response?.status === 400) {
@@ -39,9 +39,9 @@ export const useRegistration = () => {
     }
   };
 
-  const registartion = async (userData: { email: string; password: string }) => {
+  const registration = async (userData: { email: string; password: string }) => {
     try {
-      const response = await registartionApi(userData);
+      const response = await regApi.registration(userData);
       localStorage.setItem('access_token', response.data.access_token);
       localStorage.setItem('refresh_token', response.data.refresh_token);
       return response;
@@ -53,7 +53,7 @@ export const useRegistration = () => {
   return {
     verifyCode,
     verifyEmailCode,
-    registartion,
+    registration,
     sendEmailCode,
     errorMessage,
     setErrorMessage,

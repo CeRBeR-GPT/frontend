@@ -1,4 +1,4 @@
-import { Separator } from '@/shared/ui/separator';
+import { Separator } from '@/shared/components/ui/separator';
 
 export const ChoiceAuth = (props: { text: string }) => {
   return (

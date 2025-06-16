@@ -1,6 +1,6 @@
 import { BarChart, ChevronUp } from 'lucide-react';
 
-import { Progress } from '@/shared/ui/progress';
+import { Progress } from '@/shared/components/ui/progress';
 import getProviderIcon, { getProviderName } from '@/shared/utils/providers-utils';
 
 import type { ProviderStatistic } from './activity-heatmap';

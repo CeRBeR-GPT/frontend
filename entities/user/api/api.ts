@@ -1,9 +1,15 @@
 import { apiClient } from '@/shared/api';
 
-export const loginApi = async (email: string, password: string) => {
-  return apiClient.post(`user/login`, { email, password });
-};
+class UserApi {
+  private baseUrl = 'user';
 
-export const getUserDataApi = async () => {
-  return apiClient.get(`user/self`);
-};
+  async login(email: string, password: string) {
+    return apiClient.post(`${this.baseUrl}/login`, { email, password });
+  }
+
+  async getUserData() {
+    return apiClient.get(`${this.baseUrl}/self`);
+  }
+}
+
+export const userApi = new UserApi();

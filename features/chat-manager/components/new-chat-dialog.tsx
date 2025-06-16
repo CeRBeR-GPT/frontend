@@ -10,7 +10,7 @@ import axios from 'axios';
 import { MessageSquarePlus, Sparkles } from 'lucide-react';
 import { z } from 'zod';
 
-import { Button } from '@/shared/ui/button';
+import { Button } from '@/shared/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -18,10 +18,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
-import { Input } from '@/shared/ui/input';
-import { createChatApi } from '@/entities/chat/api';
+} from '@/shared/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/shared/components/ui/form';
+import { Input } from '@/shared/components/ui/input';
+import { chatApi } from '@/entities/chat/api';
 
 const formSchema = z.object({
   chatName: z
@@ -51,7 +58,7 @@ export const NewChatDialog = ({ open, onOpenChange }: NewChatDialogProps) => {
   async function onSubmit() {
     setIsSubmitting(true);
     try {
-      const response = await createChatApi(chatName);
+      const response = await chatApi.create(chatName);
       onOpenChange(false);
       router.push(`/chat/${response.data.id}`);
     } catch (error) {

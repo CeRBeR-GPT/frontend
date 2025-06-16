@@ -1,4 +1,4 @@
-export const fileExtensions: Record<string, string> = {
+export const FILE_EXTENSIONS: Record<string, string> = {
   javascript: 'js',
   typescript: 'ts',
   python: 'py',

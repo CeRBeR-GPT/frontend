@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useUser } from '@/shared/contexts';
 import { useRegistration } from './use-registration';
 import { formSchema, verifyCodeSchemaType } from '../schemes/verifyCode.schema';
-import { getChatAllApi } from '@/entities/chat/api';
+import { chatApi } from '@/entities/chat/api';
 
 export const useVerifyCodeForm = () => {
   const [error, setError] = useState('');
@@ -13,7 +13,7 @@ export const useVerifyCodeForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
-  const { verifyEmailCode, verifyCode, registartion } = useRegistration();
+  const { verifyEmailCode, verifyCode, registration } = useRegistration();
   const { refreshUserData } = useUser();
 
   const form = useForm<verifyCodeSchemaType>({
@@ -44,7 +44,7 @@ export const useVerifyCodeForm = () => {
     try {
       const response = await verifyEmailCode(email, values.code);
       if (response.status === 200 || response.status === 201) {
-        const registrationResponse = await registartion(userData);
+        const registrationResponse = await registration(userData);
         if (registrationResponse.status === 200 || registrationResponse.status === 201) {
           localStorage.setItem('access_token', registrationResponse.data.access_token);
 
@@ -55,7 +55,7 @@ export const useVerifyCodeForm = () => {
             localStorage.removeItem('password');
 
             try {
-              const chatResponse = await getChatAllApi();
+              const chatResponse = await chatApi.getAll();
 
               if (chatResponse.data) {
                 welcomeChatId = chatResponse.data[0].id;

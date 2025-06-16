@@ -6,8 +6,8 @@ import { AlertTriangle } from 'lucide-react';
 
 import { AuthIcons } from '@/features/oAuth/components';
 import { SendCodeForm } from '@/features/registration/components';
-import { ChoiceAuth } from '@/shared/ui/ChoiceAuth';
-import { Alert, AlertDescription, AlertTitle } from '@/shared/ui/alert';
+import { ChoiceAuth } from '@/shared/components/ChoiceAuth';
+import { Alert, AlertDescription, AlertTitle } from '@/shared/components/ui/alert';
 import {
   Card,
   CardContent,
@@ -15,13 +15,11 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/shared/ui/card';
-import { Header } from '@/widgets/header/header';
+} from '@/shared/components/ui/Card';
 
 export default function RegisterPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
       <main className="flex flex-1 items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">

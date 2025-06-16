@@ -1,5 +1,5 @@
 'use client';
-import { Card, CardContent } from '@/shared/ui/card';
+import { Card, CardContent } from '@/shared/components/ui/Card';
 import { useEffect } from 'react';
 import WithoutAuth from '@/features/auth/components/WithoutAuth';
 import { StatisticsDashboard } from '../../features/statistics/components';

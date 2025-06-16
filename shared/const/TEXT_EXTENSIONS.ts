@@ -1,4 +1,4 @@
-export const textExtensions = [
+export const TEXT_EXTENSIONS = [
   '.txt',
   '.md',
   '.js',

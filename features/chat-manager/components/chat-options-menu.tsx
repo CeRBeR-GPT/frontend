@@ -2,7 +2,6 @@
 
 import { AlertTriangle, Eraser, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 
-import { EditChatDialog } from '@/features/chat-manager/components';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,26 +11,21 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/shared/ui/alert-dialog';
-import { Button } from '@/shared/ui/button';
+} from '@/shared/components/ui/alert-dialog';
+import { Button } from '@/shared/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/shared/ui/dropdown-menu';
+} from '@/shared/components/ui/dropdown-menu';
 
 import { useChatManager } from '../hooks';
 import { ChatOptionsMenuProps } from '../types';
+import { EditChatDialog } from '.';
 
-export function ChatOptionsMenu({
-  chatId,
-  chatTitle,
-  onDelete,
-  onClear,
-  onRename,
-}: ChatOptionsMenuProps) {
+export function ChatOptionsMenu({ chatId, chatTitle, onDelete, onClear }: ChatOptionsMenuProps) {
   const {
     handleDelete,
     handleClear,
@@ -42,7 +36,7 @@ export function ChatOptionsMenu({
     setIsDeleteDialogOpen,
     setIsClearDialogOpen,
     setIsEditDialogOpen,
-  } = useChatManager({ chatId, onDelete, onClear, onRename });
+  } = useChatManager({ chatId, onDelete, onClear });
 
   return (
     <>

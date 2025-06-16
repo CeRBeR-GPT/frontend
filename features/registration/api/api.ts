@@ -1,13 +1,19 @@
 import { apiClient } from '@/shared/api';
 
-export const sendEmailCodeApi = async (email: string) => {
-  return apiClient.get(`user/register/verify_code?email=${email}`);
-};
+class RegistrationApi {
+  private baseUrl = 'user';
 
-export const verifyEmailCodeApi = async (email: string, code: string) => {
-  return apiClient.post(`user/register/verify_code?email=${email}&code=${code}`);
-};
+  async sendEmailCode(email: string) {
+    return apiClient.get(`${this.baseUrl}/register/verify_code?email=${email}`);
+  }
 
-export const registartionApi = async (userData: { email: string; password: string }) => {
-  return apiClient.post(`/user/register`, userData);
-};
+  async verifyEmailCode(email: string, code: string) {
+    return apiClient.post(`${this.baseUrl}/register/verify_code?email=${email}&code=${code}`);
+  }
+
+  async registration(userData: { email: string; password: string }) {
+    return apiClient.post(`${this.baseUrl}/register`, userData);
+  }
+}
+
+export const regApi = new RegistrationApi();

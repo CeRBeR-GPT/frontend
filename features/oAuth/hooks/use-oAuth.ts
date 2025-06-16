@@ -4,7 +4,7 @@ import Cookies from 'js-cookie';
 
 import { useLoginForm } from '@/features/auth/hooks';
 import { useAuth } from '@/shared/contexts';
-import { getChatAllApi } from '@/entities/chat/api';
+import { chatApi } from '@/entities/chat/api';
 
 export const useOAuth = () => {
   const { setError } = useLoginForm();
@@ -46,7 +46,7 @@ export const useOAuth = () => {
       let welcomeChatId = '1';
 
       if (!lastSavedChat) {
-        const chatResponse = await getChatAllApi();
+        const chatResponse = await chatApi.getAll();
         if (chatResponse.data?.length > 0) {
           welcomeChatId = chatResponse.data[0].id;
           localStorage.setItem('lastSavedChat', welcomeChatId);

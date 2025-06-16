@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@/shared/contexts';
 import { formatExpireDate } from '@/shared/utils';
 
-import { newPaymentApi } from '../api/api';
+import { paymentApi } from '../api';
 
 export const usePayForPlan = () => {
   const router = useRouter();
@@ -23,7 +23,7 @@ export const usePayForPlan = () => {
 
   const payForPlan = async (plan: string) => {
     try {
-      const response = await newPaymentApi(plan);
+      const response = await paymentApi.newPayment(plan);
       router.replace(response.data.url);
     } catch (error) {}
   };

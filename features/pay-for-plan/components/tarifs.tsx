@@ -2,8 +2,8 @@
 
 import { Calendar, Check, X, Zap } from 'lucide-react';
 
-import { Badge } from '../../../shared/ui/badge';
-import { Button } from '../../../shared/ui/button';
+import { Badge } from '../../../shared/components/ui/badge';
+import { Button } from '../../../shared/components/ui/button';
 import {
   Card,
   CardContent,
@@ -11,7 +11,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '../../../shared/ui/card';
+} from '../../../shared/components/ui/Card';
 import { usePayForPlan } from '../hooks';
 
 const Tarifs = () => {

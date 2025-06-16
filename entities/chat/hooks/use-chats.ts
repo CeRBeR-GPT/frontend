@@ -3,11 +3,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 import { useMessage } from '@/entities/message/hooks';
-import { clearChatApi } from '@/features/clear-chat/api/api';
 import { useAuth, useUser } from '@/shared/contexts';
 import { useMessageContext } from '@/shared/contexts';
 
-import { getChatAllApi, getChatByIdApi } from '../api/api';
+import { chatApi } from '../api';
 import { ChatHistory } from '../types/types';
 
 export const useChats = () => {
@@ -55,10 +54,6 @@ export const useChats = () => {
     loadData();
   };
 
-  // useEffect(() => {
-  //    initializeChatsData()
-  // }, [chatId, isAuthenticated, isAuthLoading, router])
-
   const updateSidebar = useCallback(() => {
     setSidebarVersion((v) => v + 1);
   }, []);
@@ -75,7 +70,7 @@ export const useChats = () => {
       const token = await getToken();
       if (!token) return;
 
-      const response = await getChatAllApi();
+      const response = await chatApi.getAll();
 
       const updatedChats = response.data.map((chat: any) => {
         const lastMessageDate =
@@ -123,7 +118,7 @@ export const useChats = () => {
         const idChat = localStorage.getItem('lastDeletedChat');
         if (chatId === idChat) return;
 
-        const response = await getChatByIdApi(chatId);
+        const response = await chatApi.getById(chatId);
         const history = response.data.messages;
         dispatchMessages({ type: 'SET', payload: history });
         setChatTitle(response.data.name);
@@ -216,39 +211,6 @@ export const useChats = () => {
   };
   const isRequested2 = useRef(false);
 
-  const clearChatMessages = useCallback(
-    async (id: string) => {
-      try {
-        await clearChatApi(id);
-        setChatHistory((prev) =>
-          prev.map((chat) =>
-            chat.id === id
-              ? { ...chat, messages: 0, preview: 'Нет сообщений', date: new Date() }
-              : chat
-          )
-        );
-
-        if (id === chatId) {
-          dispatchMessages({ type: 'CLEAR' });
-          setIsTestMessageShown(true);
-        }
-
-        await loadChatHistory(chatId);
-        updateSidebar(); // <-- Добавьте эту строку
-      } catch (error) {
-        console.error('Failed to clear chat:', error);
-      }
-    },
-    [
-      chatId,
-      setChatHistory,
-      dispatchMessages,
-      setIsTestMessageShown,
-      loadChatHistory,
-      updateSidebar,
-    ]
-  );
-
   const fetchChats = useCallback(async () => {
     // if (isChatsRequested.current) return;
     // isChatsRequested.current = true;
@@ -258,7 +220,7 @@ export const useChats = () => {
       if (!token) return;
       if (isRequested2.current) return;
       isRequested2.current = true;
-      const response = await getChatAllApi();
+      const response = await chatApi.getAll();
 
       const formattedChats = response.data.map((chat: any) => {
         const lastMessageDate =
@@ -318,7 +280,6 @@ export const useChats = () => {
     ws,
     setIsLoadingHistory,
     messages,
-    clearChatMessages,
     updateChatHistory,
     initializeChatsData,
   };

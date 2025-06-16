@@ -2,7 +2,7 @@ import { format, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
 import { DailyStatistic } from '@/shared/types/statistics';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/shared/ui/hover-card';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/shared/components/ui/hover-card';
 import { getColorIntensity, getProviderName } from '@/shared/utils';
 
 export const generateMonthlyGrid = ({

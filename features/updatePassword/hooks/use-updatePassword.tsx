@@ -1,6 +1,6 @@
 import { useAuth, useUser } from '@/shared/contexts';
 
-import { updatePasswordApi } from '../api/api';
+import { updatePasswordApi } from '../api';
 
 export const useUpdatePassword = () => {
   const { setIsAuthenticated } = useAuth();
@@ -11,7 +11,7 @@ export const useUpdatePassword = () => {
       const token = await getToken();
       if (!token) throw new Error('No valid token');
 
-      const response = await updatePasswordApi(newPassword);
+      const response = await updatePasswordApi.updatePassword(newPassword);
       localStorage.removeItem('new_password');
       if (response.data?.access_token) {
         localStorage.setItem('access_token', response.data.access_token);

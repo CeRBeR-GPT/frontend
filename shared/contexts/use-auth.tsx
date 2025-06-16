@@ -2,11 +2,11 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
-import { loginApi } from '@/entities/user/api';
+import { userApi } from '@/entities/user/api';
 
 import { getAccess } from '../utils';
 import { useUser } from './user-context';
-import { getChatAllApi } from '@/entities/chat/api';
+import { chatApi } from '@/entities/chat/api';
 import { ApiError } from '@/features/auth/types';
 
 type AuthContextType = {
@@ -73,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await loginApi(email, password);
+      const response = await userApi.login(email, password);
 
       if (response.data?.access_token) {
         localStorage.setItem('access_token', response.data.access_token);
@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         let welcomeChatId = '1';
         if (!lastSavedChat) {
           try {
-            const chatResponse = await getChatAllApi();
+            const chatResponse = await chatApi.getAll();
             if (chatResponse.data) {
               welcomeChatId = chatResponse.data[0].id;
               localStorage.setItem('lastSavedChat', chatResponse.data[0].id);

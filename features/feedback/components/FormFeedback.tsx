@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { CheckCircle, FileUp, Info, Lock, MessageSquarePlus, Send, Upload } from 'lucide-react';
 
 import { useAuth } from '@/shared/contexts';
-import { Alert, AlertDescription, AlertTitle } from '@/shared/ui/alert';
-import { Button } from '@/shared/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/shared/components/ui/alert';
+import { Button } from '@/shared/components/ui/button';
 import {
   Card,
   CardContent,
@@ -12,11 +12,11 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/shared/ui/card';
-import { FeedbackIcon } from '@/shared/ui/feedback-icon';
-import { Input } from '@/shared/ui/input';
-import { Label } from '@/shared/ui/label';
-import { Textarea } from '@/shared/ui/textarea';
+} from '@/shared/components/ui/Card';
+import { FeedbackIcon } from '@/shared/components/feedback-icon';
+import { Input } from '@/shared/components/ui/input';
+import { Label } from '@/shared/components/ui/label';
+import { Textarea } from '@/shared/components/ui/textarea';
 
 import { useFeedback } from '../hooks';
 

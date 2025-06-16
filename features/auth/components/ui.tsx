@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 
-import { AuthIcons } from '@/features/oAuth/components';
-import { ChoiceAuth } from '@/shared/ui/ChoiceAuth';
+import { ChoiceAuth } from '@/shared/components/ChoiceAuth';
 import {
   Card,
   CardContent,
@@ -11,12 +10,13 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/shared/ui/card';
+} from '@/shared/components/ui/Card';
 import { Header } from '@/widgets/header/header';
 
 import { useLoginForm } from '../hooks';
 import { FORM } from './form';
 import { useAuth } from '@/shared/contexts';
+import { AuthIcons } from '@/features/oAuth/components';
 
 export function AuthForm() {
   const { isLoading } = useAuth();

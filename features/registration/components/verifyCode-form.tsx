@@ -1,8 +1,15 @@
-import { Button } from '@/shared/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
-import { Input } from '@/shared/ui/input';
+import { Button } from '@/shared/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/shared/components/ui/form';
+import { Input } from '@/shared/components/ui/input';
 
-import { useVerifyCodeForm } from '../hooks/use-verifyCode-form';
+import { useVerifyCodeForm } from '../hooks';
 
 export const VerifyCodeForm = () => {
   const { form, onSubmit, error, isSubmitting } = useVerifyCodeForm();

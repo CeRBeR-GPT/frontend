@@ -4,7 +4,7 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
-import { getUserDataApi } from '@/entities/user/api';
+import { userApi } from '@/entities/user/api';
 import { getAccess } from '@/shared/utils';
 
 import { DailyStatistic } from '../types/statistics';
@@ -71,7 +71,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error('No valid token');
       }
 
-      const response = await getUserDataApi();
+      const response = await userApi.getUserData();
       setUserData(response.data);
 
       if (response.data?.statistics) {

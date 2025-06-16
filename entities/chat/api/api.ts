@@ -1,13 +1,19 @@
 import { apiClient } from '@/shared/api';
 
-export const getChatAllApi = async () => {
-  return apiClient.get(`chat/all`);
-};
+class ChatApi {
+  private baseUrl = 'chat';
 
-export const getChatByIdApi = async (id: string) => {
-  return apiClient.get(`chat/${id}`);
-};
+  async getAll() {
+    return apiClient.get(`${this.baseUrl}/all`);
+  }
 
-export const createChatApi = async (chatName: string) => {
-  return apiClient.post(`chat/new?name=${chatName}`);
-};
+  async getById(id: string) {
+    return apiClient.get(`${this.baseUrl}/${id}`);
+  }
+
+  async create(chatName: string) {
+    return apiClient.post(`${this.baseUrl}/new?name=${chatName}`);
+  }
+}
+
+export const chatApi = new ChatApi();

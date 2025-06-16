@@ -9,7 +9,7 @@ import { ArrowLeft } from 'lucide-react';
 
 import { ChangePasswordForm } from '@/features/updatePassword/components';
 import { useAuth } from '@/shared/contexts';
-import { Button } from '@/shared/ui/button';
+import { Button } from '@/shared/components/ui/button';
 import {
   Card,
   CardContent,
@@ -17,8 +17,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/shared/ui/card';
-import { Toaster } from '@/shared/ui/toaster';
+} from '@/shared/components/ui/Card';
+import { Toaster } from '@/shared/components/ui/toaster';
 
 export default function ChangePasswordPage() {
   const router = useRouter();

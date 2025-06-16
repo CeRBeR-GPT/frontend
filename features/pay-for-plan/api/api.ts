@@ -1,5 +1,11 @@
 import { apiClient } from '@/shared/api';
 
-export const newPaymentApi = async (plan: string) => {
-  return apiClient.post(`transaction/new_payment?plan=${plan}`);
-};
+class PaymentApi {
+  private baseUrl = 'transaction';
+
+  async newPayment(plan: string) {
+    return apiClient.post(`${this.baseUrl}/new_payment?plan=${plan}`);
+  }
+}
+
+export const paymentApi = new PaymentApi();
