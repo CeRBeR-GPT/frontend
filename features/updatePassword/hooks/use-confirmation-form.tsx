@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useUser } from '@/shared/contexts';
-import { VerifyPasswordCodeApi } from '../api/api';
+import { updatePasswordApi } from '../api';
 import { useUpdatePassword } from './use-updatePassword';
 import { ConfirmationSchemaType, formSchema } from '../schemes/confirmation.schema';
 
@@ -26,7 +26,7 @@ export const useConfirmationForm = () => {
     setError('');
     const email = userData?.email;
     try {
-      const response = await VerifyPasswordCodeApi(email, values.code);
+      const response = await updatePasswordApi.VerifyPasswordCode(email, values.code);
       if (response.status === 200 || response.status === 201) {
         const newPassword = localStorage.getItem('new_password');
         if (newPassword !== null) {

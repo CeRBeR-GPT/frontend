@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { getVerifyPasswordCodeApi } from '../api/api';
+import { updatePasswordApi } from '../api';
 import { ChangePasswordSchemaType, formSchema } from '../schemes/change-password.schema';
 
 export const useChangePasswordForm = () => {
@@ -23,7 +23,7 @@ export const useChangePasswordForm = () => {
     localStorage.setItem('new_password', values.newPassword);
     setIsSubmitting(true);
     try {
-      await getVerifyPasswordCodeApi();
+      await updatePasswordApi.getVerifyPasswordCode();
       router.push('/profile/change-password/confirmation');
     } catch (error) {
       setIsSubmitting(false);

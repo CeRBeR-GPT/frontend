@@ -1,13 +1,19 @@
 import { apiClient } from '@/shared/api';
 
-export const updatePasswordApi = async (newPassword: string) => {
-  return apiClient.post(`user/edit_password?new_password=${newPassword}`);
-};
+class UpdatePasswordApi {
+  private baseUrl = 'user';
 
-export const getVerifyPasswordCodeApi = async () => {
-  return apiClient.get(`user/secure_verify_code`);
-};
+  updatePassword(newPassword: string) {
+    return apiClient.post(`${this.baseUrl}/edit_password?new_password=${newPassword}`);
+  }
 
-export const VerifyPasswordCodeApi = async (email: string | undefined, code: string) => {
-  return apiClient.post(`user/secure_verify_code?email=${email}&code=${code}`);
-};
+  getVerifyPasswordCode() {
+    return apiClient.post(`${this.baseUrl}/secure_verify_code`);
+  }
+
+  VerifyPasswordCode(email: string | undefined, code: string) {
+    return apiClient.post(`${this.baseUrl}/secure_verify_code?email=${email}&code=${code}`);
+  }
+}
+
+export const updatePasswordApi = new UpdatePasswordApi();

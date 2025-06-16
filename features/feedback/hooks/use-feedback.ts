@@ -3,8 +3,7 @@ import { useState } from 'react';
 import { ALLOWED_FILE_TYPES, blockedExtensions } from '@/shared/const';
 import { useUser } from '@/shared/contexts';
 import { useToast } from '@/shared/hooks';
-
-import { handleSubmitFeedbackApi } from '../api/api';
+import { feedbackApi } from '../api';
 
 export const useFeedback = () => {
   const [name, setName] = useState<string>('');
@@ -57,7 +56,7 @@ export const useFeedback = () => {
         formData.append('file', file);
       }
 
-      await handleSubmitFeedbackApi(name, message, formData);
+      await feedbackApi.handleSubmitFeedback(name, message, formData);
 
       toast({
         title: 'Отзыв отправлен',
