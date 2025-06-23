@@ -8,16 +8,7 @@ import { getAccess } from '../utils';
 import { useUser } from './user-context';
 import { chatApi } from '@/entities/chat/api';
 import { ApiError } from '@/features/auth/types';
-
-type AuthContextType = {
-  isAuthenticated: boolean;
-  authChecked: boolean;
-  isLoading: boolean;
-  setIsAuthenticated: (value: boolean) => void;
-  setAuthChecked: (value: boolean) => void;
-  getToken: () => Promise<string | null>;
-  login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>;
-};
+import { AuthContextType } from '../types/context';
 
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
@@ -93,9 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               welcomeChatId = chatResponse.data[0].id;
               localStorage.setItem('lastSavedChat', chatResponse.data[0].id);
             }
-          } catch (error) {
-            // ignore error
-          }
+          } catch (error) {}
         }
 
         return { success: true, lastChatId: lastSavedChat || welcomeChatId };

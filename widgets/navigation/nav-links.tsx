@@ -19,6 +19,7 @@ export const NavLinks = () => {
   });
 
   useEffect(() => {
+    console.log(isAuthenticated);
     setIsAuth(isAuthenticated);
   }, [isAuthenticated]);
 
