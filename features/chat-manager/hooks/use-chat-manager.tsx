@@ -84,7 +84,7 @@ export const useChatManager = ({ chatId }: { chatId: string }) => {
           setIsTestMessageShown(true);
         }
 
-        await loadChatHistory(chatId);
+        await loadChatHistory();
         updateSidebar();
       } catch (error) {
         console.error('Failed to clear chat:', error);

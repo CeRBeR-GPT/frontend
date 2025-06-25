@@ -40,6 +40,7 @@ export default function ChatPage() {
   const { chatHistory } = useUser();
   const {
     chatId,
+    chatsData,
     isValidChat,
     sidebarVersion,
     ws,
