@@ -5,16 +5,16 @@ import { useMessageContext, useUser } from '@/shared/contexts';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import { chatManagerApi } from '../api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export const useChatManager = ({ chatId }: { chatId: string }) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const { setChatTitle } = useUser();
-  const { updateChatHistory } = useChats();
   const { dispatchMessages } = useMessage();
   const { setIsTestMessageShown } = useMessageContext();
-
+  const queryClient = useQueryClient();
   const router = useRouter();
 
   const { getToken, setChatHistory, chatHistory } = useUser();
@@ -101,22 +101,22 @@ export const useChatManager = ({ chatId }: { chatId: string }) => {
   );
 
   const handleRename = (newTitle: string) => {
-    renameChatTitle(chatId, newTitle);
+    mutate(newTitle);
     setIsEditDialogOpen(false);
   };
 
-  const renameChatTitle = async (id: string, newTitle: string) => {
-    try {
-      await chatManagerApi.editChatName(id, newTitle);
-
+  const { mutate } = useMutation({
+    mutationFn: (newTitle: string) => chatManagerApi.editChatName(chatId, newTitle),
+    onSuccess: (_, newTitle) => {
       setChatHistory((prev: ChatHistory[]) =>
-        prev.map((chat) => (chat.id === id ? { ...chat, title: newTitle } : chat))
+        prev.map((chat) => (chat.id === chatId ? { ...chat, title: newTitle } : chat))
       );
+
       setChatTitle(newTitle);
-      updateSidebar();
-      updateChatHistory().then(() => updateSidebar());
-    } catch (error) {}
-  };
+
+      queryClient.invalidateQueries({ queryKey: ['chats', chatId] });
+    },
+  });
 
   return {
     handleDelete,
@@ -128,7 +128,6 @@ export const useChatManager = ({ chatId }: { chatId: string }) => {
     setIsDeleteDialogOpen,
     setIsClearDialogOpen,
     setIsEditDialogOpen,
-    renameChatTitle,
     deleteChat,
   };
 };
