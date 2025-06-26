@@ -1,14 +1,13 @@
 import { useState } from 'react';
-
 import { useAuth } from '@/shared/contexts';
-
 import { regApi } from '../api/api';
+import { useMutation } from '@tanstack/react-query';
 
 export const useRegistration = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { setIsAuthenticated } = useAuth();
 
-  const verifyCode = async (email: string, code: string, password: string) => {
+  const verifyCode = async (code: string) => {
     if (code.length === 5 && /^\d+$/.test(code)) {
       localStorage.setItem('isAuthenticated', 'true');
       setIsAuthenticated(true);
@@ -17,12 +16,13 @@ export const useRegistration = () => {
     return { success: false };
   };
 
+  const { mutate } = useMutation({
+    mutationFn: ({ email, code }: { email: string; code: string }) =>
+      regApi.verifyEmailCode(email, code),
+  });
+
   const verifyEmailCode = async (email: string, code: string) => {
-    try {
-      return await regApi.verifyEmailCode(email, code);
-    } catch (error) {
-      throw error;
-    }
+    mutate({ email, code });
   };
 
   const sendEmailCode = async (email: string) => {

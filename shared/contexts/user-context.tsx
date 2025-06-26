@@ -10,14 +10,14 @@ import { getAccess } from '@/shared/utils';
 import { DailyStatistic } from '../types/statistics';
 import { UserData } from '@/entities/user/types';
 import { ChatHistory } from '@/entities/chat/types';
-import { useQuery } from '@tanstack/react-query';
+import { QueryObserverResult, RefetchOptions, useQuery } from '@tanstack/react-query';
 
 type UserContextType = {
   userData: UserData | null;
   loading: boolean;
   error: string | null;
   getToken: () => Promise<string | null>;
-  refreshUserData: () => Promise<void>;
+  refreshUserData: (options?: RefetchOptions) => Promise<QueryObserverResult<UserData, Error>>;
   setUserData: React.Dispatch<React.SetStateAction<UserData>>;
   statistics: DailyStatistic[];
   chatHistory: ChatHistory[];
@@ -57,34 +57,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  const isRequested1 = useRef(false);
-  // const refreshUserData = useCallback(async () => {
-  //   if (isRequested1.current) return;
-  //   isRequested1.current = true;
-  //   setLoading(true);
-  //   setError(null);
-
-  //   try {
-  //     const token = await getToken();
-  //     if (!token) {
-  //       throw new Error('No valid token');
-  //     }
-
-  //     const response = await userApi.getUserData();
-  //     setUserData(response.data);
-
-  //     if (response.data?.statistics) {
-  //       setStatistics(response.data.statistics);
-  //     }
-  //   } catch (err) {
-  //     const message = err instanceof Error ? err.message : 'Unknown error';
-  //     setError(message);
-  //     setUserData(null);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, [getToken]);
-
   const {
     data: dataUser,
     error: getUserDataError,
@@ -94,8 +66,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   } = useQuery({
     queryKey: ['userData'],
     queryFn: async () => {
-      // setLoading(true);
-      // setError(null);
       const token = await getToken();
       if (!token) {
         throw new Error('No valid token');
