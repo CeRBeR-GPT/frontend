@@ -67,38 +67,25 @@ export const useChatManager = ({ chatId }: { chatId: string }) => {
     setIsClearDialogOpen(false);
   };
 
-  const clearChatMessages = useCallback(
-    async (id: string) => {
-      try {
-        await chatManagerApi.clearChat(id);
-        setChatHistory((prev) =>
-          prev.map((chat) =>
-            chat.id === id
-              ? { ...chat, messages: 0, preview: 'Нет сообщений', date: new Date() }
-              : chat
-          )
-        );
+  const { mutate: clearChatMessages } = useMutation({
+    mutationFn: (id: string) => chatManagerApi.clearChat(id),
+    onSuccess: (_, id) => {
+      setChatHistory((prev) =>
+        prev.map((chat) =>
+          chat.id === id
+            ? { ...chat, messages: 0, preview: 'Нет сообщений', date: new Date() }
+            : chat
+        )
+      );
 
-        if (id === chatId) {
-          dispatchMessages({ type: 'CLEAR' });
-          setIsTestMessageShown(true);
-        }
-
-        await loadChatHistory();
-        updateSidebar();
-      } catch (error) {
-        console.error('Failed to clear chat:', error);
+      if (id === chatId) {
+        dispatchMessages({ type: 'CLEAR' });
+        setIsTestMessageShown(true);
       }
+
+      queryClient.invalidateQueries({ queryKey: ['chats', chatId] });
     },
-    [
-      chatId,
-      setChatHistory,
-      dispatchMessages,
-      setIsTestMessageShown,
-      loadChatHistory,
-      updateSidebar,
-    ]
-  );
+  });
 
   const handleRename = (newTitle: string) => {
     mutate(newTitle);

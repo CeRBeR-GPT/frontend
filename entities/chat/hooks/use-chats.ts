@@ -67,7 +67,6 @@ export const useChats = () => {
 
       return chatApi.getById(chatId);
     },
-    enabled: false,
   });
 
   useEffect(() => {
@@ -85,7 +84,6 @@ export const useChats = () => {
   const initializeWebSocket = useCallback(
     async (chatId: string) => {
       if (chatId === '1') return;
-
       try {
         const token = await getToken();
         if (!token) return;
@@ -185,7 +183,6 @@ export const useChats = () => {
 
       return formattedChats.sort((a: any, b: any) => b.date.getTime() - a.date.getTime());
     },
-    enabled: false,
   });
 
   const updateChatHistory = useCallback(async () => {
