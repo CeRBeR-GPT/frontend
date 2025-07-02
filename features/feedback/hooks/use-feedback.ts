@@ -10,45 +10,43 @@ export const useFeedback = () => {
   const [name, setName] = useState<string>('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // const [isSuccess, setIsSuccess] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const { toast } = useToast();
   const { getToken } = useUser();
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
 
-  const { mutateAsync, isSuccess, reset } = useMutation({
-    mutationFn: async ({
+  const { mutate } = useMutation({
+    mutationFn: ({
       name,
       message,
-      file,
+      formData,
     }: {
       name: string;
       message: string;
-      file: File | null;
-    }) => {
-      const token = await getToken();
-      if (!token) {
-        throw new Error('Требуется авторизация');
-      }
+      formData: FormData;
+    }) => feedbackApi.handleSubmitFeedback(name, message, formData),
+    onSuccess: () => {
+      toast({
+        title: 'Отзыв отправлен',
+        description: 'Спасибо за Ваш отзыв! Мы ценим Ваше мнение.',
+      });
 
-      const formData = new FormData();
-      if (file) {
-        formData.append('file', file);
-      }
+      setName('');
+      setMessage('');
+      setFile(null);
+      setIsSuccess(true);
 
-      return feedbackApi.handleSubmitFeedback(name, message, formData);
+      setTimeout(() => {
+        setIsSuccess(false);
+      }, 3000);
+      setIsSubmitting(false);
     },
     onError: (error: any) => {
-      if (error.message === 'Требуется авторизация') {
-        toast({
-          title: 'Требуется авторизация',
-          description: 'Пожалуйста, войдите в систему, чтобы оставить отзыв.',
-          variant: 'destructive',
-        });
-      } else if (error.response?.status === 401) {
+      if (error.response?.status === 401) {
         toast({
           title: 'Сессия истекла',
-          description: 'Ваша сессия завершена. Пожалуйста, войдите снова.',
+          description: 'Ваша сессия завершена. Пожалуйста, войдите снова, чтобы оставить отзыв.',
           variant: 'destructive',
         });
       } else {
@@ -59,27 +57,11 @@ export const useFeedback = () => {
         });
       }
     },
-    onSuccess: () => {
-      toast({
-        title: 'Отзыв отправлен',
-        description: 'Спасибо за Ваш отзыв! Мы ценим Ваше мнение.',
-      });
-    },
   });
 
-  const handleSubmitFeedback = async (
-    e: React.FormEvent,
-    name: string,
-    message: string,
-    file: File | null,
-    fileError: string | null,
-    setName: (value: string) => void,
-    setMessage: (value: string) => void,
-    setFile: (value: File | null) => void
-  ) => {
+  const handleSubmitFeedback = async (e: any) => {
     e.preventDefault();
-    console.log(name, message);
-    // Валидация
+
     if (!name.trim() || !message.trim()) {
       toast({
         title: 'Не заполнены поля',
@@ -98,19 +80,25 @@ export const useFeedback = () => {
       return;
     }
 
-    try {
-      await mutateAsync({ name, message, file });
+    setIsSubmitting(true);
+    setIsSuccess(false);
 
-      // Сброс формы после успешной отправки
-      setName('');
-      setMessage('');
-      setFile(null);
-
-      // Автоматический сброс статуса успеха через 3 секунды
-      setTimeout(() => reset(), 3000);
-    } catch {
-      // Ошибки уже обрабатываются в onError
+    const token = await getToken();
+    if (!token) {
+      toast({
+        title: 'Требуется авторизация',
+        description: 'Пожалуйста, войдите в систему, чтобы оставить отзыв.',
+        variant: 'destructive',
+      });
+      setIsSubmitting(false);
+      return;
     }
+
+    const formData = new FormData();
+    if (file) {
+      formData.append('file', file);
+    }
+    mutate({ name, message, formData });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
