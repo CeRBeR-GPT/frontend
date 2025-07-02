@@ -1,26 +1,33 @@
 import { useAuth, useUser } from '@/shared/contexts';
 
 import { updatePasswordApi } from '../api';
+import { useMutation } from '@tanstack/react-query';
 
 export const useUpdatePassword = () => {
   const { setIsAuthenticated } = useAuth();
   const { getToken } = useUser();
 
-  const updatePassword = async (newPassword: string) => {
-    try {
+  const { mutateAsync } = useMutation({
+    mutationFn: async (newPassword: string) => {
       const token = await getToken();
       if (!token) throw new Error('No valid token');
-
-      const response = await updatePasswordApi.updatePassword(newPassword);
+      return updatePasswordApi.updatePassword(newPassword);
+    },
+    onSuccess: (data) => {
       localStorage.removeItem('new_password');
-      if (response.data?.access_token) {
-        localStorage.setItem('access_token', response.data.access_token);
-        localStorage.setItem('refresh_token', response.data.refresh_token);
+      if (data.data?.access_token) {
+        localStorage.setItem('access_token', data.data.access_token);
+        localStorage.setItem('refresh_token', data.data.refresh_token);
         setIsAuthenticated(true);
         localStorage.setItem('isAuthenticated', 'true');
-        return { success: true };
       }
-      return { success: false };
+    },
+  });
+
+  const updatePassword = async (newPassword: string) => {
+    try {
+      const result = await mutateAsync(newPassword);
+      return { success: !!result?.data?.access_token };
     } catch (error) {
       return { success: false };
     }

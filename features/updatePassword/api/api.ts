@@ -8,7 +8,7 @@ class UpdatePasswordApi {
   }
 
   getVerifyPasswordCode() {
-    return apiClient.post(`${this.baseUrl}/secure_verify_code`);
+    return apiClient.get(`${this.baseUrl}/secure_verify_code`);
   }
 
   VerifyPasswordCode(email: string | undefined, code: string) {

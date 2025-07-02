@@ -1,7 +1,8 @@
+import { UserData } from './../../auth/types/types';
 import { useState } from 'react';
 import { useAuth } from '@/shared/contexts';
 import { regApi } from '../api/api';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 export const useRegistration = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -25,10 +26,19 @@ export const useRegistration = () => {
     mutate({ email, code });
   };
 
+  const { data, refetch: sendCode } = useQuery({
+    queryKey: ['emailCode'],
+    queryFn: ({ signal, queryKey }) => {
+      const [_, email] = queryKey;
+      return regApi.sendEmailCode(email);
+    },
+    enabled: false,
+  });
+
   const sendEmailCode = async (email: string) => {
     try {
-      const response = await regApi.sendEmailCode(email);
-      return response;
+      const { data } = await sendCode({ queryKey: ['emailCode', email] });
+      return data;
     } catch (error: any) {
       if (error.response?.status === 400) {
         setErrorMessage('Пользователь с такой почтой уже существует.');
@@ -40,15 +50,16 @@ export const useRegistration = () => {
   };
 
   const registration = async (userData: { email: string; password: string }) => {
-    try {
-      const response = await regApi.registration(userData);
-      localStorage.setItem('access_token', response.data.access_token);
-      localStorage.setItem('refresh_token', response.data.refresh_token);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    reg(userData);
   };
+
+  const { mutate: reg, data: reg_data } = useMutation({
+    mutationFn: (UserData: { email: string; password: string }) => regApi.registration(UserData),
+    onSuccess: (reg_data) => {
+      localStorage.setItem('access_token', reg_data?.data.access_token);
+      localStorage.setItem('refresh_token', reg_data?.data.refresh_token);
+    },
+  });
 
   return {
     verifyCode,
