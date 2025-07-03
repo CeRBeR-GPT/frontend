@@ -1,14 +1,21 @@
-import { UserData } from './../../auth/types/types';
 import { useState } from 'react';
 import { useAuth } from '@/shared/contexts';
 import { regApi } from '../api/api';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 
 export const useRegistration = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { setIsAuthenticated } = useAuth();
 
-  const verifyCode = async (code: string) => {
+  const verifyCode = async ({
+    email,
+    code,
+    password,
+  }: {
+    email: string;
+    code: string;
+    password: string;
+  }) => {
     if (code.length === 5 && /^\d+$/.test(code)) {
       localStorage.setItem('isAuthenticated', 'true');
       setIsAuthenticated(true);
@@ -26,28 +33,16 @@ export const useRegistration = () => {
     mutate({ email, code });
   };
 
-  const { data, refetch: sendCode } = useQuery({
-    queryKey: ['emailCode'],
-    queryFn: ({ signal, queryKey }) => {
-      const [_, email] = queryKey;
-      return regApi.sendEmailCode(email);
-    },
-    enabled: false,
-  });
-
-  const sendEmailCode = async (email: string) => {
-    try {
-      const { data } = await sendCode({ queryKey: ['emailCode', email] });
-      return data;
-    } catch (error: any) {
+  const { mutateAsync: sendEmailCode } = useMutation({
+    mutationFn: (email: string) => regApi.sendEmailCode(email),
+    onError: (error: any) => {
       if (error.response?.status === 400) {
         setErrorMessage('Пользователь с такой почтой уже существует.');
       } else {
         setErrorMessage('Произошла ошибка при отправке кода.');
       }
-      throw error;
-    }
-  };
+    },
+  });
 
   const registration = async (userData: { email: string; password: string }) => {
     reg(userData);

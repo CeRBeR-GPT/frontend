@@ -45,10 +45,10 @@ export const useVerifyCodeForm = () => {
       const response = await verifyEmailCode(email, values.code);
       if (response.status === 200 || response.status === 201) {
         const registrationResponse = await registration(userData);
-        if (registrationResponse.status === 200 || registrationResponse.status === 201) {
+        if (registrationResponse?.status === 200 || registrationResponse?.status === 201) {
           localStorage.setItem('access_token', registrationResponse.data.access_token);
-
-          const result = await verifyCode(email, values.code, password);
+          const code = values.code;
+          const result = await verifyCode({ email, code, password });
           if (result.success) {
             let welcomeChatId = '1';
             localStorage.removeItem('email');
