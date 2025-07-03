@@ -56,6 +56,7 @@ export const useFeedback = () => {
           variant: 'destructive',
         });
       }
+      setIsSubmitting(false);
     },
   });
 

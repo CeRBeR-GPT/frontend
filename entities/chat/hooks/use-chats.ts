@@ -35,9 +35,7 @@ export const useChats = () => {
     }
 
     const loadData = async () => {
-      await refetchChatById();
       await initializeWebSocket(chatId);
-      await refetchChats();
     };
     loadData();
   };
@@ -111,7 +109,11 @@ export const useChats = () => {
 
           setIsLoading(false);
           updateSidebar();
-          updateChatHistory().then(() => updateSidebar());
+
+          Promise.all([
+            updateChatHistory(), // Обновляет список чатов (all)
+            refetchChatById(), // Обновляет текущий чат (by id)
+          ]).then(() => updateSidebar());
 
           setTimeout(() => {
             messagesContainerRef.current?.scrollTo({
@@ -134,7 +136,7 @@ export const useChats = () => {
         };
       } catch (error) {}
     },
-    [getToken, updateSidebar]
+    [getToken, updateSidebar, refetchChatById]
   );
 
   const checkChatValidity = () => {

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { chatManagerApi } from '../api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { update } from 'lodash-es';
 
 export const useChatManager = ({ chatId }: { chatId: string }) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -14,6 +15,7 @@ export const useChatManager = ({ chatId }: { chatId: string }) => {
   const { setChatTitle } = useUser();
   const { dispatchMessages } = useMessage();
   const { setIsTestMessageShown } = useMessageContext();
+  const { updateChatHistory } = useChats();
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -54,7 +56,8 @@ export const useChatManager = ({ chatId }: { chatId: string }) => {
       }
 
       setIsLoading(false);
-      queryClient.invalidateQueries({ queryKey: ['chats', chatId] });
+      // queryClient.invalidateQueries({ queryKey: ['chats', chatId] });
+      updateChatHistory();
     },
   });
 
