@@ -90,7 +90,7 @@ export default function ChatPage() {
           <div className="flex flex-1 items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
           </div>
-        ) : !isValidChat ? (
+        ) : !isValidChat || (chatId === '1' && chatHistory.length === 0) ? (
           <div className="flex flex-1 items-center justify-center">
             <Card className="bg-muted p-3">
               <div className="prose dark:prose-invert max-w-none">

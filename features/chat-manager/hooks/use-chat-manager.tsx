@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { chatManagerApi } from '../api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { update } from 'lodash-es';
 
 export const useChatManager = ({ chatId }: { chatId: string }) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -15,7 +14,7 @@ export const useChatManager = ({ chatId }: { chatId: string }) => {
   const { setChatTitle } = useUser();
   const { dispatchMessages } = useMessage();
   const { setIsTestMessageShown } = useMessageContext();
-  const { updateChatHistory } = useChats();
+  const { updateChatHistory, initializeWebSocket } = useChats();
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -51,7 +50,7 @@ export const useChatManager = ({ chatId }: { chatId: string }) => {
           ws.current.close(1000, 'Chat deleted');
           ws.current = null;
         }
-
+        initializeWebSocket(nextChatId);
         router.push(`/chat/${nextChatId}`);
       }
 

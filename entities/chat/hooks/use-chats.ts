@@ -90,10 +90,10 @@ export const useChats = () => {
         const wsUrl = `wss://api-gpt.energy-cerber.ru/chat/ws/${chatId}?token=${token}&provider=${provider}`;
 
         const idChat = localStorage.getItem('lastDeletedChat');
-        if (chatId === idChat) {
-          return;
-        }
-        if (!isValidChat) return;
+        // if (chatId === idChat) {
+        //   return;
+        // }
+        // if (!isValidChat) return
 
         ws.current = new WebSocket(wsUrl);
         ws.current.onmessage = (event) => {
