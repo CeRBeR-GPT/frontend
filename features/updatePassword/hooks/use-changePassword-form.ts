@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { updatePasswordApi } from '../api';
 import { ChangePasswordSchemaType, formSchema } from '../schemes/change-password.schema';
+import { useMutation, useQuery, UseQueryOptions } from '@tanstack/react-query';
 
 export const useChangePasswordForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,15 +20,20 @@ export const useChangePasswordForm = () => {
     },
   });
 
+  const { mutate: getVerifyCode } = useMutation({
+    mutationFn: () => updatePasswordApi.getVerifyPasswordCode(),
+    onSuccess: () => {
+      router.push('/profile/change-password/confirmation');
+    },
+    onError: () => {
+      setIsSubmitting(false);
+    },
+  });
+
   async function onSubmit(values: ChangePasswordSchemaType) {
     localStorage.setItem('new_password', values.newPassword);
     setIsSubmitting(true);
-    try {
-      await updatePasswordApi.getVerifyPasswordCode();
-      router.push('/profile/change-password/confirmation');
-    } catch (error) {
-      setIsSubmitting(false);
-    }
+    getVerifyCode(); // Вызов мутации
   }
 
   return {

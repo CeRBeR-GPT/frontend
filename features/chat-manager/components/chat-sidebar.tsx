@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Menu, Plus, Search } from 'lucide-react';
@@ -17,16 +16,16 @@ import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetTrigger } from '@/shared/components/ui/sheet';
 import { ChatOptionsMenu, NewChatDialog } from '.';
 import { ChatHistory } from '@/entities/chat/types';
+import { useChats } from '@/entities/chat/hooks';
 
 export function ChatSidebar({ chatHistory }: { chatHistory: ChatHistory[] }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const currentChatId = pathname.split('/').pop() || '';
-
+  const { isLoadingChats } = useChats();
   useEffect(() => {
     if (pathname === '/chat') {
       const lastSavedChat = localStorage.getItem('lastSavedChat');
@@ -69,7 +68,7 @@ export function ChatSidebar({ chatHistory }: { chatHistory: ChatHistory[] }) {
 
       <ScrollArea className="pr--1 flex-1">
         <div className="mr--1 space-y-2">
-          {isLoading ? (
+          {isLoadingChats ? (
             <div className="flex h-20 items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin" />
             </div>

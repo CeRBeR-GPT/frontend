@@ -4,6 +4,7 @@ import { ALLOWED_FILE_TYPES, blockedExtensions } from '@/shared/const';
 import { useUser } from '@/shared/contexts';
 import { useToast } from '@/shared/hooks';
 import { feedbackApi } from '../api';
+import { useMutation } from '@tanstack/react-query';
 
 export const useFeedback = () => {
   const [name, setName] = useState<string>('');
@@ -14,6 +15,50 @@ export const useFeedback = () => {
   const { getToken } = useUser();
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+
+  const { mutate } = useMutation({
+    mutationFn: ({
+      name,
+      message,
+      formData,
+    }: {
+      name: string;
+      message: string;
+      formData: FormData;
+    }) => feedbackApi.handleSubmitFeedback(name, message, formData),
+    onSuccess: () => {
+      toast({
+        title: 'Отзыв отправлен',
+        description: 'Спасибо за Ваш отзыв! Мы ценим Ваше мнение.',
+      });
+
+      setName('');
+      setMessage('');
+      setFile(null);
+      setIsSuccess(true);
+
+      setTimeout(() => {
+        setIsSuccess(false);
+      }, 3000);
+      setIsSubmitting(false);
+    },
+    onError: (error: any) => {
+      if (error.response?.status === 401) {
+        toast({
+          title: 'Сессия истекла',
+          description: 'Ваша сессия завершена. Пожалуйста, войдите снова, чтобы оставить отзыв.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Ошибка отправки',
+          description: 'Произошла ошибка при отправке отзыва. Пожалуйста, попробуйте позже.',
+          variant: 'destructive',
+        });
+      }
+      setIsSubmitting(false);
+    },
+  });
 
   const handleSubmitFeedback = async (e: any) => {
     e.preventDefault();
@@ -39,55 +84,22 @@ export const useFeedback = () => {
     setIsSubmitting(true);
     setIsSuccess(false);
 
-    try {
-      const token = await getToken();
-      if (!token) {
-        toast({
-          title: 'Требуется авторизация',
-          description: 'Пожалуйста, войдите в систему, чтобы оставить отзыв.',
-          variant: 'destructive',
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      const formData = new FormData();
-      if (file) {
-        formData.append('file', file);
-      }
-
-      await feedbackApi.handleSubmitFeedback(name, message, formData);
-
+    const token = await getToken();
+    if (!token) {
       toast({
-        title: 'Отзыв отправлен',
-        description: 'Спасибо за Ваш отзыв! Мы ценим Ваше мнение.',
+        title: 'Требуется авторизация',
+        description: 'Пожалуйста, войдите в систему, чтобы оставить отзыв.',
+        variant: 'destructive',
       });
-
-      setName('');
-      setMessage('');
-      setFile(null);
-      setIsSuccess(true);
-
-      setTimeout(() => {
-        setIsSuccess(false);
-      }, 3000);
-    } catch (error: any) {
-      if (error.response?.status === 401) {
-        toast({
-          title: 'Сессия истекла',
-          description: 'Ваша сессия завершена. Пожалуйста, войдите снова, чтобы оставить отзыв.',
-          variant: 'destructive',
-        });
-      } else {
-        toast({
-          title: 'Ошибка отправки',
-          description: 'Произошла ошибка при отправке отзыва. Пожалуйста, попробуйте позже.',
-          variant: 'destructive',
-        });
-      }
-    } finally {
       setIsSubmitting(false);
+      return;
     }
+
+    const formData = new FormData();
+    if (file) {
+      formData.append('file', file);
+    }
+    mutate({ name, message, formData });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

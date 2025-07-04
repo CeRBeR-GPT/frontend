@@ -26,7 +26,9 @@ export const useLoginForm = () => {
     form.clearErrors();
 
     try {
-      const result = await login(values.email, values.password);
+      const email = values.email;
+      const password = values.password;
+      const result = await login({ email, password });
 
       if (result.success) {
         const lastSavedChat = localStorage.getItem('lastSavedChat') || '1';

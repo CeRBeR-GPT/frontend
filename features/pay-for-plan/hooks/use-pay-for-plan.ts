@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@/shared/contexts';
 import { formatExpireDate } from '@/shared/utils';
 
+import { useMutation } from '@tanstack/react-query';
 import { paymentApi } from '../api';
 
 export const usePayForPlan = () => {
@@ -21,12 +22,18 @@ export const usePayForPlan = () => {
   const expireDate = formatExpireDate(userData?.plan_expire_date);
   const isPaidPlan = userData?.plan === 'premium' || userData?.plan === 'business';
 
-  const payForPlan = async (plan: string) => {
-    try {
+  const { mutate: payForPlan } = useMutation({
+    mutationFn: async (plan: string) => {
       const response = await paymentApi.newPayment(plan);
-      router.replace(response.data.url);
-    } catch (error) {}
-  };
+      return response.data.url;
+    },
+    onSuccess: (paymentUrl) => {
+      router.replace(paymentUrl);
+    },
+    onError: (error) => {
+      console.error('Payment error:', error);
+    },
+  });
 
   return { payForPlan, plan, expireDate, isPaidPlan };
 };

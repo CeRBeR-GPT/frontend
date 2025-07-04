@@ -10,15 +10,14 @@ import { getAccess } from '@/shared/utils';
 import { DailyStatistic } from '../types/statistics';
 import { UserData } from '@/entities/user/types';
 import { ChatHistory } from '@/entities/chat/types';
-
-// features/user/context/user-context.tsx
+import { QueryObserverResult, RefetchOptions, useQuery } from '@tanstack/react-query';
 
 type UserContextType = {
   userData: UserData | null;
   loading: boolean;
   error: string | null;
   getToken: () => Promise<string | null>;
-  refreshUserData: () => Promise<void>;
+  refreshUserData: (options?: RefetchOptions) => Promise<QueryObserverResult<UserData, Error>>;
   setUserData: React.Dispatch<React.SetStateAction<UserData>>;
   statistics: DailyStatistic[];
   chatHistory: ChatHistory[];
@@ -58,38 +57,36 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  const isRequested1 = useRef(false);
-  const refreshUserData = useCallback(async () => {
-    if (isRequested1.current) return;
-    isRequested1.current = true;
-    setLoading(true);
-    setError(null);
-
-    try {
+  const {
+    data: dataUser,
+    error: getUserDataError,
+    refetch: refreshUserData,
+    isFetching,
+    isPending,
+  } = useQuery({
+    queryKey: ['userData'],
+    queryFn: async () => {
       const token = await getToken();
       if (!token) {
         throw new Error('No valid token');
       }
 
       const response = await userApi.getUserData();
-      setUserData(response.data);
+      return response.data;
+    },
+  });
 
-      if (response.data?.statistics) {
-        setStatistics(response.data.statistics);
-      }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      setError(message);
-      setUserData(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [getToken]);
-
-  // // Загружаем данные при инициализации
   useEffect(() => {
-    refreshUserData();
-  }, []);
+    if (!dataUser) return;
+    setUserData(dataUser);
+    if (dataUser?.statistics) {
+      setStatistics(dataUser.statistics);
+    }
+  }, [dataUser]);
+
+  useEffect(() => {
+    setLoading(isFetching);
+  }, [isFetching, isPending]);
 
   const value = {
     userData,
@@ -113,7 +110,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const useUser = () => {
-  // Проверяем, что выполняется на клиенте
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -125,7 +121,6 @@ export const useUser = () => {
     if (isClient) {
       throw new Error('useUser must be used within a UserProvider');
     }
-    // Возвращаем заглушку для SSR
     return {
       userData: null,
       loading: false,

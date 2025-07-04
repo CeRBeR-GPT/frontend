@@ -29,6 +29,7 @@ import {
 } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
 import { chatApi } from '@/entities/chat/api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const formSchema = z.object({
   chatName: z
@@ -48,6 +49,8 @@ export const NewChatDialog = ({ open, onOpenChange }: NewChatDialogProps) => {
   const [error, setError] = useState<null | string>(null);
   const router = useRouter();
 
+  const queryClient = useQueryClient();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -56,19 +59,28 @@ export const NewChatDialog = ({ open, onOpenChange }: NewChatDialogProps) => {
   });
 
   async function onSubmit() {
-    setIsSubmitting(true);
-    try {
-      const response = await chatApi.create(chatName);
+    mutate();
+  }
+
+  const {
+    mutate,
+    isError,
+    error: errorCreateChat,
+  } = useMutation({
+    mutationFn: () => chatApi.create(chatName),
+    onSuccess: (response) => {
       onOpenChange(false);
       router.push(`/chat/${response.data.id}`);
-    } catch (error) {
+      queryClient.invalidateQueries({ queryKey: ['chats'] });
+    },
+    onError: (error) => {
       if (axios.isAxiosError(error) && error.response?.status === 400) {
         setError('Превышен лимит чатов по вашему тарифу');
+      } else {
+        console.error('Mutation error:', error);
       }
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+    },
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

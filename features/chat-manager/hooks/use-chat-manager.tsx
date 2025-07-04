@@ -3,120 +3,105 @@ import { ChatHistory } from '@/entities/chat/types';
 import { useMessage } from '@/entities/message/hooks';
 import { useMessageContext, useUser } from '@/shared/contexts';
 import { useRouter } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { chatManagerApi } from '../api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export const useChatManager = ({ chatId }: { chatId: string }) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const { setChatTitle } = useUser();
-  const { updateChatHistory } = useChats();
   const { dispatchMessages } = useMessage();
   const { setIsTestMessageShown } = useMessageContext();
-
+  const { updateChatHistory, initializeWebSocket } = useChats();
+  const queryClient = useQueryClient();
   const router = useRouter();
 
-  const { getToken, setChatHistory, chatHistory } = useUser();
-  const { updateSidebar, setIsLoading, ws, loadChatHistory } = useChats();
+  const { setChatHistory, chatHistory } = useUser();
+  const { setIsLoading, ws } = useChats();
 
   const handleDelete = () => {
     deleteChat(chatId);
     setIsDeleteDialogOpen(false);
   };
 
-  const deleteChat = useCallback(
-    async (id: string) => {
+  const { mutate: deleteChat } = useMutation({
+    mutationFn: (id: string) => {
       router.push(`/chat/${id}`);
-      try {
-        setIsLoading(true);
-
-        await chatManagerApi.deleteChat(id);
-        localStorage.setItem('lastDeletedChat', id || '');
-        const remainingChats = chatHistory.filter((chat) => chat.id !== id);
-        setChatHistory(remainingChats);
-        const lastSavedChat = localStorage.getItem('lastSavedChat');
-        if (lastSavedChat === id) {
-          localStorage.setItem(
-            'lastSavedChat',
-            remainingChats.length > 0 ? remainingChats[0].id : '1'
-          );
-        }
-
-        if (id === chatId) {
-          const nextChatId = remainingChats.length > 0 ? remainingChats[0].id : '1';
-          if (ws.current) {
-            ws.current.close(1000, 'Chat deleted');
-            ws.current = null;
-          }
-
-          router.push(`/chat/${nextChatId}`);
-        }
-
-        updateSidebar();
-      } catch (error) {
-      } finally {
-        setIsLoading(false);
-      }
+      setIsLoading(true);
+      return chatManagerApi.deleteChat(id);
     },
-    [chatId, chatHistory, getToken, router, updateSidebar]
-  );
+    onSuccess: (_, id) => {
+      localStorage.setItem('lastDeletedChat', id || '');
+      const remainingChats = chatHistory.filter((chat) => chat.id !== id);
+      setChatHistory(remainingChats);
+      const lastSavedChat = localStorage.getItem('lastSavedChat');
+      if (lastSavedChat === id) {
+        localStorage.setItem(
+          'lastSavedChat',
+          remainingChats.length > 0 ? remainingChats[0].id : '1'
+        );
+      }
+
+      if (id === chatId) {
+        const nextChatId = remainingChats.length > 0 ? remainingChats[0].id : '1';
+        if (ws.current) {
+          ws.current.close(1000, 'Chat deleted');
+          ws.current = null;
+        }
+        initializeWebSocket(nextChatId);
+        router.push(`/chat/${nextChatId}`);
+      }
+
+      setIsLoading(false);
+      // queryClient.invalidateQueries({ queryKey: ['chats', chatId] });
+      updateChatHistory();
+    },
+  });
 
   const handleClear = () => {
     clearChatMessages(chatId);
     setIsClearDialogOpen(false);
   };
 
-  const clearChatMessages = useCallback(
-    async (id: string) => {
-      try {
-        await chatManagerApi.clearChat(id);
-        setChatHistory((prev) =>
-          prev.map((chat) =>
-            chat.id === id
-              ? { ...chat, messages: 0, preview: 'Нет сообщений', date: new Date() }
-              : chat
-          )
-        );
+  const { mutate: clearChatMessages } = useMutation({
+    mutationFn: (id: string) => chatManagerApi.clearChat(id),
+    onSuccess: (_, id) => {
+      setChatHistory((prev) =>
+        prev.map((chat) =>
+          chat.id === id
+            ? { ...chat, messages: 0, preview: 'Нет сообщений', date: new Date() }
+            : chat
+        )
+      );
 
-        if (id === chatId) {
-          dispatchMessages({ type: 'CLEAR' });
-          setIsTestMessageShown(true);
-        }
-
-        await loadChatHistory(chatId);
-        updateSidebar();
-      } catch (error) {
-        console.error('Failed to clear chat:', error);
+      if (id === chatId) {
+        dispatchMessages({ type: 'CLEAR' });
+        setIsTestMessageShown(true);
       }
+
+      queryClient.invalidateQueries({ queryKey: ['chats', chatId] });
     },
-    [
-      chatId,
-      setChatHistory,
-      dispatchMessages,
-      setIsTestMessageShown,
-      loadChatHistory,
-      updateSidebar,
-    ]
-  );
+  });
 
   const handleRename = (newTitle: string) => {
-    renameChatTitle(chatId, newTitle);
+    mutate(newTitle);
     setIsEditDialogOpen(false);
   };
 
-  const renameChatTitle = async (id: string, newTitle: string) => {
-    try {
-      await chatManagerApi.editChatName(id, newTitle);
-
+  const { mutate } = useMutation({
+    mutationFn: (newTitle: string) => chatManagerApi.editChatName(chatId, newTitle),
+    onSuccess: (_, newTitle) => {
       setChatHistory((prev: ChatHistory[]) =>
-        prev.map((chat) => (chat.id === id ? { ...chat, title: newTitle } : chat))
+        prev.map((chat) => (chat.id === chatId ? { ...chat, title: newTitle } : chat))
       );
+
       setChatTitle(newTitle);
-      updateSidebar();
-      updateChatHistory().then(() => updateSidebar());
-    } catch (error) {}
-  };
+
+      queryClient.invalidateQueries({ queryKey: ['chats', chatId] });
+    },
+  });
 
   return {
     handleDelete,
@@ -128,7 +113,6 @@ export const useChatManager = ({ chatId }: { chatId: string }) => {
     setIsDeleteDialogOpen,
     setIsClearDialogOpen,
     setIsEditDialogOpen,
-    renameChatTitle,
     deleteChat,
   };
 };

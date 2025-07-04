@@ -6,6 +6,7 @@ import { useUser } from '@/shared/contexts';
 import { updatePasswordApi } from '../api';
 import { useUpdatePassword } from './use-updatePassword';
 import { ConfirmationSchemaType, formSchema } from '../schemes/confirmation.schema';
+import { useMutation } from '@tanstack/react-query';
 
 export const useConfirmationForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,30 +26,39 @@ export const useConfirmationForm = () => {
     setIsSubmitting(true);
     setError('');
     const email = userData?.email;
-    try {
-      const response = await updatePasswordApi.VerifyPasswordCode(email, values.code);
-      if (response.status === 200 || response.status === 201) {
-        const newPassword = localStorage.getItem('new_password');
-        if (newPassword !== null) {
-          try {
-            const result = await updatePassword(newPassword);
-            if (result !== undefined && result.success) {
-              setTimeout(() => {
-                router.push('/profile');
-              }, 2000);
-            }
-          } catch (error) {
-          } finally {
-            setIsSubmitting(false);
-          }
-        }
-      }
-    } catch (error) {
-      setError('Произошла ошибка при проверке кода. Пожалуйста, попробуйте снова.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    const code = values.code;
+    verifyCode({ email, code });
   }
+
+  const { mutate: verifyCode } = useMutation({
+    mutationFn: ({ email, code }: { email: string | undefined; code: string }) =>
+      updatePasswordApi.VerifyPasswordCode(email, code),
+    onSuccess: () => {
+      const newPassword = localStorage.getItem('new_password');
+      if (newPassword !== null) {
+        passwordUpdate(newPassword);
+      }
+    },
+    onError: () => {
+      setError('Произошла ошибка при проверке кода. Пожалуйста, попробуйте снова.');
+      setIsSubmitting(false);
+    },
+  });
+
+  const { mutate: passwordUpdate } = useMutation({
+    mutationFn: (newPassword: string) => updatePassword(newPassword),
+    onSuccess: () => {
+      setTimeout(() => {
+        router.push('/profile');
+      }, 2000);
+    },
+    onError: () => {
+      setError('Произошла ошибка при обновлении пароля. Пожалуйста, попробуйте снова.');
+    },
+    onSettled: () => {
+      setIsSubmitting(false);
+    },
+  });
 
   return {
     form,
