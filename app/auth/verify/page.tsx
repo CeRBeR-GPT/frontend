@@ -24,7 +24,6 @@ export default function VerifyPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
       <main className="container flex flex-1 items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">

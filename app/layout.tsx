@@ -1,6 +1,5 @@
 import type React from 'react';
 import '@/app/globals.css';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Inter } from 'next/font/google';
 import { TanstackQueryProvider, ThemeProvider } from '@/shared/providers';
 import { AuthProvider } from '@/shared/hooks';

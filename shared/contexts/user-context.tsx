@@ -1,12 +1,9 @@
 // features/user/context/user-context.tsx
 
 'use client';
-
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-
 import { userApi } from '@/entities/user/api';
 import { getAccess } from '@/shared/utils';
-
 import { DailyStatistic } from '../types/statistics';
 import { UserData } from '@/entities/user/types';
 import { ChatHistory } from '@/entities/chat/types';

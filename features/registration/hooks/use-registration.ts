@@ -24,13 +24,19 @@ export const useRegistration = () => {
     return { success: false };
   };
 
-  const { mutate } = useMutation({
+  const { mutateAsync: verifyEmailCodeMutation } = useMutation({
     mutationFn: ({ email, code }: { email: string; code: string }) =>
       regApi.verifyEmailCode(email, code),
   });
 
   const verifyEmailCode = async (email: string, code: string) => {
-    mutate({ email, code });
+    try {
+      const response = await verifyEmailCodeMutation({ email, code });
+      return response;
+    } catch (error: any) {
+      setErrorMessage(error.response?.data?.message || 'Ошибка при проверке кода');
+      throw error;
+    }
   };
 
   const { mutateAsync: sendEmailCode } = useMutation({
@@ -45,10 +51,13 @@ export const useRegistration = () => {
   });
 
   const registration = async (userData: { email: string; password: string }) => {
-    reg(userData);
+    try {
+      const response = await reg(userData);
+      return response;
+    } catch (error: any) {}
   };
 
-  const { mutate: reg, data: reg_data } = useMutation({
+  const { mutateAsync: reg, data: reg_data } = useMutation({
     mutationFn: (UserData: { email: string; password: string }) => regApi.registration(UserData),
     onSuccess: (reg_data) => {
       localStorage.setItem('access_token', reg_data?.data.access_token);

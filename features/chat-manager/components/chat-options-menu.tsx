@@ -25,7 +25,7 @@ import { useChatManager } from '../hooks';
 import { ChatOptionsMenuProps } from '../types';
 import { EditChatDialog } from '.';
 
-export function ChatOptionsMenu({ chatId, chatTitle, onDelete, onClear }: ChatOptionsMenuProps) {
+export function ChatOptionsMenu({ chatId, chatTitle }: ChatOptionsMenuProps) {
   const {
     handleDelete,
     handleClear,
@@ -36,7 +36,7 @@ export function ChatOptionsMenu({ chatId, chatTitle, onDelete, onClear }: ChatOp
     setIsDeleteDialogOpen,
     setIsClearDialogOpen,
     setIsEditDialogOpen,
-  } = useChatManager({ chatId, onDelete, onClear });
+  } = useChatManager({ chatId });
 
   return (
     <>

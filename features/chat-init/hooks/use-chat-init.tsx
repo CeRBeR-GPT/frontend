@@ -7,7 +7,6 @@ import { throttle } from 'lodash-es';
 
 import { useChats } from '@/entities/chat/hooks/use-chats';
 import MessageItem from '@/entities/chat/components/MessageItem';
-import { useCopyMessage } from '@/features/copy-message/hooks';
 import { useMessageContext } from '@/shared/contexts';
 
 import { UseChatInitializationProps } from '../types/types';
@@ -68,7 +67,7 @@ export const useChatInitialization = ({
 
   return {
     isCheckingChat,
-    renderedMessages, // Возвращаем подготовленные сообщения для рендеринга,
+    renderedMessages,
     handleSubmit,
     input,
     handleInputChange,
