@@ -5,5 +5,8 @@ export type AuthContextType = {
   setIsAuthenticated: (value: boolean) => void;
   setAuthChecked: (value: boolean) => void;
   getToken: () => Promise<string | null>;
-  login: (email: string, password: string) => Promise<{ success: boolean; lastChatId?: string }>;
+  login: (credentials: { email: string; password: string }) => Promise<{
+    success: boolean;
+    lastChatId?: string;
+  }>;
 };
