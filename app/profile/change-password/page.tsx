@@ -1,12 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-
 import { ArrowLeft } from 'lucide-react';
-
 import { ChangePasswordForm } from '@/features/updatePassword/components';
 import { useAuth } from '@/shared/contexts';
 import { Button } from '@/shared/components/ui/button';
@@ -37,30 +34,34 @@ export default function ChangePasswordPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <Toaster />
-      <main className="container flex flex-1 items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <div className="flex items-center">
-              <Button variant="ghost" size="icon" asChild className="mr-2">
-                <Link href="/profile">
-                  <ArrowLeft className="h-4 w-4" />
-                </Link>
-              </Button>
-              <div>
-                <CardTitle className="text-2xl font-bold">Изменение пароля</CardTitle>
-                <CardDescription>Обновите ваш пароль для повышения безопасности</CardDescription>
+      <main className="flex flex-1 items-center justify-center p-4">
+        <div className="mx-auto w-full max-w-md">
+          {' '}
+          {/* Добавлен контейнер с ограничением ширины */}
+          <Card className="w-full">
+            <CardHeader className="space-y-1">
+              <div className="flex items-center">
+                <Button variant="ghost" size="icon" asChild className="mr-2">
+                  <Link href="/profile">
+                    <ArrowLeft className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <div>
+                  <CardTitle className="text-2xl font-bold">Изменение пароля</CardTitle>
+                  <CardDescription>Обновите ваш пароль для повышения безопасности</CardDescription>
+                </div>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ChangePasswordForm />
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <div className="text-center text-sm text-muted-foreground">
-              Регулярно меняйте пароль для повышения безопасности вашего аккаунта
-            </div>
-          </CardFooter>
-        </Card>
+            </CardHeader>
+            <CardContent>
+              <ChangePasswordForm />
+            </CardContent>
+            <CardFooter className="flex justify-center">
+              <div className="text-center text-sm text-muted-foreground">
+                Регулярно меняйте пароль для повышения безопасности вашего аккаунта
+              </div>
+            </CardFooter>
+          </Card>
+        </div>
       </main>
     </div>
   );
