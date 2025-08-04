@@ -2,47 +2,52 @@
 const nextJest = require('next/jest');
 
 const createJestConfig = nextJest({
-  // Указываем путь к Next.js приложению
   dir: './',
 });
 
-// Кастомная конфигурация Jest
 const customJestConfig = {
-  // Директории с тестами
   testMatch: ['<rootDir>/**/*.test.{js,jsx,ts,tsx}', '<rootDir>/**/*.spec.{js,jsx,ts,tsx}'],
-
-  // Настройки модулей
   moduleDirectories: ['node_modules', '<rootDir>/'],
   moduleNameMapper: {
-    // Для поддержки алиасов, как в tsconfig.json
     '^@/(.*)$': '<rootDir>/$1',
-
-    // Обработка CSS и других файлов
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
       '<rootDir>/__mocks__/fileMock.js',
   },
-
-  // Настройки тестовой среды
   testEnvironment: 'jest-environment-jsdom',
-
-  // Глобальные настройки
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
 
-  // Игнорируемые директории
-  testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
+  // Исправленные пути для игнорирования
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '<rootDir>/shared/utils/remarkMermaid.ts',
+    '<rootDir>/shared/utils/remarkMath.js',
+  ],
 
-  // Трансформации
   transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
+    '^.+\\.(js|jsx|ts|tsx)$': [
+      'babel-jest',
+      {
+        presets: ['next/babel', ['@babel/preset-typescript', { allowDeclareFields: true }]],
+        plugins: [['@babel/plugin-transform-modules-commonjs', { strictMode: false }]],
+      },
+    ],
   },
 
-  // Расширения файлов
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-
-  // Сброс моков перед каждым тестом
+  // Укажите, что нужно обрабатывать как ESM
+  extensionsToTreatAsEsm: ['.ts'],
+  preset: 'ts-jest',
+  globals: {
+    'ts-jest': {
+      tsconfig: 'tsconfig.json',
+      useESM: true,
+    },
+  },
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node', 'mts'],
   resetMocks: true,
+
+  // Добавьте это для обработки ESM-модулей
+  transformIgnorePatterns: ['node_modules/(?!(micromark-extension-math|mdast-util-math)/)'],
 };
 
-// Экспортируем конфигурацию
 module.exports = createJestConfig(customJestConfig);

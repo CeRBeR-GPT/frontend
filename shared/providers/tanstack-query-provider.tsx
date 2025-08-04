@@ -10,9 +10,9 @@ export function TanstackQueryProvider({ children }: { children: React.ReactNode 
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 60 * 1000, // Данные считаются "свежими" 1 минуту
-            refetchOnWindowFocus: false, // Не рефетчить при фокусе
-            refetchOnMount: false, // Не рефетчить при монтировании
+            staleTime: 60 * 1000,
+            refetchOnWindowFocus: false,
+            refetchOnMount: false,
           },
         },
       })

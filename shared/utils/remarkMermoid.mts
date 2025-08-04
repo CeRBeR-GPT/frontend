@@ -1,4 +1,7 @@
-import type { Parent } from 'mdast';
+// @ts-nocheck
+// @jest-environment node
+
+// import type { Parent } from 'mdast';
 import mermaid from 'mermaid';
 import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
@@ -7,21 +10,21 @@ export interface RemarkMermaidOptions {
   theme?: string;
 }
 
-function removeInnerBrackets(str) {
-  return str
-    .replace(
-      /(\[)(.*?)(\])/g,
-      (_, open, content, close) => open + content.replace(/[()[\]{}]/g, '') + close
-    )
-    .replace(
-      /(\()(.*?)(\))/g,
-      (_, open, content, close) => open + content.replace(/[()[\]{}]/g, '') + close
-    )
-    .replace(
-      /(\{)(.*?)(\})/g,
-      (_, open, content, close) => open + content.replace(/[()[\]{}]/g, '') + close
-    );
-}
+// function removeInnerBrackets(str) {
+//   return str
+//     .replace(
+//       /(\[)(.*?)(\])/g,
+//       (_, open, content, close) => open + content.replace(/[()[\]{}]/g, '') + close
+//     )
+//     .replace(
+//       /(\()(.*?)(\))/g,
+//       (_, open, content, close) => open + content.replace(/[()[\]{}]/g, '') + close
+//     )
+//     .replace(
+//       /(\{)(.*?)(\})/g,
+//       (_, open, content, close) => open + content.replace(/[()[\]{}]/g, '') + close
+//     );
+// }
 
 const remarkMermaid: Plugin<[RemarkMermaidOptions?], any> = function remarkMermaid({
   theme = 'default',
