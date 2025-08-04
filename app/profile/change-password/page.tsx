@@ -36,8 +36,6 @@ export default function ChangePasswordPage() {
       <Toaster />
       <main className="flex flex-1 items-center justify-center p-4">
         <div className="mx-auto w-full max-w-md">
-          {' '}
-          {/* Добавлен контейнер с ограничением ширины */}
           <Card className="w-full">
             <CardHeader className="space-y-1">
               <div className="flex items-center">
