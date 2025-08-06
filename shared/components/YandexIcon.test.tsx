@@ -8,7 +8,6 @@ describe('YandexIcon', () => {
     // Получаем SVG через querySelector
     const svg = container.querySelector('svg');
 
-    // Основные проверки
     expect(svg).toBeInTheDocument();
     expect(svg).toHaveAttribute('viewBox', '0 0 24 24');
     expect(svg).toHaveClass('mr-2 h-5 w-5');

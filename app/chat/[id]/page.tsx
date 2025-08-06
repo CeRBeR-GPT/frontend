@@ -3,7 +3,6 @@
 import React, { useEffect } from 'react';
 
 import { useRouter } from 'next/navigation';
-
 import 'katex/dist/katex.min.css';
 import { ArrowDown, Bot } from 'lucide-react';
 
