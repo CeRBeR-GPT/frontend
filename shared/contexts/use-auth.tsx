@@ -6,7 +6,6 @@ import { userApi } from '@/entities/user/api';
 
 import { getAccess } from '../utils';
 import { useUser } from './user-context';
-import { chatApi } from '@/entities/chat/api';
 import { ApiError } from '@/features/auth/types';
 import { AuthContextType } from '../types/context';
 import { useMutation } from '@tanstack/react-query';
@@ -76,20 +75,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('isAuthenticated', 'true');
 
       setIsAuthenticated(true);
-      // await refreshUserData();
       setAuthChecked(true);
 
       const lastSavedChat = localStorage.getItem('lastSavedChat');
       let welcomeChatId = '1';
-      // if (!lastSavedChat) {
-      //   try {
-      //     const chatResponse = await chatApi.getAll();
-      //     if (chatResponse.data) {
-      //       welcomeChatId = chatResponse.data[0].id;
-      //       localStorage.setItem('lastSavedChat', chatResponse.data[0].id);
-      //     }
-      //   } catch (error) {}
-      // }
 
       return { success: true, lastChatId: lastSavedChat || welcomeChatId };
     },

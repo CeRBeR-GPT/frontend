@@ -111,8 +111,8 @@ export const useChats = () => {
           updateSidebar();
 
           Promise.all([
-            updateChatHistory(), // Обновляет список чатов (all)
-            refetchChatById(), // Обновляет текущий чат (by id)
+            updateChatHistory(),
+            refetchChatById(),
           ]).then(() => updateSidebar());
 
           setTimeout(() => {

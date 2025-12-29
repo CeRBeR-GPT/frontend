@@ -28,7 +28,6 @@ type MessageContextType = {
 
 const MessageContext = createContext<MessageContextType | undefined>(undefined);
 
-// Редуктор (аналогичный вашему)
 function messagesReducer(state: Message[], action: MessageAction): Message[] {
   switch (action.type) {
     case 'ADD':
@@ -42,7 +41,6 @@ function messagesReducer(state: Message[], action: MessageAction): Message[] {
   }
 }
 
-// Провайдер контекста
 export const MessageProvider = ({ children }: { children: ReactNode }) => {
   const [messages, dispatchMessages] = useReducer(messagesReducer, []);
   const [isValidChat, setIsValidChat] = useState<boolean>(true);
@@ -72,7 +70,6 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Хук для доступа к контексту
 export const useMessageContext = () => {
   const context = useContext(MessageContext);
   if (!context) {

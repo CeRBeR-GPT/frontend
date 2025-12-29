@@ -18,12 +18,10 @@ export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
     }
   }, [isAuthenticated, authChecked, router]);
 
-  // Пока не проверили аутентификацию, не рендерим ничего
   if (!authChecked) {
     return null;
   }
 
-  // Если не аутентифицирован, но проверка завершена - null (редирект уже выполнится)
   if (!isAuthenticated) {
     return null;
   }

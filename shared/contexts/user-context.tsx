@@ -1,5 +1,3 @@
-// features/user/context/user-context.tsx
-
 'use client';
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { userApi } from '@/entities/user/api';

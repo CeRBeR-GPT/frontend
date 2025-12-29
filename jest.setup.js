@@ -1,22 +1,19 @@
-// jest.setup.js
 import '@testing-library/jest-dom';
 
-// Мок для window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
+    addListener: jest.fn(), 
+    removeListener: jest.fn(),
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
     dispatchEvent: jest.fn(),
   })),
 });
 
-// Мок для localStorage
 const localStorageMock = (function () {
   let store = {};
   return {

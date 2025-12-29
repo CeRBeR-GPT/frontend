@@ -1,4 +1,3 @@
-// features/chat-init/model/use-chat-init.ts
 import { useCallback, useMemo, useState } from 'react';
 
 import { useTheme } from 'next-themes';

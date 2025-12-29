@@ -1,4 +1,3 @@
-// shared/utils/scrollToBottom.ts
 import { RefObject } from 'react';
 
 interface ScrollOptions {

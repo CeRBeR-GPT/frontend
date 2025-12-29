@@ -5,7 +5,6 @@ describe('YandexIcon', () => {
   it('корректно рендерится', () => {
     const { container } = render(<YandexIcon />);
 
-    // Получаем SVG через querySelector
     const svg = container.querySelector('svg');
 
     expect(svg).toBeInTheDocument();

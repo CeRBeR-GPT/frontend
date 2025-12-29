@@ -55,7 +55,6 @@ export const useChatManager = ({ chatId }: { chatId: string }) => {
       }
 
       setIsLoading(false);
-      // queryClient.invalidateQueries({ queryKey: ['chats', chatId] });
       updateChatHistory();
     },
   });

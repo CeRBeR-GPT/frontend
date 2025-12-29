@@ -33,7 +33,7 @@ export const useChangePasswordForm = () => {
   async function onSubmit(values: ChangePasswordSchemaType) {
     localStorage.setItem('new_password', values.newPassword);
     setIsSubmitting(true);
-    getVerifyCode(); // Вызов мутации
+    getVerifyCode();
   }
 
   return {

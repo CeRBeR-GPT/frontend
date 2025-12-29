@@ -7,22 +7,6 @@ export interface RemarkMermaidOptions {
   theme?: string;
 }
 
-function removeInnerBrackets(str) {
-  return str
-    .replace(
-      /(\[)(.*?)(\])/g,
-      (_, open, content, close) => open + content.replace(/[()[\]{}]/g, '') + close
-    )
-    .replace(
-      /(\()(.*?)(\))/g,
-      (_, open, content, close) => open + content.replace(/[()[\]{}]/g, '') + close
-    )
-    .replace(
-      /(\{)(.*?)(\})/g,
-      (_, open, content, close) => open + content.replace(/[()[\]{}]/g, '') + close
-    );
-}
-
 const remarkMermaid: Plugin<[RemarkMermaidOptions?], any> = function remarkMermaid({
   theme = 'default',
 } = {}) {
@@ -40,24 +24,18 @@ const remarkMermaid: Plugin<[RemarkMermaidOptions?], any> = function remarkMerma
     const results = instances.map((ins) => {
       let code = ins[0];
 
-      // Обработка текста внутри квадратных скобок []
       code = code.replaceAll(
         /\[([^\]]*?)\[([^\]\[]+)\]([^\[]*?)\]/g,
         (match, prefix, content, suffix) => {
-          // Удаляем все внутренние квадратные скобки в тексте
           const cleanedContent = content.replaceAll(/\[|\]/g, '');
           return `[${prefix}${cleanedContent}${suffix}]`;
         }
       );
 
-      // Обрабатываем особые случаи:
-      // 1. {A[j] > A[j+1]} → {Aj > Aj+1}
       code = code.replaceAll(/{([^{}]*?)\[([^\]\[]+?)\]([^{}]*?)}/g, '{$1$2$3}');
 
-      // 2. [j + 1]] → j + 1]
       code = code.replaceAll(/\[([^\]\[]+?)\]\]/g, '$1]');
 
-      // 3. [text]} → text}
       code = code.replaceAll(/\[([^\]\[]+?)\]\}/g, '$1}');
       code = code.replace(/\[([a-zA-Zа-яА-Я])\] /g, '$1 ');
       code = code.replaceAll(' { ', ' ').replaceAll(' } ', ' ').replaceAll('()', ' ');
